@@ -17,7 +17,7 @@ contract RobomedIco is Ownable, Destructible, ERC20 {
 
   //VipPlacement constants
   /**
-   * Количество токенов для стадии VipPlacement
+   * Количество токенов для стадии VipPlacement x
   */
   uint256 constant INITIAL_COINS_FOR_VIPPLACEMENT = 250000000 * 10 ** 18;
 
