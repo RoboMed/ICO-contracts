@@ -3,7 +3,7 @@ pragma solidity ^0.4.11;
 
 /**
  * @title Math
- * @dev Assorted math operations
+ * @dev Assorted math operations x
  */
 library Math {
   function max64(uint64 a, uint64 b) internal constant returns (uint64) {
