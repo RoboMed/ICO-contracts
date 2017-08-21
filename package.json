@@ -1,0 +1,19 @@
+{
+  "name": "ico-contracts",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/RoboMed/ICO-contracts.git"
+  },
+  "author": "RobomedDev",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/RoboMed/ICO-contracts/issues"
+  },
+  "homepage": "https://github.com/RoboMed/ICO-contracts#readme"
+}
