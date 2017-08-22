@@ -23,7 +23,7 @@ function mineSomeCoins(etherbase, coinCount) {
 
     let exec = "\"miner.setEtherbase('" + etherbase + "');" +
         "miner.start(1);" +
-        "while(eth.getBalance('" + etherbase + "') < " + coinCount + "){};" +
+        "while(eth.getBalance('" + etherbase + "') < " + coinCount + "){ admin.sleepBlocks(1); };" +
         "miner.stop();\"";
 
     let cmd = "geth attach --exec " + exec;
@@ -40,22 +40,15 @@ function mineSomeCoins(etherbase, coinCount) {
 /**
  * Функция для завершения ожидающих транзакций
  * @param etherbase Счет для майнинга
- * @param pendingAccounts Счета, по которым ожидается изменение баланса
  */
-function commitPendingTransactions(etherbase, pendingAccounts) {
-
-    //будем ждать, пока баланс всех pendingAccounts изменится
-    let condition = pendingAccounts.map(acc => {
-        let balance = web3.eth.getBalance(acc).toNumber();
-        return "eth.getBalance('" + acc + "') == " + balance;
-    }).join(" && ");
+function commitPendingTransactions(etherbase) {
 
     let exec = "\"miner.setEtherbase('" + etherbase + "');" +
         "miner.start(1);" +
-        "while(" + condition + "){};" +
+        "admin.sleepBlocks(1);" +
         "miner.stop();\"";
 
-    let cmd = config.gethExePath + " attach --exec " + exec;
+    let cmd = "geth attach --exec " + exec;
 
     console.log(cmd);
 
@@ -109,7 +102,8 @@ function run(config) {
 }
 
 let res = run(config);
-console.log("res: " + res);
+console.log("res: ");
+console.log(res);
 
 
 
