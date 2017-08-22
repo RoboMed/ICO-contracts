@@ -11,7 +11,7 @@ let web3 = new Web3(new Web3.providers.HttpProvider('http://localhost:8545'));
  */
 function compileSol() {
     console.log("compileSol started...");
-    child_process.execSync('build.bat', function (error, stdout, stderr) {
+    child_process.execSync('../../build.bat', function (error, stdout, stderr) {
         console.log(error);
         console.log(stdout);
         console.log(stderr);
@@ -80,7 +80,7 @@ function run(testData) {
     // компилируем
     compileSol();
     // загружаем в сеть
-    let contract = loadContract(testData.owner.addr);
+    //let contract = loadContract(testData.owner.addr);
 
     console.log("contract: ");
     console.log(contract);

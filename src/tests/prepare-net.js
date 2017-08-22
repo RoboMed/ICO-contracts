@@ -1,9 +1,10 @@
+let fs = require('fs');
 let config = require('./config');
-let u = require('./src/u');
+let u = require('./u');
 let Web3 = require('web3');
 let web3 = new Web3(new Web3.providers.HttpProvider(config.rpcAddress));
 
-var child_process = require('child_process');
+let child_process = require('child_process');
 
 ////////////////////////////////////////////////////
 //
@@ -62,9 +63,10 @@ function commitPendingTransactions(etherbase) {
 /**
  * Функция для подготовки сети перед тестированием
  * @param config Конфиг
+ * @param preparedDataPath Путь по которому сохраняем подготовленные данные
  * @returns {{owner: {addr: *}, user1: {addr: *}, user2: {addr: *}}}
  */
-function run(config) {
+function run(config, preparedDataPath) {
 
     // Создаем несколько новых аккаунтов
     let owner = web3.personal.newAccount(config.accountPass);
@@ -77,7 +79,7 @@ function run(config) {
     // Майним монетки для теста на отдельный счет
     let coinSourceAccount = web3.personal.newAccount(config.accountPass);
     web3.personal.unlockAccount(coinSourceAccount, config.accountPass);
-    mineSomeCoins(coinSourceAccount, 3);
+    mineSomeCoins(coinSourceAccount, "5" + "000000000000000000");
 
     console.log("balance coinSourceAccount: " + web3.eth.getBalance(coinSourceAccount));
 
@@ -94,15 +96,17 @@ function run(config) {
     console.log("balance user2: " + web3.eth.getBalance(user2));
 
     //Возвращаем готовые тестовые данные
-    return {
+    let preparedData = {
         owner: {addr: owner},
         user1: {addr: user1},
         user2: {addr: user2},
-    }
+    };
+    let preparedDataJson = JSON.stringify(preparedData);
+    fs.writeFileSync(preparedDataPath, preparedDataJson);
+    return preparedData;
 }
 
-let res = run(config);
-console.log("res: ");
+let res = run(config, "out/prepared-data.json");
 console.log(res);
 
 

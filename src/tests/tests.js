@@ -10,3 +10,4 @@ function initTest(contract, config, testData) {
 
     console.log(contract);
 }
+
