@@ -30,8 +30,6 @@ function loadContract(config, from) {
     let gasEstimate = web3.eth.estimateGas({data: compiled}) + 1000000;
     console.log("gasEstimate: " + gasEstimate);
 
-    let isReady = false;
-
     web3.eth.defaultAccount = from;
     web3.personal.unlockAccount(web3.eth.defaultAccount, config.accountPass);
     console.log("unlockAccount: " + web3.eth.defaultAccount);
@@ -44,16 +42,14 @@ function loadContract(config, from) {
             gas: gasEstimate
         }, function (err, contract) {
             if (err) {
-                console.error(err);
+                reject(err);
                 // callback fires twice, we only want the second call when the contract is deployed
             }
             else if (contract.address) {
-                console.log('address: ' + contract.address);
-                return contract;
+                resolve(contract);
             }
         });
     });
-
 }
 
 /**
@@ -75,6 +71,6 @@ function run() {
 }
 
 let contract = run();
-contract.then(c=>console.log(c.address));
+contract.then(c => console.log(c));
 
 
