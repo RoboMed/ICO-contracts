@@ -455,7 +455,6 @@ contract RobomedIco is Ownable, Destructible, ERC20 {
     }
   }
 
-
   /**
    * Метод покупки токенов
    */
@@ -500,6 +499,7 @@ contract RobomedIco is Ownable, Destructible, ERC20 {
       {
         remVal = 0;
       }
+      assert(tokens > 0);
 
       freeMoney = freeMoney.sub(tokens);
       totalBought = totalBought.add(tokens);
@@ -539,20 +539,17 @@ contract RobomedIco is Ownable, Destructible, ERC20 {
     //проверяем кошелёк назначения
     require(_to != 0x0 && _to != msg.sender);
 
-    if (currentState == IcoStates.PostIco) {
-      balances[msg.sender] = balances[msg.sender].sub(_value);
-      balances[_to] = balances[_to].add(_value);
-    }
-    else {
+
+    if (currentState != IcoStates.PostIco) {
       //переводить деньги до ico может только владелец
       require(msg.sender == owner);
 
       //общая сумма переводов от владельца (до завершения) ico не может превышать InitialCoinsFor_VipPlacement
       vipPlacementNotDistributed = vipPlacementNotDistributed.sub(_value);
-      balances[_to] = balances[_to].add(_value);
-      balances[msg.sender] = balances[msg.sender].sub(_value);
     }
 
+    balances[_to] = balances[_to].add(_value);
+    balances[msg.sender] = balances[msg.sender].sub(_value);
     Transfer(msg.sender, _to, _value);
     return true;
   }
