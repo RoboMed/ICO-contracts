@@ -463,55 +463,72 @@ contract RobomedIco is Ownable, Destructible, ERC20 {
     require(beneficiary != 0x0);
     require(msg.value != 0);
 
-    //покупать токены можно только на указанных стадиях
-    require(
-    currentState == IcoStates.PreSale
-    ||
-    currentState == IcoStates.SaleStage1
-    ||
-    currentState == IcoStates.SaleStage2
-    ||
-    currentState == IcoStates.SaleStage3
-    ||
-    currentState == IcoStates.SaleStage4
-    ||
-    currentState == IcoStates.SaleStage5
-    );
+    //выставляем остаток средств
+    //в процессе покупки будем его уменьшать на каждой итерации - итерация - покупка токенов на определённой стадии
+    //суть - если покупающий переводит количество эфира,
+    //большее чем возможное количество свободных токенов на определённой стадии,
+    //то выполняется переход на следующую стадию (курс тоже меняется)
+    //и на остаток идёт покупка на новой стадии и т.д.
+    //если же в процессе покупке все свободные токены израсходуются (со всех допустимых стадий)
+    //будет выкинуто исключение
+    uint256 remVal = msg.value;
 
-    //выполняем покупку для вызывающего
-    uint256 weiAmount = msg.value;
-    uint256 tokens = weiAmount.mul(rate);
-    freeMoney = freeMoney.sub(tokens);
-    totalBought = totalBought.add(tokens);
-    balances[beneficiary] = balances[beneficiary].add(tokens);
+    while (remVal > 0) {
+      //покупать токены можно только на указанных стадиях
+      require(
+      currentState == IcoStates.PreSale
+      ||
+      currentState == IcoStates.SaleStage1
+      ||
+      currentState == IcoStates.SaleStage2
+      ||
+      currentState == IcoStates.SaleStage3
+      ||
+      currentState == IcoStates.SaleStage4
+      ||
+      currentState == IcoStates.SaleStage5
+      );
 
-    //если покупка была выполнена на PreSale
-    if (currentState == IcoStates.PreSale) {
-      //уменьшаем количество остатка по токенам которые необходимо продать на PreSale
-      remForPreSale = remForPreSale.sub(tokens);
+      //выполняем покупку для вызывающего
+      //смотрим, есть ли у нас такое количество свободных токенов на текущей стадии
+      uint256 tokens = remVal.mul(rate);
+      if (tokens > freeMoney) {
+        remVal = (tokens - freeMoney) / rate;
+        tokens = freeMoney;
+      }
+      else
+      {
+        remVal = 0;
+      }
+
+      freeMoney = freeMoney.sub(tokens);
+      totalBought = totalBought.add(tokens);
+      balances[beneficiary] = balances[beneficiary].add(tokens);
+
+      //если покупка была выполнена на PreSale
+      if (currentState == IcoStates.PreSale) {
+        //уменьшаем количество остатка по токенам которые необходимо продать на PreSale
+        remForPreSale = remForPreSale.sub(tokens);
+      }
+      //если покупка была выполнена на любой из стадий Sale кроме последней
+      else if (
+      currentState == IcoStates.SaleStage1
+      ||
+      currentState == IcoStates.SaleStage2
+      ||
+      currentState == IcoStates.SaleStage3
+      ||
+      currentState == IcoStates.SaleStage4) {
+
+        //уменьшаем количество остатка по токенам которые необходимо продать на этих стадиях
+        remForSalesBeforeStage5 = remForSalesBeforeStage5.sub(tokens);
+
+        //пробуем перейти между SaleStages
+        transitionBetweenSaleStages();
+      }
     }
-    //если покупка была выполнена на любой из стадий Sale кроме последней
-    else if (
-    currentState == IcoStates.SaleStage1
-    ||
-    currentState == IcoStates.SaleStage2
-    ||
-    currentState == IcoStates.SaleStage3
-    ||
-    currentState == IcoStates.SaleStage4) {
 
-      //уменьшаем количество остатка по токенам которые необходимо продать на этих стадиях
-      remForSalesBeforeStage5 = remForSalesBeforeStage5.sub(tokens);
-
-      //пробуем перейти между SaleStages
-      transitionBetweenSaleStages();
-    }
   }
-
-
-
-
-
 
   /**
   * @dev transfer token for a specified address
@@ -519,6 +536,9 @@ contract RobomedIco is Ownable, Destructible, ERC20 {
   * @param _value The amount to be transferred.
   */
   function transfer(address _to, uint256 _value) returns (bool) {
+    //проверяем кошелёк назначения
+    require(_to != 0x0 && _to != msg.sender);
+
     if (currentState == IcoStates.PostIco) {
       balances[msg.sender] = balances[msg.sender].sub(_value);
       balances[_to] = balances[_to].add(_value);
@@ -526,9 +546,6 @@ contract RobomedIco is Ownable, Destructible, ERC20 {
     else {
       //переводить деньги до ico может только владелец
       require(msg.sender == owner);
-
-      //проверяем кошелёк назначения
-      require(_to != 0x0 && _to != owner);
 
       //общая сумма переводов от владельца (до завершения) ico не может превышать InitialCoinsFor_VipPlacement
       vipPlacementNotDistributed = vipPlacementNotDistributed.sub(_value);
@@ -540,7 +557,6 @@ contract RobomedIco is Ownable, Destructible, ERC20 {
     return true;
   }
 
-
   /**
   * @dev Gets the balance of the specified address.
   * @param _owner The address to query the the balance of.
@@ -549,7 +565,6 @@ contract RobomedIco is Ownable, Destructible, ERC20 {
   function balanceOf(address _owner) constant returns (uint256 balance) {
     return balances[_owner];
   }
-
 
   /**
    * @dev Transfer tokens from one address to another
@@ -754,7 +769,6 @@ contract RobomedIco is Ownable, Destructible, ERC20 {
     StateChanged(IcoStates.PostIco);
     return true;
   }
-
 
 
 }
