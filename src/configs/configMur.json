@@ -1,0 +1,5 @@
+{
+  "rpcAddress": "http://localhost:8545",
+  "accountPass": "12345",
+  "preparedDataPath": "out/prepared-data.json"
+}

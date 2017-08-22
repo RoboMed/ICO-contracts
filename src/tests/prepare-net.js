@@ -1,10 +1,5 @@
-let fs = require('fs');
-let config = require('./config');
 let u = require('./u');
 let Web3 = require('web3');
-let web3 = new Web3(new Web3.providers.HttpProvider(config.rpcAddress));
-
-let child_process = require('child_process');
 
 ////////////////////////////////////////////////////
 //
@@ -31,11 +26,7 @@ function mineSomeCoins(etherbase, coinCount) {
 
     console.log(cmd);
 
-    child_process.execSync(cmd, (error, stdout, stderr) => {
-        console.log(error);
-        console.log(stdout);
-        console.log(stderr);
-    });
+    u.execProcessSync(cmd);
 }
 
 /**
@@ -53,20 +44,19 @@ function commitPendingTransactions(etherbase) {
 
     console.log(cmd);
 
-    child_process.execSync(cmd, (error, stdout, stderr) => {
-        console.log(error);
-        console.log(stdout);
-        console.log(stderr);
-    });
+    u.execProcessSync(cmd);
 }
 
 /**
  * Функция для подготовки сети перед тестированием
- * @param config Конфиг
- * @param preparedDataPath Путь по которому сохраняем подготовленные данные
  * @returns {{owner: {addr: *}, user1: {addr: *}, user2: {addr: *}}}
  */
-function run(config, preparedDataPath) {
+function run() {
+
+    let config = u.getConfigFromArgv(process.argv);
+
+    let web3 =  new Web3(new Web3.providers.HttpProvider(config.rpcAddress));
+
 
     // Создаем несколько новых аккаунтов
     let owner = web3.personal.newAccount(config.accountPass);
@@ -89,7 +79,7 @@ function run(config, preparedDataPath) {
     let tx3 = web3.eth.sendTransaction({from: coinSourceAccount, to: user2, value: web3.toWei(1, "ether")});
 
     //ждем, пока все монеты дойдут
-    commitPendingTransactions(coinSourceAccount, [owner, user1, user2]);
+    commitPendingTransactions(coinSourceAccount);
 
     console.log("balance owner: " + web3.eth.getBalance(owner));
     console.log("balance user1: " + web3.eth.getBalance(user1));
@@ -101,12 +91,11 @@ function run(config, preparedDataPath) {
         user1: {addr: user1},
         user2: {addr: user2},
     };
-    let preparedDataJson = JSON.stringify(preparedData);
-    fs.writeFileSync(preparedDataPath, preparedDataJson);
+    u.writePreparedTestData(config.preparedDataPath, preparedData);
     return preparedData;
 }
 
-let res = run(config, "out/prepared-data.json");
+let res = run();
 console.log(res);
 
 

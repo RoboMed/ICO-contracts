@@ -1,9 +1,8 @@
 let fs = require('fs');
-let child_process = require('child_process');
 let config = require('./config');
 let Web3 = require('web3');
 let web3 = new Web3(new Web3.providers.HttpProvider('http://localhost:8545'));
-
+let u = require('./u');
 
 /**
  * Функция для компилирования sol файлов
@@ -11,11 +10,7 @@ let web3 = new Web3(new Web3.providers.HttpProvider('http://localhost:8545'));
  */
 function compileSol() {
     console.log("compileSol started...");
-    child_process.execSync('../../build.bat', function (error, stdout, stderr) {
-        console.log(error);
-        console.log(stdout);
-        console.log(stderr);
-    });
+    u.execProcessSync("build.bat");
     console.log("compileSol finished");
 }
 
@@ -43,7 +38,7 @@ function loadContract(from) {
     let myContract;
     web3.eth.contract(abi).new({
         data: compiled,
-        //from: from,
+        from: from,
         gas: gasEstimate
     }, function (err, contract) {
         if (err) {
