@@ -219,19 +219,19 @@ contract RobomedIco is Ownable, Destructible, ERC20 {
 
 
 
-  mapping (address => uint256) balances;
+  mapping (address => uint256) public balances;
 
-  mapping (address => mapping (address => uint256)) allowed;
+  mapping (address => mapping (address => uint256)) public allowed;
 
   /**
   * Здесь храним начисленные премиальные токены, могут быть выведены на кошелёк начиная с даты startDateOfUseTeamTokens
   */
-  mapping (address => uint256) teamBalances;
+  mapping (address => uint256) public teamBalances;
 
   /**
   * Здесь храним начисленные очки баунти
   */
-  mapping (address => uint256) bountyPointsBalances;
+  mapping (address => uint256) public bountyPointsBalances;
 
   /**
     * Текущее состояние
@@ -740,16 +740,15 @@ contract RobomedIco is Ownable, Destructible, ERC20 {
     //ок переходим на состояние SaleStage5
     currentState = IcoStates.PostIco;
 
+    //уничтожаем свободные токены
+    totalSupply = totalSupply.sub(freeMoney);
+    setMoney(0, 0, 0);
+
     //определяем количество премиальных токенов для команды и баунти - на этом этапе они не попадают в выпущенные
     //попадут только при получении
     teamTokens = (totalBought + INITIAL_COINS_FOR_VIPPLACEMENT) / 5;
 
     bountyTokens = (totalBought + INITIAL_COINS_FOR_VIPPLACEMENT) / 20;
-
-
-    //уничтожаем свободные токены
-    totalSupply = totalSupply.sub(freeMoney);
-    setMoney(0, 0, 0);
 
     //выставляем дату после которой можно использовать премиальные токены
     startDateOfUseTeamTokens = now + DURATION_NONUSEBOUNTY;
@@ -757,10 +756,10 @@ contract RobomedIco is Ownable, Destructible, ERC20 {
     //проводим распределение TeamTokens -
 
     //member1
-    teamBalances[0x0] = teamBalances[0x0].add(teamTokens / 20);
+    teamBalances[0x0] = teamBalances[0x0].add(teamTokens / 2);
 
     //member2
-    teamBalances[0x0] = teamBalances[0x0].add(teamTokens / 20);
+    teamBalances[0x0] = teamBalances[0x0].add(teamTokens / 2);
 
 
     StateChanged(IcoStates.PostIco);
