@@ -7,8 +7,8 @@
     "start": "node ./src/tests/index.js",
     "preparenetMur":"node ./src/tests/prepare-net.js configFile=./src/configs/configMur.json",
     "preparenetRum":"node ./src/tests/prepare-net.js configFile=./src/configs/configRum.json",
-    "deployMur":"node ./src/tests/deploy-contract.js configFile=./src/configs/configMur.json ",
-    "deployRum":"node ./src/tests/deploy-contract.js configFile=./src/configs/configRum.json ",
+    "deployMur":"node ./src/tests/deploy-to-target.js configFile=./src/configs/configMur.json ",
+    "deployRum":"node ./src/tests/deploy-to-target.js configFile=./src/configs/configRum.json ",
     "build": "build.bat",
     "test": "echo \"Error: no test specified\" && exit 1"
   },

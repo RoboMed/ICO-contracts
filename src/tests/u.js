@@ -1,6 +1,5 @@
 let child_process = require('child_process');
 let fs = require('fs');
-let Web3 = require('web3');
 
 module.exports = {
 
