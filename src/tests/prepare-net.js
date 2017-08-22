@@ -17,10 +17,12 @@ let Web3 = require('web3');
  */
 function mineSomeCoins(etherbase, coinCount) {
 
-    let exec = "\"miner.setEtherbase('" + etherbase + "');" +
+    let exec = "\"var prevCoinbase = eth.coinbase; " +
+        "miner.setEtherbase('" + etherbase + "');" +
         "miner.start(1);" +
         "while(eth.getBalance('" + etherbase + "') < " + coinCount + "){ admin.sleepBlocks(1); };" +
-        "miner.stop();\"";
+        "miner.stop();" +
+        "miner.setEtherbase(prevCoinbase);\"";
 
     let cmd = "geth attach --exec " + exec;
 
@@ -35,10 +37,13 @@ function mineSomeCoins(etherbase, coinCount) {
  */
 function commitPendingTransactions(etherbase) {
 
-    let exec = "\"miner.setEtherbase('" + etherbase + "');" +
+    let exec = "\"var prevCoinbase = eth.coinbase; " +
+        "miner.setEtherbase('" + etherbase + "');" +
         "miner.start(1);" +
         "admin.sleepBlocks(1);" +
-        "miner.stop();\"";
+        "miner.stop();" +
+        "miner.setEtherbase(prevCoinbase);\"";
+
 
     let cmd = "geth attach --exec " + exec;
 
@@ -51,12 +56,10 @@ function commitPendingTransactions(etherbase) {
  * Функция для подготовки сети перед тестированием
  * @returns {{owner: {addr: *}, user1: {addr: *}, user2: {addr: *}}}
  */
-function run() {
+function init() {
 
     let config = u.getConfigFromArgv(process.argv);
-
-    let web3 =  new Web3(new Web3.providers.HttpProvider(config.rpcAddress));
-
+    let web3 = new Web3(new Web3.providers.HttpProvider(config.rpcAddress));
 
     // Создаем несколько новых аккаунтов
     let owner = web3.personal.newAccount(config.accountPass);
@@ -69,9 +72,9 @@ function run() {
     // Майним монетки для теста на отдельный счет
     let coinSourceAccount = web3.personal.newAccount(config.accountPass);
     web3.personal.unlockAccount(coinSourceAccount, config.accountPass);
-    mineSomeCoins(coinSourceAccount, "5" + "000000000000000000");
+    mineSomeCoins(coinSourceAccount, web3.toWei(5));
 
-    console.log("balance coinSourceAccount: " + web3.eth.getBalance(coinSourceAccount));
+    console.log("balance coinSourceAccount: " + web3.fromWei(web3.eth.getBalance(coinSourceAccount)));
 
     // Распределяем намайненное
     let tx1 = web3.eth.sendTransaction({from: coinSourceAccount, to: owner, value: web3.toWei(1, "ether")});
@@ -81,9 +84,9 @@ function run() {
     //ждем, пока все монеты дойдут
     commitPendingTransactions(coinSourceAccount);
 
-    console.log("balance owner: " + web3.eth.getBalance(owner));
-    console.log("balance user1: " + web3.eth.getBalance(user1));
-    console.log("balance user2: " + web3.eth.getBalance(user2));
+    console.log("balance owner: " + web3.fromWei(web3.eth.getBalance(owner)));
+    console.log("balance user1: " + web3.fromWei(web3.eth.getBalance(user1)));
+    console.log("balance user2: " + web3.fromWei(web3.eth.getBalance(user2)));
 
     //Возвращаем готовые тестовые данные
     let preparedData = {
@@ -95,9 +98,9 @@ function run() {
     return preparedData;
 }
 
-let res = run();
-console.log(res);
-
+module.exports = {
+    init: init
+};
 
 
 

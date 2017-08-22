@@ -1,6 +1,7 @@
 let fs = require('fs');
 let u = require('./u');
 let Web3 = require('web3');
+let Miner = require('./miner');
 
 /**
  * Функция для компилирования sol файлов
@@ -34,6 +35,9 @@ function loadContract(config, from) {
     web3.personal.unlockAccount(web3.eth.defaultAccount, config.accountPass);
     console.log("unlockAccount: " + web3.eth.defaultAccount);
 
+    let miner = new Miner();
+    miner.start();
+
     return new Promise((resolve, reject) => {
 
         web3.eth.contract(abi).new({
@@ -42,10 +46,12 @@ function loadContract(config, from) {
             gas: gasEstimate
         }, function (err, contract) {
             if (err) {
+                miner.stop();
                 reject(err);
                 // callback fires twice, we only want the second call when the contract is deployed
             }
             else if (contract.address) {
+                miner.stop();
                 resolve(contract);
             }
         });
@@ -56,7 +62,7 @@ function loadContract(config, from) {
  * Функция компилирует и деплоит контракт
  * @returns {Contract} Promise<Contract>
  */
-function run() {
+function init() {
 
     let config = u.getConfigFromArgv(process.argv);
 
@@ -67,10 +73,18 @@ function run() {
     compileSol();
 
     // загружаем в сеть
-    return loadContract(config, data.owner.addr) //Promise;
+    let contract = loadContract(config, data.owner.addr); //Promise;
+
+    contract.then(c => {
+        console.log("contract address: " + c.address);
+        console.log("contract abi: " + c.abi.toString())
+    });
+
+    return contract;
 }
 
-let contract = run();
-contract.then(c => console.log(c));
+module.exports = {
+    init: init
+};
 
 
