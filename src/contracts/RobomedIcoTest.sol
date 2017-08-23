@@ -99,10 +99,6 @@ contract Destructible is Ownable {
   function destroy() onlyOwner {
     selfdestruct(owner);
   }
-
-  function destroyAndSend(address _recipient) onlyOwner {
-    selfdestruct(_recipient);
-  }
 }
 
 
