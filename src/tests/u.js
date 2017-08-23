@@ -35,6 +35,23 @@ function getConfigFromArgv(argv) {
     }
 }
 
+function getConfigFromEnv(env) {
+
+    try {
+        let configFile = env["configFile"];
+        let data = fs.readFileSync(configFile);
+        let config = JSON.parse(data);
+
+        return config;
+    }
+    catch (e) {
+        console.error(e);
+        console.log("env:");
+        console.log(env);
+        throw e;
+    }
+}
+
 function readPreparedTestData(path) {
     return JSON.parse(fs.readFileSync(path));
 }
@@ -52,6 +69,7 @@ module.exports = {
     delaySync: delaySync,
     execProcessSync: execProcessSync,
     getConfigFromArgv: getConfigFromArgv,
+    getConfigFromEnv: getConfigFromEnv,
     readPreparedTestData: readPreparedTestData,
     writePreparedTestData: writePreparedTestData,
     getConfig: getConfig
