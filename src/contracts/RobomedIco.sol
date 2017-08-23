@@ -782,10 +782,10 @@ contract RobomedIco is Ownable, Destructible, ERC20 {
     //проводим распределение TeamTokens -
 
     //member1
-    teamBalances[0x0] = teamBalances[0x0].add(teamTokens / 2);
+    //teamBalances[0x0] = teamBalances[0x0].add(teamTokens / 2);
 
     //member2
-    teamBalances[0x0] = teamBalances[0x0].add(teamTokens / 2);
+    //teamBalances[0x0] = teamBalances[0x0].add(teamTokens / 2);
 
 
     StateChanged(IcoStates.PostIco);
