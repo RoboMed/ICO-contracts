@@ -462,7 +462,7 @@ contract RobomedIco is Ownable, Destructible, ERC20 {
    * только если ico не закончилось
    */
   modifier beforeIco() {
-    require(currentState == IcoStates.PostIco);
+    require(currentState != IcoStates.PostIco);
     _;
   }
 

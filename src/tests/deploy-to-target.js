@@ -5,7 +5,6 @@ let Miner = require('./miner');
 
 /**
  * Функция для компилирования sol файлов
- * @returns {Promise.<void>}
  */
 function compileSol() {
     console.log("compileSol started...");
@@ -17,7 +16,7 @@ function compileSol() {
  * Функция для загрузки контракта в сеть
  * @param config Конфиг
  * @param from The address transactions should be made from
- * @returns Contract object
+ * @returns Promise object
  */
 function loadContract(config, from) {
 
@@ -60,7 +59,7 @@ function loadContract(config, from) {
 
 /**
  * Функция компилирует и деплоит контракт
- * @returns {Contract} Promise<Contract>
+ * @returns {Promise.<TResult>} Promise<Contract>
  */
 function init(config = null) {
 
@@ -75,14 +74,12 @@ function init(config = null) {
     // загружаем в сеть
     let contract = loadContract(config, data.owner.addr); //Promise;
 
-    contract.then(c => {
+   return contract.then(c => {
         console.log("contract address: " + c.address);
         console.log("contract abi: " + c.abi.toString());
-
-        console.log(c.call().canGoToState(1));
+        return c;
     });
 
-    return contract;
 }
 
 module.exports = {
