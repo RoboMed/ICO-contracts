@@ -132,7 +132,6 @@ contract ERC20 is ERC20Basic {
   event Approval(address indexed owner, address indexed spender, uint256 value);
 }
 
-
 contract RobomedIco is Ownable, Destructible, ERC20 {
 
   using SafeMath for uint256;
@@ -152,12 +151,12 @@ contract RobomedIco is Ownable, Destructible, ERC20 {
   /**
    * Количество токенов для стадии VipPlacement x
   */
-  uint256 constant INITIAL_COINS_FOR_VIPPLACEMENT = 250000000 * 10 ** 18;
+  uint256 public constant INITIAL_COINS_FOR_VIPPLACEMENT = 250000000 * 10 ** 18;
 
   /**
    * Длительность стадии VipPlacement
   */
-  uint256 constant DURATION_VIPPLACEMENT = 1 minutes;//  1 days;
+  uint256 public constant DURATION_VIPPLACEMENT = 1 minutes;//  1 days;
 
   //end VipPlacement constants
 
@@ -166,17 +165,17 @@ contract RobomedIco is Ownable, Destructible, ERC20 {
   /**
    * Количество токенов для стадии PreSale
   */
-  uint256 constant EMISSION_FOR_PRESALE = 540000000 * 10 ** 18;
+  uint256 public constant EMISSION_FOR_PRESALE = 540000000 * 10 ** 18;
 
   /**
    * Длительность стадии PreSale
   */
-  uint256 constant DURATION_PRESALE = 2 minutes;//1 days;
+  uint256 public constant DURATION_PRESALE = 2 minutes;//1 days;
 
   /**
    * Курс стадии PreSale
   */
-  uint256 constant RATE_PRESALE = 3600;
+  uint256 public constant RATE_PRESALE = 3600;
 
   //end PreSale constants
 
@@ -185,17 +184,17 @@ contract RobomedIco is Ownable, Destructible, ERC20 {
   /**
    * Общая длительность стадий Sale с SaleStage1 по SaleStage4 включительно
   */
-  uint256 constant DURATION_SALESTAGES = 2 minutes;//30 days;
+  uint256 public constant DURATION_SALESTAGES = 2 minutes;//30 days;
 
   /**
    * Курс стадии SaleStage1
   */
-  uint256 constant RATE_SALESTAGE1 = 3000;
+  uint256 public constant RATE_SALESTAGE1 = 3000;
 
   /**
    * Эмиссия токенов для стадии SaleStage1
   */
-  uint256 constant EMISSION_FOR_SALESTAGE1 = 112500000 * 10 ** 18;
+  uint256 public constant EMISSION_FOR_SALESTAGE1 = 112500000 * 10 ** 18;
 
   //end SaleStage1 constants
 
@@ -204,12 +203,12 @@ contract RobomedIco is Ownable, Destructible, ERC20 {
   /**
    * Курс стадии SaleStage2
   */
-  uint256 constant RATE_SALESTAGE2 = 2700;
+  uint256 public constant RATE_SALESTAGE2 = 2700;
 
   /**
     * Эмиссия токенов для стадии SaleStage2
     */
-  uint256 constant EMISSION_FOR_SALESTAGE2 = 101250000 * 10 ** 18;
+  uint256 public constant EMISSION_FOR_SALESTAGE2 = 101250000 * 10 ** 18;
 
   //end SaleStage2 constants
 
@@ -218,12 +217,12 @@ contract RobomedIco is Ownable, Destructible, ERC20 {
   /**
    * Курс стадии SaleStage3
   */
-  uint256 constant RATE_SALESTAGE3 = 2300;
+  uint256 public constant RATE_SALESTAGE3 = 2300;
 
   /**
   * Эмиссия токенов для стадии SaleStage3
   */
-  uint256 constant EMISSION_FOR_SALESTAGE3 = 86250000 * 10 ** 18;
+  uint256 public constant EMISSION_FOR_SALESTAGE3 = 86250000 * 10 ** 18;
   //end SaleStage3 constants
 
   //SaleStage4 constants
@@ -231,12 +230,12 @@ contract RobomedIco is Ownable, Destructible, ERC20 {
   /**
    * Курс стадии SaleStage4
   */
-  uint256 constant RATE_SALESTAGE4 = 2100;
+  uint256 public constant RATE_SALESTAGE4 = 2100;
 
   /**
   * Эмиссия токенов для стадии SaleStage4
   */
-  uint256 constant EMISSION_FOR_SALESTAGE4 = 78750000 * 10 ** 18;
+  uint256 public constant EMISSION_FOR_SALESTAGE4 = 78750000 * 10 ** 18;
 
   //end SaleStage4 constants
 
@@ -245,37 +244,37 @@ contract RobomedIco is Ownable, Destructible, ERC20 {
   /**
    * Длительность стадии SaleStage5
   */
-  uint256 constant DURATION_SALESTAGE5 = 20 minutes;//10 days;
+  uint256 public constant DURATION_SALESTAGE5 = 20 minutes;//10 days;
 
   /**
    * Курс стадии SaleStage5
   */
-  uint256 constant RATE_SALESTAGE5 = 2000;
+  uint256 public constant RATE_SALESTAGE5 = 2000;
 
   /**
   * Эмиссия токенов для стадии SaleStage5
   */
-  uint256 constant EMISSION_FOR_SALESTAGE5 = 300000000 * 10 ** 18;
+  uint256 public constant EMISSION_FOR_SALESTAGE5 = 300000000 * 10 ** 18;
   //end SaleStage5 constants
 
   //PostIco constants
 
   /**
-   * Длительность периода на который нельзя использовать токены, полученные при Bounty
+   * Длительность периода на который нельзя использовать team токены, полученные при распределении
   */
-  uint256 constant DURATION_NONUSEBOUNTY = 20 minutes;//10 days;
+  uint256 public constant DURATION_NONUSETEAM = 20 minutes;//10 days;
 
   //end PostIco constants
 
   /**
   * Максимально доступное количество очков баунти
   */
-  uint256 constant BOUNTY_POINTS_SIZE = 1000;
+  uint256 public constant BOUNTY_POINTS_SIZE = 1000;
 
   /**
    * Размер премии для аккаунта, с которого успешно выполнили goto на очередную стадию
   */
-  uint256 PRIZE_SIZE_FORGOTO = 1000 * 10 ** 18;
+  uint256 public constant PRIZE_SIZE_FORGOTO = 1000 * 10 ** 18;
 
   /**
     * Перечисление состояний контракта
@@ -365,6 +364,11 @@ contract RobomedIco is Ownable, Destructible, ERC20 {
     * Текущее состояние
     */
   IcoStates public currentState;
+
+  /**
+  * Количество собранного эфира
+  */
+  uint256 public totalBalance;
 
   /**
   * Количество свободных токенов (никто ими не владеет)
@@ -528,6 +532,15 @@ contract RobomedIco is Ownable, Destructible, ERC20 {
   }
 
   /**
+  * Снятие эфира на кошелёк владельца
+  */
+  function ownerWithdrawal(uint256 _value) afterIco onlyOwner {
+    require(_value > 0);
+    totalBalance = totalBalance.sub(_value);
+    owner.transfer(_value);
+  }
+
+  /**
   * Метод выполняющий добавление боунти-поинтов на указанный адрес
   */
   function addBounty(address beneficiary, uint256 _value) beforeIco onlyOwner {
@@ -606,6 +619,9 @@ contract RobomedIco is Ownable, Destructible, ERC20 {
     //будет выкинуто исключение
     uint256 remVal = msg.value;
 
+    //увеличиваем количество эфира пришедшего к нам
+    totalBalance = totalBalance.add(msg.value);
+
     while (remVal > 0) {
       //покупать токены можно только на указанных стадиях
       require(
@@ -663,6 +679,7 @@ contract RobomedIco is Ownable, Destructible, ERC20 {
     }
 
   }
+
 
   /**
   * @dev transfer token for a specified address
@@ -885,15 +902,15 @@ contract RobomedIco is Ownable, Destructible, ERC20 {
     bountyTokens = (totalBought + INITIAL_COINS_FOR_VIPPLACEMENT) / 20;
 
     //выставляем дату после которой можно использовать премиальные токены
-    startDateOfUseTeamTokens = now + DURATION_NONUSEBOUNTY;
+    startDateOfUseTeamTokens = now + DURATION_NONUSETEAM;
 
     //проводим распределение TeamTokens -
 
     //member1
-    teamBalances[0x0] = teamBalances[0x0].add(teamTokens / 2);
+    //teamBalances[0x0] = teamBalances[0x0].add(teamTokens / 2);
 
     //member2
-    teamBalances[0x0] = teamBalances[0x0].add(teamTokens / 2);
+    //teamBalances[0x0] = teamBalances[0x0].add(teamTokens / 2);
 
 
     StateChanged(IcoStates.PostIco);
