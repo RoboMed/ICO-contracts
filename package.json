@@ -4,11 +4,18 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "preparenetMur": "node -e \"require('./src/tests/prepare-net').init()\" configFile=./src/configs/config-mur.json",
-    "preparenetRum": "node -e \"require('./src/tests/prepare-net').init()\" configFile=./src/configs/config-rum.json",
+
+    "prepareNewNetMur": "node -e \"require('./src/tests/prepare-new-net').initAndWrite()\" configFile=./src/configs/config-mur.json",
+    "prepareNewNetRum": "node -e \"require('./src/tests/prepare-new-net').initAndWrite()\" configFile=./src/configs/config-rum.json",
+
+    "prepareTestDataMur": "node -e \"require('./src/tests/prepare-test-data').initAndWrite()\" configFile=./src/configs/config-mur.json",
+    "prepareTestDataRum": "node -e \"require('./src/tests/prepare-test-data').initAndWrite()\" configFile=./src/configs/config-rum.json",
+
     "deployMur": "node -e \"require('./src/tests/deploy-to-target').init()\" configFile=./src/configs/config-mur.json ",
     "deployRum": "node -e \"require('./src/tests/deploy-to-target').init()\" configFile=./src/configs/config-rum.json ",
+
     "build": "build.bat",
+
     "testMur": "mocha \"src/tests/*test.js\" --configFile=./src/configs/config-mur.json",
     "testRum": "mocha \"src/tests/*test.js\" --configFile=./src/configs/config-rum.json"
   },

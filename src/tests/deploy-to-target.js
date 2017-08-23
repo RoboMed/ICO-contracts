@@ -1,7 +1,6 @@
 let fs = require('fs');
 let u = require('./u');
 let Web3 = require('web3');
-let Miner = require('./miner');
 
 /**
  * Функция для компилирования sol файлов
@@ -18,7 +17,7 @@ function compileSol() {
  * @param from The address transactions should be made from
  * @returns Promise object
  */
-function loadContract(config, from) {
+function uploadContract(config, from) {
 
     let web3 = new Web3(new Web3.providers.HttpProvider(config.rpcAddress));
 
@@ -31,11 +30,8 @@ function loadContract(config, from) {
     console.log("gasEstimate: " + gasEstimate);
 
     web3.eth.defaultAccount = from;
-    web3.personal.unlockAccount(web3.eth.defaultAccount, config.accountPass);
-    console.log("unlockAccount: " + web3.eth.defaultAccount);
-
-    let miner = new Miner();
-    miner.start();
+    web3.personal.unlockAccount(from, config.accountPass);
+    console.log("unlockAccount: " + from);
 
     return new Promise((resolve, reject) => {
 
@@ -43,14 +39,12 @@ function loadContract(config, from) {
             data: compiled,
             from: from,
             gas: gasEstimate
-        }, function (err, contract) {
+        }, (err, contract) => {
             if (err) {
-                miner.stop();
+                console.log(err);
                 reject(err);
-                // callback fires twice, we only want the second call when the contract is deployed
             }
             else if (contract.address) {
-                miner.stop();
                 resolve(contract);
             }
         });
@@ -66,15 +60,15 @@ function init(config = null) {
     config = config != null ? config : u.getConfigFromArgv(process.argv);
 
     // тестовые данные
-    let data = u.readPreparedTestData(config.preparedDataPath);
+    let data = u.readDataFromFileSync(config.preparedDataPath);
 
     // компилируем
     compileSol();
 
     // загружаем в сеть
-    let contract = loadContract(config, data.owner.addr); //Promise;
+    let contract = uploadContract(config, data.owner.addr); //Promise;
 
-   return contract.then(c => {
+    return contract.then(c => {
         console.log("contract address: " + c.address);
         console.log("contract abi: " + c.abi.toString());
         return c;

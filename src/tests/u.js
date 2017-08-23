@@ -13,6 +13,8 @@ function execProcessSync(cmd) {
         console.log(error);
         console.log(stdout);
         console.log(stderr);
+
+        if (error != null) throw error;
     });
 }
 
@@ -52,16 +54,37 @@ function getConfigFromEnv(env) {
     }
 }
 
-function readPreparedTestData(path) {
+/**
+ * Функция читает данные из файла
+ * @param path Путь к файлу
+ */
+function readDataFromFileSync(path) {
     return JSON.parse(fs.readFileSync(path));
 }
 
-function writePreparedTestData(path, preparedTestData) {
-    fs.writeFileSync(path, JSON.stringify(preparedTestData));
+/**
+ * Функция сохраняет данные в файл
+ * @param path Путь к файлу
+ * @param data данные
+ */
+function writeDataToFileSync(path, data) {
+    fs.writeFileSync(path, JSON.stringify(data));
 }
 
 function getConfig() {
     return getConfigFromArgv(process.argv);
+}
+
+function waitForTransactions(web3, txObj) {
+
+    let txHashes = Array.isArray(txObj) ? txObj : [txObj];
+
+    //Пока есть хотя бы одна невыполненная транзакция, ждем
+    while (txHashes.find((txHash) => {
+        web3.eth.getTransactionReceipt(txHash) == null
+    }) != undefined) {
+        //do nothing
+    }
 }
 
 
@@ -70,7 +93,8 @@ module.exports = {
     execProcessSync: execProcessSync,
     getConfigFromArgv: getConfigFromArgv,
     getConfigFromEnv: getConfigFromEnv,
-    readPreparedTestData: readPreparedTestData,
-    writePreparedTestData: writePreparedTestData,
-    getConfig: getConfig
+    readDataFromFileSync: readDataFromFileSync,
+    writeDataToFileSync: writeDataToFileSync,
+    getConfig: getConfig,
+    waitForTransactions: waitForTransactions
 };

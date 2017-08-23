@@ -1,26 +1,20 @@
 let assert = require("assert");
-let prepare_net = require("./prepare-net");
+let prepare_test_data = require("./prepare-test-data");
 let deploy_to_target = require("./deploy-to-target");
-let contract_constants = require("./contract-constants");
+let ContractConstants = require("./contract-constants");
 let fs = require('fs');
 let u = require('./u');
 let Web3 = require('web3');
-let Miner = require('./miner');
 let BigNumber = require('bignumber.js');
+let IcoStates = require("./ico-states");
 
 const timeout = 100000;
 
 let web3 = null;
 let contract = null;
 let config = null;
-let miner = new Miner();
 let preparedData = null;
-
-function waitForTransaction(txHash) {
-    while (web3.eth.getTransactionReceipt(txHash) == null) {
-        u.delaySync(500);
-    }
-}
+let contractConstants = null;
 
 describe('TestInit', () => {
 
@@ -34,7 +28,6 @@ describe('TestInit', () => {
 
         assert.ok(config != undefined);
         assert.ok(web3 != undefined);
-
     });
 
     beforeEach(function (done) {
@@ -42,13 +35,14 @@ describe('TestInit', () => {
 
         this.timeout(timeout);
 
-        prepare_net.init(config);
+        prepare_test_data.initAndWrite(config);
         deploy_to_target.init(config).then(c => {
 
             contract = web3.eth.contract(c.abi).at(c.address);
             assert.ok(contract.address);
 
-            miner.start();
+            contractConstants = new ContractConstants(contract);
+
             done()
         });
 
@@ -56,17 +50,19 @@ describe('TestInit', () => {
         //contractAddress = "0xaebb4bfe88cfac310c8671027c35e0131376bbcb";
         //contract = web3.eth.contract(abi).at(contractAddress);
 
-        preparedData = u.readPreparedTestData(config.preparedDataPath);
+        preparedData = u.readDataFromFileSync(config.preparedDataPath);
 
-        web3.personal.unlockAccount(preparedData.owner.addr, config.accountPass);
-        web3.personal.unlockAccount(preparedData.user1.addr, config.accountPass);
-        web3.personal.unlockAccount(preparedData.user2.addr, config.accountPass);
+        [preparedData.owner.addr,
+            preparedData.user1.addr,
+            preparedData.user2.addr
+        ].map(addr => {
+            web3.personal.unlockAccount(addr, config.accountPass)
+        });
 
     });
 
     afterEach(() => {
         console.log("afterEach");
-        miner.stop();
     });
 
     it('test1', (done) => {
@@ -75,13 +71,13 @@ describe('TestInit', () => {
 
         // Проверяем, что контракт на 0 стадии (VipReplacement)
         let currentState = contract.currentState();
-        assert.ok(currentState == 0);
+        assert.ok(currentState.equals(IcoStates.VipPlacement));
 
-        let canGotoState1 = contract.canGotoState(1);
-        let canGotoState2 = contract.canGotoState(2);
-        let canGotoState3 = contract.canGotoState(3);
-        let canGotoState4 = contract.canGotoState(4);
-        let canGotoState5 = contract.canGotoState(5);
+        let canGotoState1 = contract.canGotoState(IcoStates.PreSale);
+        let canGotoState2 = contract.canGotoState(IcoStates.SaleStage1);
+        let canGotoState3 = contract.canGotoState(IcoStates.SaleStage2);
+        let canGotoState4 = contract.canGotoState(IcoStates.SaleStage3);
+        let canGotoState5 = contract.canGotoState(IcoStates.SaleStage4);
 
         //assert.ok(canGotoState1 == false);// ToDo: Уточнить
         assert.ok(canGotoState2 == false);
@@ -94,7 +90,7 @@ describe('TestInit', () => {
         let user1RmTokens = contract.balanceOf(preparedData.user1.addr);
         let user2RmTokens = contract.balanceOf(preparedData.user2.addr);
 
-        assert.ok(contractRmTokens.equals(contract_constants.INITIAL_COINS_FOR_VIPPLACEMENT));
+        assert.ok(contractRmTokens.equals(contractConstants.INITIAL_COINS_FOR_VIPPLACEMENT));
         assert.ok(user1RmTokens.equals(0));
         assert.ok(user2RmTokens.equals(0));
 
@@ -104,7 +100,7 @@ describe('TestInit', () => {
         //ToDo: убедиться по res, что операция не выполнилась
 
         // Баланс rmTokens не должен измениться
-        assert.ok(contract.balanceOf(preparedData.owner.addr).equals(contract_constants.INITIAL_COINS_FOR_VIPPLACEMENT));
+        assert.ok(contract.balanceOf(preparedData.owner.addr).equals(contractConstants.INITIAL_COINS_FOR_VIPPLACEMENT));
         assert.ok(contract.balanceOf(preparedData.user1.addr).equals(0));
         assert.ok(contract.balanceOf(preparedData.user2.addr).equals(0));
     });
@@ -112,27 +108,27 @@ describe('TestInit', () => {
     it('test-transfer-1-all', () => {
         // Тест на передачу VIP токенов одному юзеру
 
-        let txHash = contract.transfer(preparedData.user1.addr, contract_constants.INITIAL_COINS_FOR_VIPPLACEMENT);
-        //ToDo надо дожидаться проведения транзакции
+        let txHash = contract.transfer(preparedData.user1.addr, contractConstants.INITIAL_COINS_FOR_VIPPLACEMENT);
+        u.waitForTransactions(web3, txHash);
 
         let contractRmTokens = contract.balanceOf(preparedData.owner.addr);
-        let user1 = contract.balanceOf(preparedData.user1.addr);
+        let user1RmTokens = contract.balanceOf(preparedData.user1.addr);
 
         assert.ok(contractRmTokens.equals(0));
-        assert.ok(user1RmTokens.equals(contract_constants.INITIAL_COINS_FOR_VIPPLACEMENT));
+        assert.ok(user1RmTokens.equals(contractConstants.INITIAL_COINS_FOR_VIPPLACEMENT));
     });
 
     it('test-transfer-2-overflow', () => {
         // Тест на передачу VIP токенов больше чем есть
 
-        let txHash = contract.transfer(preparedData.user1.addr, contract_constants.INITIAL_COINS_FOR_VIPPLACEMENT.add(1));
-        //ToDo надо дожидаться проведения транзакции
+        let txHash = contract.transfer(preparedData.user1.addr, contractConstants.INITIAL_COINS_FOR_VIPPLACEMENT.add(1));
+        u.waitForTransactions(web3, txHash);
 
         let contractRmTokens = contract.balanceOf(preparedData.owner.addr);
         let user1RmTokens = contract.balanceOf(preparedData.user1.addr);
 
         // Ничего не должно измениться
-        assert.ok(contractRmTokens.equals(contract_constants.INITIAL_COINS_FOR_VIPPLACEMENT));
+        assert.ok(contractRmTokens.equals(contractConstants.INITIAL_COINS_FOR_VIPPLACEMENT));
         assert.ok(user1RmTokens.equals(0));
     });
 
@@ -142,13 +138,13 @@ describe('TestInit', () => {
         // user2 получает 200
         let txHash1 = contract.transfer(preparedData.user1.addr, new BigNumber(100));
         let txHash2 = contract.transfer(preparedData.user2.addr, new BigNumber(200));
-        //ToDo надо дожидаться проведения транзакции
+        u.waitForTransactions(web3, [txHash1, txHash2]);
 
         let contractRmTokens = contract.balanceOf(preparedData.owner.addr);
         let user1RmTokens = contract.balanceOf(preparedData.user1.addr);
         let user2RmTokens = contract.balanceOf(preparedData.user2.addr);
 
-        assert.ok(contractRmTokens.equals(contract_constants.INITIAL_COINS_FOR_VIPPLACEMENT.minus(100 + 200)));
+        assert.ok(contractRmTokens.equals(contractConstants.INITIAL_COINS_FOR_VIPPLACEMENT.minus(100 + 200)));
         assert.ok(user1RmTokens.equals(100));
         assert.ok(user2RmTokens.equals(200));
 
@@ -156,7 +152,7 @@ describe('TestInit', () => {
         let txHashErr = contract.transfer(preparedData.user1.addr, contractRmTokens.add(1));
 
         // Ничего не должно измениться
-        assert.ok(contractRmTokens.equals(contract_constants.INITIAL_COINS_FOR_VIPPLACEMENT.minus(100 + 200)));
+        assert.ok(contractRmTokens.equals(contractConstants.INITIAL_COINS_FOR_VIPPLACEMENT.minus(100 + 200)));
         assert.ok(user1RmTokens.equals(100));
         assert.ok(user2RmTokens.equals(200));
     });

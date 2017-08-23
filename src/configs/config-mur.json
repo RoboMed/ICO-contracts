@@ -1,5 +1,17 @@
 {
+  "rpcAddress-comment": "rpc host",
   "rpcAddress": "http://localhost:8545",
+
+  "accountPass-comment": "passPhrase для всех кошельков",
   "accountPass": "12345",
-  "preparedDataPath": "out/prepared-data.json"
+
+  "preparedNewNetPath-comment" :"путь к файлу с результатом подготовки новой сети к работе",
+  "preparedNewNetPath" :"out/prepared-new-net-data.json",
+
+  "preparedDataPath-comment": "путь в файлу с тестовыми данными",
+  "preparedDataPath": "out/prepared-data.json",
+
+  "coinSourceAccount-comment": "кошелек - источник монет для тестов",
+  "coinSourceAccount": "0xb728c0cfbb4c9c9936b7f436b5e23a79e314f9f4"
+
 }
