@@ -25,7 +25,7 @@ function loadContract(config, from) {
 
     console.log("loadContract started...");
 
-    let abi = fs.readFileSync('out/RobomedIco.abi');
+    let abi = JSON.parse(fs.readFileSync('out/RobomedIco.abi'));
     let compiled = '0x' + fs.readFileSync("out/RobomedIco.bin");
 
     let gasEstimate = web3.eth.estimateGas({data: compiled}) + 1000000;
@@ -62,9 +62,9 @@ function loadContract(config, from) {
  * Функция компилирует и деплоит контракт
  * @returns {Contract} Promise<Contract>
  */
-function init() {
+function init(config = null) {
 
-    let config = u.getConfigFromArgv(process.argv);
+    config = config != null ? config : u.getConfigFromArgv(process.argv);
 
     // тестовые данные
     let data = u.readPreparedTestData(config.preparedDataPath);
@@ -77,7 +77,9 @@ function init() {
 
     contract.then(c => {
         console.log("contract address: " + c.address);
-        console.log("contract abi: " + c.abi.toString())
+        console.log("contract abi: " + c.abi.toString());
+
+        console.log(c.call().canGoToState(1));
     });
 
     return contract;

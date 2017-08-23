@@ -56,9 +56,9 @@ function commitPendingTransactions(etherbase) {
  * Функция для подготовки сети перед тестированием
  * @returns {{owner: {addr: *}, user1: {addr: *}, user2: {addr: *}}}
  */
-function init() {
+function init(config = null) {
 
-    let config = u.getConfigFromArgv(process.argv);
+    config = config != null ? config : u.getConfigFromArgv(process.argv);
     let web3 = new Web3(new Web3.providers.HttpProvider(config.rpcAddress));
 
     // Создаем несколько новых аккаунтов

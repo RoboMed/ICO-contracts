@@ -5,14 +5,22 @@ let contract_constants = require("./contract-constants");
 let fs = require('fs');
 let u = require('./u');
 let Web3 = require('web3');
+let Miner = require('./miner');
+let BigNumber = require('bignumber.js');
 
 const timeout = 100000;
 
 let web3 = null;
 let contract = null;
 let config = null;
-let abi = null;
-let contractAddress = null;
+let miner = new Miner();
+let preparedData = null;
+
+function waitForTransaction(txHash) {
+    while (web3.eth.getTransactionReceipt(txHash) == null) {
+        u.delaySync(500);
+    }
+}
 
 describe('TestInit', () => {
 
@@ -26,6 +34,7 @@ describe('TestInit', () => {
 
         assert.ok(config != undefined);
         assert.ok(web3 != undefined);
+
     });
 
     beforeEach(function (done) {
@@ -33,51 +42,122 @@ describe('TestInit', () => {
 
         this.timeout(timeout);
 
-        // prepare_net.init();
-        // deploy_to_target.init().then(c => {
-        //     contract = c;
-        //     assert.ok(contract.address);
-        //     done()
-        // });
+        prepare_net.init(config);
+        deploy_to_target.init(config).then(c => {
 
-        let preparedData = {
-            owner: "22",
-            user1: "22",
-            user2: "22"
-        };
+            contract = web3.eth.contract(c.abi).at(c.address);
+            assert.ok(contract.address);
 
-        // web3.personal.unlockUser(preparedData.user1, config.accountPass);
+            miner.start();
+            done()
+        });
 
+        //abi = JSON.parse(fs.readFileSync('out/RobomedIco.abi'));
+        //contractAddress = "0xaebb4bfe88cfac310c8671027c35e0131376bbcb";
+        //contract = web3.eth.contract(abi).at(contractAddress);
 
-        abi = fs.readFileSync('out/RobomedIco.abi');
-        contractAddress = "0x330724de1b0a3181eaf3f2dfa56a907ca5e27612";
-        contract = web3.eth.contract([{"constant":true,"inputs":[],"name":"name","outputs":[{"name":"","type":"string"}],"payable":false,"type":"function"},{"constant":false,"inputs":[{"name":"_spender","type":"address"},{"name":"_value","type":"uint256"}],"name":"approve","outputs":[{"name":"","type":"bool"}],"payable":false,"type":"function"},{"constant":true,"inputs":[],"name":"currentState","outputs":[{"name":"","type":"uint8"}],"payable":false,"type":"function"},{"constant":true,"inputs":[],"name":"totalSupply","outputs":[{"name":"","type":"uint256"}],"payable":false,"type":"function"},{"constant":true,"inputs":[],"name":"remForPreSale","outputs":[{"name":"","type":"uint256"}],"payable":false,"type":"function"},{"constant":true,"inputs":[],"name":"bountyTokens","outputs":[{"name":"","type":"uint256"}],"payable":false,"type":"function"},{"constant":false,"inputs":[{"name":"_from","type":"address"},{"name":"_to","type":"address"},{"name":"_value","type":"uint256"}],"name":"transferFrom","outputs":[{"name":"","type":"bool"}],"payable":false,"type":"function"},{"constant":true,"inputs":[],"name":"rate","outputs":[{"name":"","type":"uint256"}],"payable":false,"type":"function"},{"constant":true,"inputs":[],"name":"decimals","outputs":[{"name":"","type":"uint256"}],"payable":false,"type":"function"},{"constant":true,"inputs":[],"name":"startDateOfUseTeamTokens","outputs":[{"name":"","type":"uint256"}],"payable":false,"type":"function"},{"constant":true,"inputs":[],"name":"bountyPointsNotDistributed","outputs":[{"name":"","type":"uint256"}],"payable":false,"type":"function"},{"constant":true,"inputs":[{"name":"toState","type":"uint8"}],"name":"canGotoState","outputs":[{"name":"","type":"bool"}],"payable":false,"type":"function"},{"constant":true,"inputs":[],"name":"totalBought","outputs":[{"name":"","type":"uint256"}],"payable":false,"type":"function"},{"constant":false,"inputs":[],"name":"accrueTeamTokens","outputs":[],"payable":false,"type":"function"},{"constant":true,"inputs":[{"name":"_owner","type":"address"}],"name":"balanceOf","outputs":[{"name":"balance","type":"uint256"}],"payable":false,"type":"function"},{"constant":true,"inputs":[{"name":"","type":"address"}],"name":"teamBalances","outputs":[{"name":"","type":"uint256"}],"payable":false,"type":"function"},{"constant":false,"inputs":[],"name":"destroy","outputs":[],"payable":false,"type":"function"},{"constant":false,"inputs":[{"name":"beneficiary","type":"address"},{"name":"_value","type":"uint256"}],"name":"addBounty","outputs":[],"payable":false,"type":"function"},{"constant":true,"inputs":[{"name":"","type":"address"}],"name":"bountyPointsBalances","outputs":[{"name":"","type":"uint256"}],"payable":false,"type":"function"},{"constant":true,"inputs":[],"name":"vipPlacementNotDistributed","outputs":[{"name":"","type":"uint256"}],"payable":false,"type":"function"},{"constant":true,"inputs":[],"name":"owner","outputs":[{"name":"","type":"address"}],"payable":false,"type":"function"},{"constant":false,"inputs":[],"name":"gotoNextStateAndPrize","outputs":[{"name":"","type":"bool"}],"payable":false,"type":"function"},{"constant":true,"inputs":[],"name":"symbol","outputs":[{"name":"","type":"string"}],"payable":false,"type":"function"},{"constant":true,"inputs":[],"name":"freeMoney","outputs":[{"name":"","type":"uint256"}],"payable":false,"type":"function"},{"constant":true,"inputs":[],"name":"remForSalesBeforeStage5","outputs":[{"name":"","type":"uint256"}],"payable":false,"type":"function"},{"constant":false,"inputs":[{"name":"_to","type":"address"},{"name":"_value","type":"uint256"}],"name":"transfer","outputs":[{"name":"","type":"bool"}],"payable":false,"type":"function"},{"constant":true,"inputs":[],"name":"teamTokens","outputs":[{"name":"","type":"uint256"}],"payable":false,"type":"function"},{"constant":true,"inputs":[],"name":"endDateOfSaleStage5","outputs":[{"name":"","type":"uint256"}],"payable":false,"type":"function"},{"constant":true,"inputs":[{"name":"_owner","type":"address"},{"name":"_spender","type":"address"}],"name":"allowance","outputs":[{"name":"remaining","type":"uint256"}],"payable":false,"type":"function"},{"constant":true,"inputs":[],"name":"endDateOfVipPlacement","outputs":[{"name":"","type":"uint256"}],"payable":false,"type":"function"},{"constant":false,"inputs":[],"name":"accrueBountyTokens","outputs":[],"payable":false,"type":"function"},{"constant":false,"inputs":[{"name":"beneficiary","type":"address"}],"name":"buyTokens","outputs":[],"payable":true,"type":"function"},{"constant":false,"inputs":[{"name":"_recipient","type":"address"}],"name":"destroyAndSend","outputs":[],"payable":false,"type":"function"},{"constant":true,"inputs":[],"name":"startDateOfSaleStage5","outputs":[{"name":"","type":"uint256"}],"payable":false,"type":"function"},{"constant":true,"inputs":[],"name":"endDateOfPreSale","outputs":[{"name":"","type":"uint256"}],"payable":false,"type":"function"},{"inputs":[],"payable":false,"type":"constructor"},{"payable":true,"type":"fallback"},{"anonymous":false,"inputs":[{"indexed":false,"name":"state","type":"uint8"}],"name":"StateChanged","type":"event"},{"anonymous":false,"inputs":[{"indexed":true,"name":"owner","type":"address"},{"indexed":true,"name":"spender","type":"address"},{"indexed":false,"name":"value","type":"uint256"}],"name":"Approval","type":"event"},{"anonymous":false,"inputs":[{"indexed":true,"name":"from","type":"address"},{"indexed":true,"name":"to","type":"address"},{"indexed":false,"name":"value","type":"uint256"}],"name":"Transfer","type":"event"}]).at(contractAddress);
-        assert.ok(contract.address);
+        preparedData = u.readPreparedTestData(config.preparedDataPath);
 
-        done();
+        web3.personal.unlockAccount(preparedData.owner.addr, config.accountPass);
+        web3.personal.unlockAccount(preparedData.user1.addr, config.accountPass);
+        web3.personal.unlockAccount(preparedData.user2.addr, config.accountPass);
+
     });
 
-    //https://github.com/mochajs/mocha/issues/1904
-    it('test1', function () {
-        let balance = web3.fromWei(web3.eth.getBalance(contract.address).toNumber());
-        let res = contract.canGotoState(1);
-        let res2 = contract.gotoNextStateAndPrize.call();
-        console.log(contract);
+    afterEach(() => {
+        console.log("afterEach");
+        miner.stop();
+    });
 
+    it('test1', (done) => {
 
-        //web.eth.contract(abi).at(contractAddress).canGotoState.call(1);
+        // Тест для проверки начального состояния контракта
 
-       // contract.canGotoState.call().then(function (r) {
-        //    console.log(r);
-        //});
+        // Проверяем, что контракт на 0 стадии (VipReplacement)
+        let currentState = contract.currentState();
+        assert.ok(currentState == 0);
 
-        //console.log(contract);
+        let canGotoState1 = contract.canGotoState(1);
+        let canGotoState2 = contract.canGotoState(2);
+        let canGotoState3 = contract.canGotoState(3);
+        let canGotoState4 = contract.canGotoState(4);
+        let canGotoState5 = contract.canGotoState(5);
 
-       // let balanceRobomedToken = contract.balanceOf(contract.address).then(function (v) {
+        assert.ok(canGotoState1 == false);// ToDo: Уточнить
+        assert.ok(canGotoState2 == false);
+        assert.ok(canGotoState3 == false);
+        assert.ok(canGotoState4 == false);
+        assert.ok(canGotoState5 == false);
 
-        //    console.log(v);
-       // });
+        // Проверяем кол-во RobomedTokens:
+        let contractRmTokens = contract.balanceOf(preparedData.owner.addr);
+        let user1RmTokens = contract.balanceOf(preparedData.user1.addr);
+        let user2RmTokens = contract.balanceOf(preparedData.user2.addr);
 
-        console.log(balance);
+        assert.ok(contractRmTokens.equals(contract_constants.INITIAL_COINS_FOR_VIPPLACEMENT));
+        assert.ok(user1RmTokens.equals(0));
+        assert.ok(user2RmTokens.equals(0));
+
+        // Пытаемся купить что-нибудь на 0 стадии
+        let res = contract.buyTokens.call(preparedData.user2.addr);
+
+        //ToDo: убедиться по res, что операция не выполнилась
+
+        // Баланс rmTokens не должен измениться
+        assert.ok(contract.balanceOf(preparedData.owner.addr).equals(contract_constants.INITIAL_COINS_FOR_VIPPLACEMENT));
+        assert.ok(contract.balanceOf(preparedData.user1.addr).equals(0));
+        assert.ok(contract.balanceOf(preparedData.user2.addr).equals(0));
+    });
+
+    it('test-transfer-1-all', () => {
+        // Тест на передачу VIP токенов одному юзеру
+
+        let txHash = contract.transfer(preparedData.user1.addr, contract_constants.INITIAL_COINS_FOR_VIPPLACEMENT);
+        //ToDo надо дожидаться проведения транзакции
+
+        let contractRmTokens = contract.balanceOf(preparedData.owner.addr);
+        let user1 = contract.balanceOf(preparedData.user1.addr);
+
+        assert.ok(contractRmTokens.equals(0));
+        assert.ok(user1RmTokens.equals(contract_constants.INITIAL_COINS_FOR_VIPPLACEMENT));
+    });
+
+    it('test-transfer-2-overflow', () => {
+        // Тест на передачу VIP токенов больше чем есть
+
+        let txHash = contract.transfer(preparedData.user1.addr, contract_constants.INITIAL_COINS_FOR_VIPPLACEMENT.add(1));
+        //ToDo надо дожидаться проведения транзакции
+
+        let contractRmTokens = contract.balanceOf(preparedData.owner.addr);
+        let user1RmTokens = contract.balanceOf(preparedData.user1.addr);
+
+        // Ничего не должно измениться
+        assert.ok(contractRmTokens.equals(contract_constants.INITIAL_COINS_FOR_VIPPLACEMENT));
+        assert.ok(user1RmTokens.equals(0));
+    });
+
+    it('test-transfer-3-distribution', () => {
+
+        // user1 получает 100
+        // user2 получает 200
+        let txHash1 = contract.transfer(preparedData.user1.addr, new BigNumber(100));
+        let txHash2 = contract.transfer(preparedData.user2.addr, new BigNumber(200));
+        //ToDo надо дожидаться проведения транзакции
+
+        let contractRmTokens = contract.balanceOf(preparedData.owner.addr);
+        let user1RmTokens = contract.balanceOf(preparedData.user1.addr);
+        let user2RmTokens = contract.balanceOf(preparedData.user2.addr);
+
+        assert.ok(contractRmTokens.equals(contract_constants.INITIAL_COINS_FOR_VIPPLACEMENT.minus(100 + 200)));
+        assert.ok(user1RmTokens.equals(100));
+        assert.ok(user2RmTokens.equals(200));
+
+        // пытаемся перечислить user1 max - 100 - 200 + 1
+        let txHashErr = contract.transfer(preparedData.user1.addr, contractRmTokens.add(1));
+
+        // Ничего не должно измениться
+        assert.ok(contractRmTokens.equals(contract_constants.INITIAL_COINS_FOR_VIPPLACEMENT.minus(100 + 200)));
+        assert.ok(user1RmTokens.equals(100));
+        assert.ok(user2RmTokens.equals(200));
     });
 });
