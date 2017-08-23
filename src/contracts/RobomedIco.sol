@@ -241,6 +241,11 @@ contract RobomedIco is Ownable, Destructible, ERC20 {
   IcoStates public currentState;
 
   /**
+  * Количество собранного эфира
+  */
+  uint256 public totalBalance;
+
+  /**
   * Количество свободных токенов (никто ими не владеет)
   */
   uint256 public freeMoney = 0;
@@ -402,6 +407,15 @@ contract RobomedIco is Ownable, Destructible, ERC20 {
   }
 
   /**
+  * Снятие эфира на кошелёк владельца
+  */
+  function ownerWithdrawal(uint256 _value) afterIco onlyOwner {
+    require(_value > 0);
+    totalBalance = totalBalance.sub(_value);
+    owner.transfer(_value);
+  }
+
+  /**
   * Метод выполняющий добавление боунти-поинтов на указанный адрес
   */
   function addBounty(address beneficiary, uint256 _value) beforeIco onlyOwner {
@@ -480,6 +494,9 @@ contract RobomedIco is Ownable, Destructible, ERC20 {
     //будет выкинуто исключение
     uint256 remVal = msg.value;
 
+    //увеличиваем количество эфира пришедшего к нам
+    totalBalance = totalBalance.add(msg.value);
+
     while (remVal > 0) {
       //покупать токены можно только на указанных стадиях
       require(
@@ -537,6 +554,7 @@ contract RobomedIco is Ownable, Destructible, ERC20 {
     }
 
   }
+
 
   /**
   * @dev transfer token for a specified address
