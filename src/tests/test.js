@@ -188,33 +188,6 @@ describe('TestInit', () => {
     });
 
 
-    function txParams(addr, value = null) {
-        let res = {from: addr, gas: 200000};
-        if (value !== null) {
-            res.value = value;
-        }
-        return res;
-    }
-
-    function execInEth(act) {
-        let txHash = null;
-        try {
-            txHash = act();
-        } catch (err) {
-            return false;
-        }
-        while (web3.eth.getTransactionReceipt(txHash) === null) {
-        }
-
-        let txRec = web3.eth.getTransactionReceipt(txHash);
-        let tx = web3.eth.getTransaction(txHash);
-        if (txRec.blockNumber === null || tx.blockNumber === null) {
-            throw `${txRec.blockNumber} - ${tx.blockNumber}`;
-        }
-
-        return tx.gas > txRec.gasUsed;
-    }
-
     /**
      * Тест проверяет, что нельзя передать vipTokens до завершения ICO
      */
@@ -244,7 +217,8 @@ describe('TestInit', () => {
         // Считаем, сколько rmToken должны купить на 1 ether
         let count = etherCount.mul(contractConstants.RATE_PRESALE);
 
-        let res = contract.buyTokens(user.addr, {value: etherCount});
+        let res = execInEth(() => contract.buyTokens(user.addr, txParams(user.addr, etherCount)));
+        assert.ok(res);
 
         // Проверяем что купили
         let userRmTokens = contract.balanceOf(user.addr);
@@ -254,6 +228,36 @@ describe('TestInit', () => {
         assert.ok(contractRmTokens.equals(contractConstants.INITIAL_COINS_FOR_VIPPLACEMENT.minus(count)));
     });
 
+
+
+
+    function txParams(addr, value = null) {
+        let res = {from: addr, gas: 200000};
+        if (value !== null) {
+            res.value = value;
+        }
+        return res;
+    }
+
+    function execInEth(act) {
+        let txHash = null;
+        try {
+            txHash = act();
+        } catch (err) {
+            return false;
+        }
+        while (web3.eth.getTransactionReceipt(txHash) === null) {
+        }
+
+        let txRec = web3.eth.getTransactionReceipt(txHash);
+        let tx = web3.eth.getTransaction(txHash);
+        if (txRec.blockNumber === null || tx.blockNumber === null) {
+            throw `${txRec.blockNumber} - ${tx.blockNumber}`;
+        }
+
+        return tx.gas > txRec.gasUsed;
+    }
+
     /**
      * Вспомагательный метод переводит контракт на PreSale
      */
@@ -261,8 +265,8 @@ describe('TestInit', () => {
         while (!contract.canGotoState(IcoStates.PreSale)) {
         }
         //ToDo а owner может сам дергать ручку?
-        contract.gotoNextStateAndPrize({from: preparedData.owner.addr, gas: 2000})
+        let res = execInEth(() => contract.gotoNextStateAndPrize(txParams(preparedData.owner.addr)));
 
-        assert.ok(contract.currentState().equals(IcoStates.PreSale))
+        assert.ok(res);
     }
 });

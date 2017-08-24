@@ -390,14 +390,6 @@ contract RobomedIco is Ownable, Destructible, ERC20 {
     bountyPointsBalances[msg.sender] = 0;
   }
 
-  uint256 public TestValue = 0;
-
-  function testMethod(uint256 _value){
-    require(_value != 3);
-
-    TestValue = TestValue + 1;
-  }
-
   /**
    * Метод переводящий контракт в следующее доступное состояние,
    * если переход состоялся, вызывающий метод получает приз в размере PRIZE_SIZE_FORGOTO
