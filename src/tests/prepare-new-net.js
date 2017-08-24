@@ -32,27 +32,8 @@ function init(config = null) {
     return coinbase;
 }
 
-/**
- * Функция для подготовки новой сети перед тестированием
- * Сохраняет результат в файл
- * @param config Конфиг
- * @returns coinbase
- */
-function initAndWrite(config = null) {
-
-    config = config != null ? config : u.getConfigFromArgv(process.argv);
-
-    let coinbase = init(config);
-    u.writeDataToFileSync(config.preparedNewNetPath, coinbase);
-
-    console.log(coinbase);
-
-    return coinbase;
-}
-
 module.exports = {
-    init: init,
-    initAndWrite: initAndWrite
+    init: init
 };
 
 

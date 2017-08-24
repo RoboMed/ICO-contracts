@@ -5,13 +5,6 @@
   "accountPass-comment": "passPhrase для всех кошельков",
   "accountPass": "12345",
 
-  "preparedNewNetPath-comment" :"путь к файлу с результатом подготовки новой сети к работе",
-  "preparedNewNetPath" :"out/prepared-new-net-data.json",
-
   "preparedDataPath-comment": "путь в файлу с тестовыми данными",
-  "preparedDataPath": "out/prepared-data.json",
-
-  "coinSourceAccount-comment": "кошелек - источник монет для тестов",
-  "coinSourceAccount": ""
-
+  "preparedDataPath": "out/prepared-data.json"
 }

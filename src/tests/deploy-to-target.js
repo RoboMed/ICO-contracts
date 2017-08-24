@@ -29,7 +29,6 @@ function uploadContract(config, from) {
     let gasEstimate = web3.eth.estimateGas({data: compiled}) + 1000000;
     console.log("gasEstimate: " + gasEstimate);
 
-    web3.eth.defaultAccount = from;
     web3.personal.unlockAccount(from, config.accountPass);
     console.log("unlockAccount: " + from);
 

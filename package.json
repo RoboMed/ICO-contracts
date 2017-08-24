@@ -5,8 +5,8 @@
   "main": "index.js",
   "scripts": {
 
-    "prepareNewNetMur": "node -e \"require('./src/tests/prepare-new-net').initAndWrite()\" configFile=./src/configs/config-mur.json",
-    "prepareNewNetRum": "node -e \"require('./src/tests/prepare-new-net').initAndWrite()\" configFile=./src/configs/config-rum.json",
+    "prepareNewNetMur": "node -e \"require('./src/tests/prepare-new-net').init()\" configFile=./src/configs/config-mur.json",
+    "prepareNewNetRum": "node -e \"require('./src/tests/prepare-new-net').init()\" configFile=./src/configs/config-rum.json",
 
     "prepareTestDataMur": "node -e \"require('./src/tests/prepare-test-data').initAndWrite()\" configFile=./src/configs/config-mur.json",
     "prepareTestDataRum": "node -e \"require('./src/tests/prepare-test-data').initAndWrite()\" configFile=./src/configs/config-rum.json",
