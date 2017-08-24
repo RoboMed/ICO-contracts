@@ -31,11 +31,12 @@ function init(config = null) {
     // Пополняем кошельки
     let coinSourceAccount = web3.eth.coinbase;
     web3.personal.unlockAccount(coinSourceAccount, config.accountPass);
-    let tx1 = web3.eth.sendTransaction({from: coinSourceAccount, to: user1, value: web3.toWei(1, "ether")});
-    let tx2 = web3.eth.sendTransaction({from: coinSourceAccount, to: user2, value: web3.toWei(1, "ether")});
+    let tx1 = web3.eth.sendTransaction({from: coinSourceAccount, to: owner, value: web3.toWei(1, "ether")});
+    let tx2 = web3.eth.sendTransaction({from: coinSourceAccount, to: user1, value: web3.toWei(1, "ether")});
+    let tx3 = web3.eth.sendTransaction({from: coinSourceAccount, to: user2, value: web3.toWei(1, "ether")});
 
     //ждем, пока все монеты дойдут
-    u.waitForTransactions(web3, [tx1, tx2]);
+    u.waitForTransactions(web3, [tx1, tx2, tx3]);
 
     //Возвращаем готовые тестовые данные
     let preparedData = {

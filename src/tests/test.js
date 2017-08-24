@@ -95,8 +95,9 @@ describe('TestInit', () => {
         assert.ok(user2RmTokens.equals(0));
 
         // Пытаемся купить что-нибудь на 0 стадии
-        let res = contract.buyTokens.call(preparedData.user2.addr);
-
+        let res = contract.buyTokens.call(preparedData.user2.addr, {value: 1, gas: 200000});
+        //Возвращается []
+        //ToDO: заранее считать кол-во газа
         //ToDo: убедиться по res, что операция не выполнилась
 
         // Баланс rmTokens не должен измениться
@@ -134,8 +135,8 @@ describe('TestInit', () => {
 
     it('test-transfer-3-distribution', () => {
 
-        // user1 получает 100
-        // user2 получает 200
+        // user1 получает 100 rmToken
+        // user2 получает 200 rmToken
         let txHash1 = contract.transfer(preparedData.user1.addr, new BigNumber(100));
         let txHash2 = contract.transfer(preparedData.user2.addr, new BigNumber(200));
         u.waitForTransactions(web3, [txHash1, txHash2]);
@@ -149,11 +150,89 @@ describe('TestInit', () => {
         assert.ok(user2RmTokens.equals(200));
 
         // пытаемся перечислить user1 max - 100 - 200 + 1
-        let txHashErr = contract.transfer(preparedData.user1.addr, contractRmTokens.add(1));
+        let txHashErr = contract.transfer(preparedData.user1.addr, contractConstants.INITIAL_COINS_FOR_VIPPLACEMENT.minus(100 + 200).add(1));
+        //ToDo не понятно где указывать gas и надо ли
+        //u.delaySync(4000);
+        //let res = web3.eth.getTransactionReceipt(txHashErr);
 
         // Ничего не должно измениться
         assert.ok(contractRmTokens.equals(contractConstants.INITIAL_COINS_FOR_VIPPLACEMENT.minus(100 + 200)));
         assert.ok(user1RmTokens.equals(100));
         assert.ok(user2RmTokens.equals(200));
     });
+
+    it('test-goToState1', () => {
+
+        let addr = preparedData.user1.addr;
+
+        //Проверяем, что мы на стадии VipPlacement
+        assert.ok(contract.currentState().equals(IcoStates.VipPlacement));
+
+        //Ждем пока нельзя переходить на PreSale
+        while (!contract.canGotoState(IcoStates.PreSale)) {
+        }
+
+        //Дергаем ручку
+        //ToDo не понятно от кого дергаем этот метод и кто получит приз
+        let res = contract.gotoNextStateAndPrize({from: addr, gas: 2000});
+        assert.ok(res == true);
+
+        //Должны быть на стадии PreSale
+        assert.ok(contract.currentState().equals(IcoStates.PreSale));
+
+        //Проверяем, что получили приз
+        let priceRes = contract.getBalanceOf(addr);
+        assert.ok(priceRes.equals(contractConstants.PRIZE_SIZE_FORGOTO));
+    });
+
+    /**
+     * Тест проверяет, что нельзя передать vipTokens до завершения ICO
+     */
+    It('test-cannot-transfer-vipTokens', () => {
+
+        // Передаем vipTokens юзеру 1
+        let txHash1 = contract.transfer(preparedData.user1.addr, new BigNumber(10));
+        u.waitForTransactions(web3, txHash1);
+
+        // Юзер 1 пытается передать их юзеру 2
+        let txHash2 = contract.transfer(preparedData.user2.addr, new BigNumber(10));
+        u.waitForTransactions(web3, txHash);
+    });
+
+
+    /**
+     * Тест покупки на preSale
+     */
+    It('test-buy-on-preSale', () => {
+
+        goToState1();
+
+        let user = preparedData.user1;
+
+        // Пытаемся купить rmToken
+        let etherCount = new BigNumber(1);
+        // Считаем, сколько rmToken должны купить на 1 ether
+        let count = etherCount.mul(contractConstants.RATE_PRESALE);
+
+        let res = contract.buyTokens(user.addr, {value: etherCount});
+
+        // Проверяем что купили
+        let userRmTokens = contract.balanceOf(user.addr);
+        let contractRmTokens = contract.balanceOf(preparedData.owner.addr);
+
+        assert.ok(userRmTokens.equals(count));
+        assert.ok(contractRmTokens.equals(contractConstants.INITIAL_COINS_FOR_VIPPLACEMENT.minus(count)));
+    });
+
+    /**
+     * Вспомагательный метод переводит контракт на PreSale
+     */
+    function goToState1() {
+        while (!contract.canGotoState(IcoStates.PreSale)) {
+        }
+        //ToDo а owner может сам дергать ручку?
+        contract.gotoNextStateAndPrize({from: preparedData.owner.addr, gas: 2000})
+
+        assert.ok(contract.currentState().equals(IcoStates.PreSale))
+    }
 });
