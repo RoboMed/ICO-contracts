@@ -43,7 +43,7 @@ describe('TestInit', () => {
 
             contractConstants = new ContractConstants(contract);
 
-            done()
+            done();
         });
 
         //abi = JSON.parse(fs.readFileSync('out/RobomedIco.abi'));

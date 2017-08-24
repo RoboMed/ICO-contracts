@@ -18,7 +18,7 @@ let Web3 = require('web3');
  */
 function init(config = null) {
 
-    config = config != null ? config : u.getConfigFromArgv();
+    config = config != null ? config : u.getConfigFromArgv(process.argv);
 
     let web3 = new Web3(new Web3.providers.HttpProvider(config.rpcAddress));
 
