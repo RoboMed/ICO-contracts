@@ -1,9 +1,11 @@
 pragma solidity ^0.4.11;
 
 
+
+
 /**
  * @title Math
- * @dev Assorted math operations
+ * @dev Assorted math operations y
  */
 library Math {
   function max64(uint64 a, uint64 b) internal constant returns (uint64) {
@@ -22,6 +24,8 @@ library Math {
     return a < b ? a : b;
   }
 }
+
+
 
 
 /**
@@ -55,6 +59,7 @@ library SafeMath {
 }
 
 
+
 /**
  * @title Ownable
  * @dev The Ownable contract has an owner address, and provides basic authorization control
@@ -85,6 +90,10 @@ contract Ownable {
 }
 
 
+
+
+
+
 /**
  * @title Destructible
  * @dev Base contract that can be destroyed by owner. All funds in contract will be sent to the owner.
@@ -99,7 +108,10 @@ contract Destructible is Ownable {
   function destroy() onlyOwner {
     selfdestruct(owner);
   }
+
 }
+
+
 
 
 /**
@@ -118,6 +130,9 @@ contract ERC20Basic {
 }
 
 
+
+
+
 /**
  * @title ERC20 interface
  * @dev see https://github.com/ethereum/EIPs/issues/20
@@ -131,6 +146,12 @@ contract ERC20 is ERC20Basic {
 
   event Approval(address indexed owner, address indexed spender, uint256 value);
 }
+
+
+
+
+
+
 
 contract RobomedIco is Ownable, Destructible, ERC20 {
 
