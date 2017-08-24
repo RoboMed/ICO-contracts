@@ -81,7 +81,7 @@ function waitForTransactions(web3, txObj) {
 
     //Пока есть хотя бы одна невыполненная транзакция, ждем
     while (txHashes.find((txHash) => {
-        web3.eth.getTransactionReceipt(txHash) == null
+        web3.eth.getTransactionReceipt(txHash) != null
     }) != undefined) {
         //do nothing
     }

@@ -161,7 +161,10 @@ describe('TestInit', () => {
         assert.ok(user2RmTokens.equals(200));
     });
 
-    it('test-goToState1', () => {
+    it('test-goToState-preSale', () => {
+
+        let coinbase = web3.eth.coinbase;
+        let def = web3.eth.defaultAccount;
 
         let addr = preparedData.user1.addr;
 
@@ -174,21 +177,73 @@ describe('TestInit', () => {
 
         //Дергаем ручку
         //ToDo не понятно от кого дергаем этот метод и кто получит приз
-        let res = contract.gotoNextStateAndPrize({from: addr, gas: 2000});
+        //ToDo не понятно как расчитывать gas заранее
+        let txHash = contract.gotoNextStateAndPrize({from: addr, gas: 200000});
+        u.waitForTransactions(web3, txHash);
+
+        let receipt = web3.eth.getTransactionReceipt(txHash);
+        let tr = web3.eth.getTransaction(txHash);
+
+
+        let txErr = contract.testMethod({from: addr, gas: 200000});
+        u.waitForTransactions(web3, txErr);
+        let receiptErr = web3.eth.getTransactionReceipt(txErr);
+        let trErr = web3.eth.getTransaction(txErr);
+
+        let res = contract.currentState().toString();
+
         assert.ok(res == true);
 
         //Должны быть на стадии PreSale
-        assert.ok(contract.currentState().equals(IcoStates.PreSale));
+        //assert.ok(contract.currentState().equals(IcoStates.PreSale));
 
         //Проверяем, что получили приз
-        let priceRes = contract.getBalanceOf(addr);
-        assert.ok(priceRes.equals(contractConstants.PRIZE_SIZE_FORGOTO));
+        //let priceRes = contract.getBalanceOf(addr);
+        //assert.ok(priceRes.equals(contractConstants.PRIZE_SIZE_FORGOTO));
     });
+
+    it('testError', () => {
+
+        let r1 = testTTT(0);
+        let r2 = testTTT(3);
+        let r3 = testTTT(0);
+        let r4 = testTTT(0);
+
+        let tr1 = web3.eth.getTransaction(r1.txHash);
+        let tr2 = web3.eth.getTransaction(r2.txHash);
+        let tr3 = web3.eth.getTransaction(r3.txHash);
+        let tr4 = web3.eth.getTransaction(r4.txHash);
+
+        let trr1 = web3.eth.getTransactionReceipt(r1.txHash);
+        let trr2 = web3.eth.getTransactionReceipt(r2.txHash);
+        let trr3 = web3.eth.getTransactionReceipt(r3.txHash);
+        let trr4 = web3.eth.getTransactionReceipt(r4.txHash);
+    });
+
+    function testTTT(value) {
+
+        let addr = preparedData.user1.addr;
+
+        let txErr = contract.testMethod(value, {from: addr, gas: 200000});
+        //u.waitForTransactions(web3, txErr);
+        while( web3.eth.getTransactionReceipt(txErr) == null){}
+
+        let receiptErr = web3.eth.getTransactionReceipt(txErr);
+        let trErr = web3.eth.getTransaction(txErr);
+        let val = contract.TestValue().toString();
+
+        return {
+            txHash: txErr,
+            receipt: receiptErr,
+            tr: trErr,
+            val: val
+        }
+    }
 
     /**
      * Тест проверяет, что нельзя передать vipTokens до завершения ICO
      */
-    It('test-cannot-transfer-vipTokens', () => {
+    it('test-cannot-transfer-vipTokens', () => {
 
         // Передаем vipTokens юзеру 1
         let txHash1 = contract.transfer(preparedData.user1.addr, new BigNumber(10));
@@ -203,7 +258,7 @@ describe('TestInit', () => {
     /**
      * Тест покупки на preSale
      */
-    It('test-buy-on-preSale', () => {
+    it('test-buy-on-preSale', () => {
 
         goToState1();
 
