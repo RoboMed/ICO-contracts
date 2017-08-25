@@ -27,6 +27,7 @@ function init(config = null) {
     let owner = web3.personal.newAccount(config.accountPass);
     let user1 = web3.personal.newAccount(config.accountPass);
     let user2 = web3.personal.newAccount(config.accountPass);
+    let lucky = web3.personal.newAccount(config.accountPass);
 
     // Пополняем кошельки
     let coinSourceAccount = web3.eth.coinbase;
@@ -34,15 +35,17 @@ function init(config = null) {
     let tx1 = web3.eth.sendTransaction({from: coinSourceAccount, to: owner, value: web3.toWei(1, "ether")});
     let tx2 = web3.eth.sendTransaction({from: coinSourceAccount, to: user1, value: web3.toWei(1, "ether")});
     let tx3 = web3.eth.sendTransaction({from: coinSourceAccount, to: user2, value: web3.toWei(1, "ether")});
+    let tx4 = web3.eth.sendTransaction({from: coinSourceAccount, to: lucky, value: web3.toWei(1, "ether")});
 
     //ждем, пока все монеты дойдут
-    u.waitForTransactions(web3, [tx1, tx2, tx3]);
+    u.waitForTransactions(web3, [tx1, tx2, tx3, tx4]);
 
     //Возвращаем готовые тестовые данные
     let preparedData = {
         owner: {addr: owner},
         user1: {addr: user1},
         user2: {addr: user2},
+        lucky: {addr: lucky}
     };
 
     console.log(preparedData);

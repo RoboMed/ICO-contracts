@@ -14,7 +14,7 @@ let web3 = null;
 let contract = null;
 let config = null;
 let preparedData = null;
-let contractConstants = null;
+let CONSTANTS = null;
 
 describe('TestInit', () => {
 
@@ -42,7 +42,7 @@ describe('TestInit', () => {
             contract = web3.eth.contract(c.abi).at(c.address);
             assert.ok(contract.address);
 
-            contractConstants = new ContractConstants(contract);
+            CONSTANTS = new ContractConstants(contract);
 
             done();
         });
@@ -66,13 +66,14 @@ describe('TestInit', () => {
         console.log("afterEach");
     });
 
-    it('test1', (done) => {
+    /**
+     * Тест для проверки начального состояния контракта
+     */
+    it('test-contract-init', (done) => {
 
-        // Тест для проверки начального состояния контракта
-
-        // Проверяем, что контракт на 0 стадии (VipReplacement)
+        // Проверяем, что контракт настадии (VipReplacement)
         let currentState = contract.currentState();
-        assert.ok(currentState.equals(IcoStates.VipPlacement));
+        assert.ok(contract.currentState().equals(IcoStates.VipPlacement));
 
         let canGotoState1 = contract.canGotoState(IcoStates.PreSale);
         let canGotoState2 = contract.canGotoState(IcoStates.SaleStage1);
@@ -91,7 +92,7 @@ describe('TestInit', () => {
         let user1RmTokens = contract.balanceOf(preparedData.user1.addr);
         let user2RmTokens = contract.balanceOf(preparedData.user2.addr);
 
-        assert.ok(contractRmTokens.equals(contractConstants.INITIAL_COINS_FOR_VIPPLACEMENT));
+        assert.ok(contractRmTokens.equals(CONSTANTS.INITIAL_COINS_FOR_VIPPLACEMENT));
         assert.ok(user1RmTokens.equals(0));
         assert.ok(user2RmTokens.equals(0));
 
@@ -102,36 +103,47 @@ describe('TestInit', () => {
         //ToDo: убедиться по res, что операция не выполнилась
 
         // Баланс rmTokens не должен измениться
-        assert.ok(contract.balanceOf(preparedData.owner.addr).equals(contractConstants.INITIAL_COINS_FOR_VIPPLACEMENT));
+        assert.ok(contract.balanceOf(preparedData.owner.addr).equals(CONSTANTS.INITIAL_COINS_FOR_VIPPLACEMENT));
         assert.ok(contract.balanceOf(preparedData.user1.addr).equals(0));
         assert.ok(contract.balanceOf(preparedData.user2.addr).equals(0));
     });
 
-    it('test-transfer-1-all', () => {
+    it('test-transfer-all', () => {
         // Тест на передачу VIP токенов одному юзеру
 
-        let txHash = contract.transfer(preparedData.user1.addr, contractConstants.INITIAL_COINS_FOR_VIPPLACEMENT);
+        let txHash = contract.transfer(preparedData.user1.addr, CONSTANTS.INITIAL_COINS_FOR_VIPPLACEMENT);
         u.waitForTransactions(web3, txHash);
 
         let contractRmTokens = contract.balanceOf(preparedData.owner.addr);
         let user1RmTokens = contract.balanceOf(preparedData.user1.addr);
 
         assert.ok(contractRmTokens.equals(0));
-        assert.ok(user1RmTokens.equals(contractConstants.INITIAL_COINS_FOR_VIPPLACEMENT));
+        assert.ok(user1RmTokens.equals(CONSTANTS.INITIAL_COINS_FOR_VIPPLACEMENT));
     });
 
-    it('test-transfer-2-overflow', () => {
-        // Тест на передачу VIP токенов больше чем есть
+    /**
+     * Тест, что нельзя передавать VIP токенов больше чем есть
+     */
+    it('test-transfer-vipTokens-overflow', () => {
 
-        let txHash = contract.transfer(preparedData.user1.addr, contractConstants.INITIAL_COINS_FOR_VIPPLACEMENT.add(1));
-        u.waitForTransactions(web3, txHash);
+        // Кол-во оставшихся VIP токенов + 1
+        let count = bmWr(contract.vipPlacementNotDistributed().add(1));
 
-        let contractRmTokens = contract.balanceOf(preparedData.owner.addr);
-        let user1RmTokens = contract.balanceOf(preparedData.user1.addr);
+        // Пытаемся передать VIP токенов больше чем осталось
+        let res = execInEth(() => contract.transfer(preparedData.user1.addr, count, txParams(preparedData.owner.addr)));
+        assert.ok(!res);
+
+        let contractRmTokens = bmWr(contract.balanceOf(preparedData.owner.addr));
+        let user1RmTokens = bmWr(contract.balanceOf(preparedData.user1.addr));
 
         // Ничего не должно измениться
-        assert.ok(contractRmTokens.equals(contractConstants.INITIAL_COINS_FOR_VIPPLACEMENT));
+        assert.ok(contractRmTokens.equals(CONSTANTS.INITIAL_COINS_FOR_VIPPLACEMENT));
         assert.ok(user1RmTokens.equals(0));
+
+        checkContract({
+            totalBought: new BigNumber(0),
+            vipPlacementNotDistributed: CONSTANTS.INITIAL_COINS_FOR_VIPPLACEMENT
+        });
     });
 
     it('test-transfer-3-distribution', () => {
@@ -146,18 +158,18 @@ describe('TestInit', () => {
         let user1RmTokens = contract.balanceOf(preparedData.user1.addr);
         let user2RmTokens = contract.balanceOf(preparedData.user2.addr);
 
-        assert.ok(contractRmTokens.equals(contractConstants.INITIAL_COINS_FOR_VIPPLACEMENT.minus(100 + 200)));
+        assert.ok(contractRmTokens.equals(CONSTANTS.INITIAL_COINS_FOR_VIPPLACEMENT.minus(100 + 200)));
         assert.ok(user1RmTokens.equals(100));
         assert.ok(user2RmTokens.equals(200));
 
         // пытаемся перечислить user1 max - 100 - 200 + 1
-        let txHashErr = contract.transfer(preparedData.user1.addr, contractConstants.INITIAL_COINS_FOR_VIPPLACEMENT.minus(100 + 200).add(1));
+        let txHashErr = contract.transfer(preparedData.user1.addr, CONSTANTS.INITIAL_COINS_FOR_VIPPLACEMENT.minus(100 + 200).add(1));
         //ToDo не понятно где указывать gas и надо ли
         //u.delaySync(4000);
         //let res = web3.eth.getTransactionReceipt(txHashErr);
 
         // Ничего не должно измениться
-        assert.ok(contractRmTokens.equals(contractConstants.INITIAL_COINS_FOR_VIPPLACEMENT.minus(100 + 200)));
+        assert.ok(contractRmTokens.equals(CONSTANTS.INITIAL_COINS_FOR_VIPPLACEMENT.minus(100 + 200)));
         assert.ok(user1RmTokens.equals(100));
         assert.ok(user2RmTokens.equals(200));
     });
@@ -185,7 +197,7 @@ describe('TestInit', () => {
 
         //Проверяем, что получили приз
         let priceRes = contract.balanceOf(addr);
-        assert.ok(priceRes.equals(contractConstants.PRIZE_SIZE_FORGOTO));
+        assert.ok(priceRes.equals(CONSTANTS.PRIZE_SIZE_FORGOTO));
     });
 
 
@@ -229,7 +241,7 @@ describe('TestInit', () => {
 
         // Свободные токены должны быть в ко-ве эмиссии
         checkContract({
-            freeMoney: contractConstants.EMISSION_FOR_PRESALE,
+            freeMoney: CONSTANTS.EMISSION_FOR_PRESALE,
             totalBought: new BigNumber(0)
         });
 
@@ -237,7 +249,7 @@ describe('TestInit', () => {
         let etherCount = bnWr(new BigNumber(1));
 
         // Считаем, сколько rmToken должны купить на 1 ether
-        let count = bnWr(web3.toWei(etherCount).mul(contractConstants.RATE_PRESALE));
+        let count = bnWr(web3.toWei(etherCount).mul(CONSTANTS.RATE_PRESALE));
 
         // Выполняем покупку
         let res = execInEth(() => contract.buyTokens(user.addr, txParams(user.addr, web3.toWei(etherCount))));
@@ -248,7 +260,7 @@ describe('TestInit', () => {
 
         assert.ok(userRmTokens.equals(count));
         checkContract({
-            freeMoney: contractConstants.EMISSION_FOR_PRESALE.minus(count),
+            freeMoney: CONSTANTS.EMISSION_FOR_PRESALE.minus(count),
             totalBought: count
         });
     });
@@ -264,14 +276,37 @@ describe('TestInit', () => {
      */
     function checkContract(params) {
 
+        if (params.hasOwnProperty('currentState')) {
+            assert.ok(contract.currentState().equals(params.currentState));
+        }
+
+        if (params.hasOwnProperty('totalBalance')) {
+            assert.ok(contract.totalBalance().equals(params.totalBalance));
+        }
+
         if (params.hasOwnProperty('freeMoney')) {
             assert.ok(contract.freeMoney().equals(params.freeMoney));
+        }
+
+        if (params.hasOwnProperty('totalSupply')) {
+            assert.ok(contract.totalSupply().equals(params.totalSupply));
         }
 
         if (params.hasOwnProperty('totalBought')) {
             assert.ok(contract.totalBought().equals(params.totalBought));
         }
 
+        if (params.hasOwnProperty('vipPlacementNotDistributed')) {
+            assert.ok(contract.vipPlacementNotDistributed().equals(params.vipPlacementNotDistributed));
+        }
+
+        if (params.hasOwnProperty('remForPreSale')) {
+            assert.ok(contract.remForPreSale().equals(params.remForPreSale));
+        }
+
+        if (params.hasOwnProperty('rate')) {
+            assert.ok(contract.rate().equals(params.rate));
+        }
     }
 
     function txParams(addr, value = null) {
@@ -309,7 +344,7 @@ describe('TestInit', () => {
         while (!contract.canGotoState(IcoStates.PreSale)) {
         }
 
-        let res = execInEth(() => contract.gotoNextStateAndPrize(txParams(preparedData.owner.addr)));
+        let res = execInEth(() => contract.gotoNextStateAndPrize(txParams(preparedData.owner.lucky)));
 
         assert.ok(res);
     }
