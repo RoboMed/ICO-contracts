@@ -190,17 +190,32 @@ describe('TestInit', () => {
 
 
     /**
-     * Тест проверяет, что нельзя передать vipTokens до завершения ICO
+     * Тест, что юзеры не могут передать vipTokens до PostIco
      */
-    it('test-cannot-transfer-vipTokens', () => {
+    it('test-cannot-transfer-vipTokens-before-postIco', () => {
+
+        // Сумма, которую будем покупать, передавать
+        let sum = bnWr(new BigNumber(1));
+        let bUser1, bUser2;
 
         // Передаем vipTokens юзеру 1
-        let txHash1 = contract.transfer(preparedData.user1.addr, new BigNumber(10));
-        u.waitForTransactions(web3, txHash1);
+        let res1 = execInEth(() => contract.transfer(preparedData.user1.addr, sum, txParams(preparedData.owner.addr)));
+        assert.ok(res1);
+
+        // Проверяем баланс
+        bUser1 = bnWr(contract.balanceOf(preparedData.user1.addr));
+        assert.ok(bUser1.equals(sum));
 
         // Юзер 1 пытается передать их юзеру 2
-        let txHash2 = contract.transfer(preparedData.user2.addr, new BigNumber(10));
-        u.waitForTransactions(web3, txHash);
+        let res2 = execInEth(() => contract.transfer(preparedData.user2.addr, sum, txParams(preparedData.user1.addr)));
+        assert.ok(!res2);
+
+        // Проверяем балансы
+        bUser1 = bnWr(contract.balanceOf(preparedData.user1.addr));
+        bUser2 = bnWr(contract.balanceOf(preparedData.user2.addr));
+
+        assert.ok(bUser1.equals(sum));
+        assert.ok(bUser2.equals(new BigNumber(0)));
     });
 
 
@@ -209,16 +224,14 @@ describe('TestInit', () => {
      */
     it('test-buy-on-preSale', () => {
 
+        let user = preparedData.user1;
         goToPreSale();
 
-        //свободные токены должны быть в ко-ве эмиссии
-        let fm = bnWr(contract.freeMoney());
-        assert.ok(contractConstants.EMISSION_FOR_PRESALE.equals(fm));
-
-        let totalBought = bnWr(contract.totalBought());
-        assert.ok(totalBought.equals(new BigNumber(0)));
-
-        let user = preparedData.user1;
+        // Свободные токены должны быть в ко-ве эмиссии
+        checkContract({
+            freeMoney: contractConstants.EMISSION_FOR_PRESALE,
+            totalBought: new BigNumber(0)
+        });
 
         // Пытаемся купить rmToken
         let etherCount = bnWr(new BigNumber(1));
@@ -226,22 +239,39 @@ describe('TestInit', () => {
         // Считаем, сколько rmToken должны купить на 1 ether
         let count = bnWr(web3.toWei(etherCount).mul(contractConstants.RATE_PRESALE));
 
+        // Выполняем покупку
         let res = execInEth(() => contract.buyTokens(user.addr, txParams(user.addr, web3.toWei(etherCount))));
         assert.ok(res);
 
         // Проверяем что купили
         let userRmTokens = bnWr(contract.balanceOf(user.addr));
-        let fm2 = bnWr(contract.freeMoney());
-        let totalBought2 = bnWr(contract.totalBought());
 
         assert.ok(userRmTokens.equals(count));
-        assert.ok(fm2.equals(contractConstants.EMISSION_FOR_PRESALE.minus(count)));
-        assert.ok(totalBought2.equals(count));
+        checkContract({
+            freeMoney: contractConstants.EMISSION_FOR_PRESALE.minus(count),
+            totalBought: count
+        });
     });
 
     function bnWr(bn) {
         bn.strVal = bn.toNumber();
         return bn;
+    }
+
+    /**
+     * Вспомагательная функция проверяет значения полей контракта
+     * @param params
+     */
+    function checkContract(params) {
+
+        if (params.hasOwnProperty('freeMoney')) {
+            assert.ok(contract.freeMoney().equals(params.freeMoney));
+        }
+
+        if (params.hasOwnProperty('totalBought')) {
+            assert.ok(contract.totalBought().equals(params.totalBought));
+        }
+
     }
 
     function txParams(addr, value = null) {
