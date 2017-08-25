@@ -6,9 +6,9 @@ let Web3 = require('web3');
  * Функция для компилирования sol файлов
  */
 function compileSol() {
-    console.log("compileSol started...");
+
     u.execProcessSync("build.bat");
-    console.log("compileSol finished");
+    console.log("contract compiled");
 }
 
 /**
@@ -21,16 +21,14 @@ function uploadContract(config, from) {
 
     let web3 = new Web3(new Web3.providers.HttpProvider(config.rpcAddress));
 
-    console.log("loadContract started...");
-
     let abi = JSON.parse(fs.readFileSync('out/RobomedIco.abi'));
     let compiled = '0x' + fs.readFileSync("out/RobomedIco.bin");
 
     let gasEstimate = web3.eth.estimateGas({data: compiled}) + 1000000;
-    console.log("gasEstimate: " + gasEstimate);
+    //console.log("gasEstimate: " + gasEstimate);
 
     web3.personal.unlockAccount(from, config.accountPass);
-    console.log("unlockAccount: " + from);
+    //console.log("unlockAccount: " + from);
 
     return new Promise((resolve, reject) => {
 
@@ -68,8 +66,10 @@ function init(config = null) {
     let contract = uploadContract(config, data.owner.addr); //Promise;
 
     return contract.then(c => {
-        console.log("contract address: " + c.address);
-        console.log("contract abi: " + c.abi.toString());
+        console.log("contract.owner: " + data.owner.addr);
+        console.log("contract.address: " + c.address);
+        console.log("contract.abi: " + JSON.stringify(c.abi));
+        console.log();
         return c;
     });
 

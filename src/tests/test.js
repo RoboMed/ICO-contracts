@@ -7,6 +7,7 @@ let u = require('./u');
 let Web3 = require('web3');
 let BigNumber = require('bignumber.js');
 let IcoStates = require("./ico-states");
+let bnWr = require("./bn-wr");
 
 const timeout = 100000;
 
@@ -69,43 +70,19 @@ describe('TestInit', () => {
     /**
      * Тест для проверки начального состояния контракта
      */
-    it('test-contract-init', (done) => {
+    it('test-contract-init', () => {
 
-        // Проверяем, что контракт настадии (VipReplacement)
-        let currentState = contract.currentState();
-        assert.ok(contract.currentState().equals(IcoStates.VipPlacement));
+        checkContract({
+            currentState: IcoStates.VipPlacement,
+            totalBalance: bnWr(new BigNumber(0)),
+            totalSupply: CONSTANTS.INITIAL_COINS_FOR_VIPPLACEMENT,
+            totalBought: bnWr(new BigNumber(0)),
+            rate: bnWr(new BigNumber(0)),
+        });
 
-        let canGotoState1 = contract.canGotoState(IcoStates.PreSale);
-        let canGotoState2 = contract.canGotoState(IcoStates.SaleStage1);
-        let canGotoState3 = contract.canGotoState(IcoStates.SaleStage2);
-        let canGotoState4 = contract.canGotoState(IcoStates.SaleStage3);
-        let canGotoState5 = contract.canGotoState(IcoStates.SaleStage4);
-
-        //assert.ok(canGotoState1 == false);// ToDo: Уточнить
-        assert.ok(canGotoState2 == false);
-        assert.ok(canGotoState3 == false);
-        assert.ok(canGotoState4 == false);
-        assert.ok(canGotoState5 == false);
-
-        // Проверяем кол-во RobomedTokens:
-        let contractRmTokens = contract.balanceOf(preparedData.owner.addr);
-        let user1RmTokens = contract.balanceOf(preparedData.user1.addr);
-        let user2RmTokens = contract.balanceOf(preparedData.user2.addr);
-
-        assert.ok(contractRmTokens.equals(CONSTANTS.INITIAL_COINS_FOR_VIPPLACEMENT));
-        assert.ok(user1RmTokens.equals(0));
-        assert.ok(user2RmTokens.equals(0));
-
-        // Пытаемся купить что-нибудь на 0 стадии
-        let res = contract.buyTokens.call(preparedData.user2.addr, {value: 1, gas: 200000});
-        //Возвращается []
-        //ToDO: заранее считать кол-во газа
-        //ToDo: убедиться по res, что операция не выполнилась
-
-        // Баланс rmTokens не должен измениться
-        assert.ok(contract.balanceOf(preparedData.owner.addr).equals(CONSTANTS.INITIAL_COINS_FOR_VIPPLACEMENT));
-        assert.ok(contract.balanceOf(preparedData.user1.addr).equals(0));
-        assert.ok(contract.balanceOf(preparedData.user2.addr).equals(0));
+        //Проверяем, что была выполнена эмиссия на кошелек владельца
+        let balance = bnWr(contract.balanceOf(preparedData.owner.addr));
+        assert.equal(balance.strVal, CONSTANTS.INITIAL_COINS_FOR_VIPPLACEMENT.strVal)
     });
 
     it('test-transfer-all', () => {
@@ -277,35 +254,51 @@ describe('TestInit', () => {
     function checkContract(params) {
 
         if (params.hasOwnProperty('currentState')) {
-            assert.ok(contract.currentState().equals(params.currentState));
+            let value = contract.currentState();
+            let expected = params.currentState;
+            assert.equal(value.strVal, expected.strVal, "currentState");
         }
 
         if (params.hasOwnProperty('totalBalance')) {
-            assert.ok(contract.totalBalance().equals(params.totalBalance));
+            let value = contract.totalBalance();
+            let expected = params.totalBalance;
+            assert.equal(value.strVal, expected.strVal, "totalBalance");
         }
 
         if (params.hasOwnProperty('freeMoney')) {
-            assert.ok(contract.freeMoney().equals(params.freeMoney));
+            let value = contract.freeMoney();
+            let expected = params.freeMoney;
+            assert.equal(value.strVal, expected.strVal, "freeMoney");
         }
 
         if (params.hasOwnProperty('totalSupply')) {
-            assert.ok(contract.totalSupply().equals(params.totalSupply));
+            let value = contract.totalSupply();
+            let expected = params.totalSupply;
+            assert.equal(value.strVal, expected.strVal, "totalSupply");
         }
 
         if (params.hasOwnProperty('totalBought')) {
-            assert.ok(contract.totalBought().equals(params.totalBought));
+            let value = contract.totalBought();
+            let expected = params.totalBought;
+            assert.equal(value.strVal, expected.strVal, "totalBought");
         }
 
         if (params.hasOwnProperty('vipPlacementNotDistributed')) {
-            assert.ok(contract.vipPlacementNotDistributed().equals(params.vipPlacementNotDistributed));
+            let value = contract.vipPlacementNotDistributed();
+            let expected = params.vipPlacementNotDistributed;
+            assert.equal(value.strVal, expectedstrVal, "vipPlacementNotDistributed");
         }
 
         if (params.hasOwnProperty('remForPreSale')) {
-            assert.ok(contract.remForPreSale().equals(params.remForPreSale));
+            let value = contract.remForPreSale();
+            let expected = params.remForPreSale;
+            assert.equal(value.strVal, expected.strVal, "remForPreSale");
         }
 
         if (params.hasOwnProperty('rate')) {
-            assert.ok(contract.rate().equals(params.rate));
+            let value = contract.rate();
+            let expected = params.rate;
+            assert.equal(value.strVal, expected.strVal, "rate");
         }
     }
 
