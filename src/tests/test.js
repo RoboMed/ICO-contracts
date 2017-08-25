@@ -22,6 +22,7 @@ describe('TestInit', () => {
     before(function () {
         // runs before all tests in this block
         console.log("Test before");
+        BigNumber.config({EXPONENTIAL_AT: 1e+9});
 
         config = u.getConfigFromEnv(process.env);
         web3 = new Web3(new Web3.providers.HttpProvider(config.rpcAddress));
@@ -208,28 +209,40 @@ describe('TestInit', () => {
      */
     it('test-buy-on-preSale', () => {
 
-        goToState1();
+        goToPreSale();
+
+        //свободные токены должны быть в ко-ве эмиссии
+        let fm = bnWr(contract.freeMoney());
+        assert.ok(contractConstants.EMISSION_FOR_PRESALE.equals(fm));
+
+        let totalBought = bnWr(contract.totalBought());
+        assert.ok(totalBought.equals(new BigNumber(0)));
 
         let user = preparedData.user1;
 
         // Пытаемся купить rmToken
-        let etherCount = new BigNumber(1);
-        // Считаем, сколько rmToken должны купить на 1 ether
-        let count = etherCount.mul(contractConstants.RATE_PRESALE);
+        let etherCount = bnWr(new BigNumber(1));
 
-        let res = execInEth(() => contract.buyTokens(user.addr, txParams(user.addr, etherCount)));
+        // Считаем, сколько rmToken должны купить на 1 ether
+        let count = bnWr(web3.toWei(etherCount).mul(contractConstants.RATE_PRESALE));
+
+        let res = execInEth(() => contract.buyTokens(user.addr, txParams(user.addr, web3.toWei(etherCount))));
         assert.ok(res);
 
         // Проверяем что купили
-        let userRmTokens = contract.balanceOf(user.addr);
-        let contractRmTokens = contract.balanceOf(preparedData.owner.addr);
+        let userRmTokens = bnWr(contract.balanceOf(user.addr));
+        let fm2 = bnWr(contract.freeMoney());
+        let totalBought2 = bnWr(contract.totalBought());
 
         assert.ok(userRmTokens.equals(count));
-        assert.ok(contractRmTokens.equals(contractConstants.INITIAL_COINS_FOR_VIPPLACEMENT.minus(count)));
+        assert.ok(fm2.equals(contractConstants.EMISSION_FOR_PRESALE.minus(count)));
+        assert.ok(totalBought2.equals(count));
     });
 
-
-
+    function bnWr(bn) {
+        bn.strVal = bn.toNumber();
+        return bn;
+    }
 
     function txParams(addr, value = null) {
         let res = {from: addr, gas: 200000};
@@ -261,10 +274,11 @@ describe('TestInit', () => {
     /**
      * Вспомагательный метод переводит контракт на PreSale
      */
-    function goToState1() {
+    function goToPreSale() {
+
         while (!contract.canGotoState(IcoStates.PreSale)) {
         }
-        //ToDo а owner может сам дергать ручку?
+
         let res = execInEth(() => contract.gotoNextStateAndPrize(txParams(preparedData.owner.addr)));
 
         assert.ok(res);

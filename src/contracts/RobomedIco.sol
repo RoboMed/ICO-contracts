@@ -31,7 +31,7 @@ contract RobomedIco is Ownable, Destructible, ERC20 {
   /**
    * Длительность стадии VipPlacement
   */
-  uint256 public constant DURATION_VIPPLACEMENT = 1 minutes;//  1 days;
+  uint256 public constant DURATION_VIPPLACEMENT = 1 seconds;// 1 minutes;//  1 days;
 
   //end VipPlacement constants
 
@@ -45,7 +45,7 @@ contract RobomedIco is Ownable, Destructible, ERC20 {
   /**
    * Длительность стадии PreSale
   */
-  uint256 public constant DURATION_PRESALE = 2 minutes;//1 days;
+  uint256 public constant DURATION_PRESALE = 1 seconds;//2 minutes;//1 days;
 
   /**
    * Курс стадии PreSale
@@ -59,7 +59,7 @@ contract RobomedIco is Ownable, Destructible, ERC20 {
   /**
    * Общая длительность стадий Sale с SaleStage1 по SaleStage4 включительно
   */
-  uint256 public constant DURATION_SALESTAGES = 2 minutes;//30 days;
+  uint256 public constant DURATION_SALESTAGES = 1 seconds;//2 minutes;//30 days;
 
   /**
    * Курс стадии SaleStage1
