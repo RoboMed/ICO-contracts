@@ -1,5 +1,5 @@
-let u = require('./u');
-let Web3 = require('web3');
+import {U} from "./u";
+import * as Web3 from "web3";
 
 ////////////////////////////////////////////////////
 //
@@ -13,29 +13,23 @@ let Web3 = require('web3');
 
 /**
  * Функция для подготовки новой сети перед тестированием
- * @param config Конфиг
  * @returns coinbase
  */
-function init(config = null) {
+export function prepare() {
 
-    config = config != null ? config : u.getConfigFromArgv(process.argv);
+	let config = U.getConfig();
 
-    let web3 = new Web3(new Web3.providers.HttpProvider(config.rpcAddress));
+	let web3 = new Web3(new Web3.providers.HttpProvider(config.rpcAddress));
 
-    let coinbase = web3.personal.newAccount(config.accountPass);
+	let coinbase = web3.personal.newAccount(config.accountPass);
 
-    let exec = " \"miner.setEtherbase('" + coinbase + "');\" ";
-    let cmd = "geth attach --exec " + exec;
+	let exec = " \"miner.setEtherbase('" + coinbase + "');\" ";
+	let cmd = "geth attach --exec " + exec;
 
-    u.execProcessSync(cmd);
+	U.execProcessSync(cmd);
 
-    return coinbase;
+	return coinbase;
 }
-
-module.exports = {
-    init: init
-};
-
 
 
 

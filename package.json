@@ -4,20 +4,16 @@
   "description": "",
   "main": "index.js",
   "scripts": {
+    "prepareNewNetMur": "set CONFIGFILE=./src/configs/config-mur.json&&node -e \"require('./dist/prepare-new-net').prepare()\" ",
+    "prepareNewNetRum": "set CONFIGFILE=./src/configs/config-rum.json&&node -e \"require('./dist/prepare-new-net').prepare()\" ",
 
-    "prepareNewNetMur": "node -e \"require('./src/tests/prepare-new-net').init()\" configFile=./src/configs/config-mur.json",
-    "prepareNewNetRum": "node -e \"require('./src/tests/prepare-new-net').init()\" configFile=./src/configs/config-rum.json",
+    "prepareTestDataMur": "set CONFIGFILE=./src/configs/config-mur.json&& node -e \"require('./dist/prepare-test-data').prepare()\" ",
+    "prepareTestDataRum": "set CONFIGFILE=./src/configs/config-rum.json&& node -e \"require('./dist/prepare-test-data').prepare()\" ",
 
-    "prepareTestDataMur": "node -e \"require('./src/tests/prepare-test-data').initAndWrite()\" configFile=./src/configs/config-mur.json",
-    "prepareTestDataRum": "node -e \"require('./src/tests/prepare-test-data').initAndWrite()\" configFile=./src/configs/config-rum.json",
+    "deployMur": "node -e \"require('./dist/deploy-to-target').deploy('http://localhost:8545', '0x39ce8539d78364e6697c5a0e884559e2db397913', '12345')\" ",
+    "deployRum": "node -e \"require('./dist/deploy-to-target').deploy('http://localhost:8545', '', '12345')\" ",
 
-    "deployMur": "node -e \"require('./src/tests/deploy-to-target').init()\" configFile=./src/configs/config-mur.json ",
-    "deployRum": "node -e \"require('./src/tests/deploy-to-target').init()\" configFile=./src/configs/config-rum.json ",
-
-    "build": "build.bat",
-
-    "testMur": "mocha \"src/tests/*test.js\" --configFile=./src/configs/config-mur.json",
-    "testRum": "mocha \"src/tests/*test.js\" --configFile=./src/configs/config-rum.json"
+    "build": "build.bat"
   },
   "repository": {
     "type": "git",
@@ -30,8 +26,14 @@
   },
   "homepage": "https://github.com/RoboMed/ICO-contracts#readme",
   "dependencies": {
+    "typescript": "^2.4.2",
+    "@types/node": "^8.0.25",
+    "@types/mocha": "^2.2.42",
+    "@types/bignumber.js": "^4.0.3",
+    "web3-typescript-typings": "^0.3.2",
+    "ts-node": "^3.3.0",
     "web3": "^0.20.0",
     "mocha": "^3.5.0",
-    "bignumber.js":"^4.0.2"
+    "bignumber.js": "^4.0.2"
   }
 }
