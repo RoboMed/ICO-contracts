@@ -114,23 +114,70 @@ contract RobomedIco is Ownable, Destructible, ERC20 {
 
   //end SaleStage4 constants
 
-  //SaleStage5 constants
 
-  /**
-   * Длительность стадии SaleStage5
-  */
-  uint256 public constant DURATION_SALESTAGE5 = 20 minutes;//10 days;
+  //SaleStage5 constants
 
   /**
    * Курс стадии SaleStage5
   */
-  uint256 public constant RATE_SALESTAGE5 = 2000;
+  uint256 public constant RATE_SALESTAGE5 = 2100;
 
   /**
   * Эмиссия токенов для стадии SaleStage5
   */
-  uint256 public constant EMISSION_FOR_SALESTAGE5 = 300000000 * 10 ** 18;
+  uint256 public constant EMISSION_FOR_SALESTAGE5 = 78750000 * 10 ** 18;
+
   //end SaleStage5 constants
+
+
+
+  //SaleStage6 constants
+
+  /**
+   * Курс стадии SaleStage6
+  */
+  uint256 public constant RATE_SALESTAGE6 = 2100;
+
+  /**
+  * Эмиссия токенов для стадии SaleStage6
+  */
+  uint256 public constant EMISSION_FOR_SALESTAGE6 = 78750000 * 10 ** 18;
+
+  //end SaleStage6 constants
+
+
+  //SaleStage7 constants
+
+  /**
+   * Курс стадии SaleStage7
+  */
+  uint256 public constant RATE_SALESTAGE7 = 2100;
+
+  /**
+  * Эмиссия токенов для стадии SaleStage7
+  */
+  uint256 public constant EMISSION_FOR_SALESTAGE7 = 78750000 * 10 ** 18;
+
+  //end SaleStage7 constants
+
+
+  //SaleStageLast constants
+
+  /**
+   * Длительность стадии SaleStageLast
+  */
+  uint256 public constant DURATION_SALESTAGELAST = 20 minutes;//10 days;
+
+  /**
+   * Курс стадии SaleStageLast
+  */
+  uint256 public constant RATE_SALESTAGELAST = 2000;
+
+  /**
+  * Эмиссия токенов для стадии SaleStageLast
+  */
+  uint256 public constant EMISSION_FOR_SALESTAGELAST = 300000000 * 10 ** 18;
+  //end SaleStageLast constants
 
   //PostIco constants
 
@@ -172,8 +219,9 @@ contract RobomedIco is Ownable, Destructible, ERC20 {
   /**
      * Состояние для которого выполняется заданная эмиссия в свободный пул freeMoney.
      * далее все выпущенные свободные токены покупаются всеми желающими вплоть до endDateOfPreSale,
-     * не выкупленные токены будут выставлены на стадии SaleStage5
+     * не выкупленные токены будут уничтожены
      * Состояние завершается по наступлению времени endDateOfPreSale.
+     * С момента наступления PreSale покупка токенов становиться разрешена
      */
   PreSale,
 
@@ -181,11 +229,10 @@ contract RobomedIco is Ownable, Destructible, ERC20 {
    * Состояние представляющее из себя подстадию продаж,
    * при наступлении данного состояния выпускается заданное количество токенов,
    * количество свободных токенов приравнивается к этой эмиссии
-   * Состояние завершается при выкупе всех свободных токенов или по наступлению времени startDateOfSaleStage5.
+   * Состояние завершается при выкупе всех свободных токенов или по наступлению времени startDateOfSaleStageLast.
    * Если выкупаются все свободные токены - переход осуществляется на следующую стадию -
    * например [с SaleStage1 на SaleStage2] или [с SaleStage2 на SaleStage3]
-   * Если наступает время startDateOfSaleStage5, то независимо от выкупленных токенов переходим на стостояние SaleStage5
-   * С момента наступления SaleStage1 покупка токенов становиться разрешена
+   * Если наступает время startDateOfSaleStageLast, то независимо от выкупленных токенов переходим на стостояние SaleStageLast
   */
   SaleStage1,
 
@@ -205,13 +252,28 @@ contract RobomedIco is Ownable, Destructible, ERC20 {
   SaleStage4,
 
   /**
+   * Аналогично SaleStage1
+   */
+  SaleStage5,
+
+  /**
+   * Аналогично SaleStage1
+   */
+  SaleStage6,
+
+  /**
+   * Аналогично SaleStage1
+   */
+  SaleStage7,
+
+  /**
    * Состояние представляющее из себя последнюю подстадию продаж,
    * при наступлении данного состояния выпускается заданное количество токенов,
    * количество свободных токенов приравнивается к этой эмиссии,
-   * плюс остатки нераспроданных токенов со стадии PreSale и стадий SaleStage1,SaleStage2,SaleStage3,SaleStage4
-   * Состояние завершается по наступлению времени endDateOfSaleStage5.
+   * плюс остатки нераспроданных токенов со стадий SaleStage1,SaleStage2,SaleStage3,SaleStage4,SaleStage5,SaleStage6,SaleStage7
+   * Состояние завершается по наступлению времени endDateOfSaleStageLast.
   */
-  SaleStage5,
+  SaleStageLast,
 
   /**
    * Состояние наступающее после завершения Ico,
@@ -298,20 +360,20 @@ contract RobomedIco is Ownable, Destructible, ERC20 {
   uint256 public endDateOfPreSale = 0;
 
   /**
-   * Дата начала стадии SaleStage5
+   * Дата начала стадии SaleStageLast
   */
-  uint256 public startDateOfSaleStage5 = 0;
+  uint256 public startDateOfSaleStageLast = 0;
 
   /**
-   * Дата окончания стадии SaleStage5
+   * Дата окончания стадии SaleStageLast
   */
-  uint256 public endDateOfSaleStage5 = 0;
+  uint256 public endDateOfSaleStageLast = 0;
 
 
   /**
-   * Остаток нераспроданных токенов для состояний с SaleStage1 по SaleStage4, которые переходят в свободные на момент наступления SaleStage5
+   * Остаток нераспроданных токенов для состояний с SaleStage1 по SaleStage7, которые переходят в свободные на момент наступления SaleStageLast
    */
-  uint256 public remForSalesBeforeStage5 = 0;
+  uint256 public remForSalesBeforeStageLast = 0;
 
   /**
   * Дата, начиная с которой можно получить team токены непосредственно на кошелёк
@@ -378,7 +440,7 @@ contract RobomedIco is Ownable, Destructible, ERC20 {
     totalSupply = INITIAL_COINS_FOR_VIPPLACEMENT + EMISSION_FOR_BOUNTY + EMISSION_FOR_TEAM;
 
     endDateOfVipPlacement = now.add(DURATION_VIPPLACEMENT);
-    remForSalesBeforeStage5 = 0;
+    remForSalesBeforeStageLast = 0;
   }
 
   /**
@@ -403,7 +465,7 @@ contract RobomedIco is Ownable, Destructible, ERC20 {
   */
   function gotoNextStateAndPrize() returns (bool) {
 
-    if (gotoPreSale() || gotoSaleStage1() || gotoSaleStage5() || gotoPostIco()) {
+    if (gotoPreSale() || gotoSaleStage1() || gotoSaleStageLast() || gotoPostIco()) {
       //переход состоялся - награждаем вызвавшего функцию
       balances[msg.sender] = balances[msg.sender].add(PRIZE_SIZE_FORGOTO);
       totalSupply = totalSupply.add(PRIZE_SIZE_FORGOTO);
@@ -434,16 +496,25 @@ contract RobomedIco is Ownable, Destructible, ERC20 {
       return (currentState == IcoStates.PreSale && endDateOfPreSale <= now);
     }
     else if (toState == IcoStates.SaleStage2) {
-      return (currentState == IcoStates.SaleStage1 && freeMoney == 0 && startDateOfSaleStage5 > now);
+      return (currentState == IcoStates.SaleStage1 && freeMoney == 0 && startDateOfSaleStageLast > now);
     }
     else if (toState == IcoStates.SaleStage3) {
-      return (currentState == IcoStates.SaleStage2 && freeMoney == 0 && startDateOfSaleStage5 > now);
+      return (currentState == IcoStates.SaleStage2 && freeMoney == 0 && startDateOfSaleStageLast > now);
     }
     else if (toState == IcoStates.SaleStage4) {
-      return (currentState == IcoStates.SaleStage3 && freeMoney == 0 && startDateOfSaleStage5 > now);
+      return (currentState == IcoStates.SaleStage3 && freeMoney == 0 && startDateOfSaleStageLast > now);
     }
     else if (toState == IcoStates.SaleStage5) {
-      //переход на состояние SaleStage5 возможен только из состояний SaleStages
+      return (currentState == IcoStates.SaleStage4 && freeMoney == 0 && startDateOfSaleStageLast > now);
+    }
+    else if (toState == IcoStates.SaleStage6) {
+      return (currentState == IcoStates.SaleStage5 && freeMoney == 0 && startDateOfSaleStageLast > now);
+    }
+    else if (toState == IcoStates.SaleStage7) {
+      return (currentState == IcoStates.SaleStage6 && freeMoney == 0 && startDateOfSaleStageLast > now);
+    }
+    else if (toState == IcoStates.SaleStageLast) {
+      //переход на состояние SaleStageLast возможен только из состояний SaleStages
       if (
       currentState != IcoStates.SaleStage1
       &&
@@ -451,17 +522,23 @@ contract RobomedIco is Ownable, Destructible, ERC20 {
       &&
       currentState != IcoStates.SaleStage3
       &&
-      currentState != IcoStates.SaleStage4) return false;
+      currentState != IcoStates.SaleStage4
+      &&
+      currentState != IcoStates.SaleStage5
+      &&
+      currentState != IcoStates.SaleStage6
+      &&
+      currentState != IcoStates.SaleStage7) return false;
 
-      //переход осуществляется если на состоянии SaleStage4 не осталось свободных токенов
-      //или на одном из состояний SaleStages наступило время startDateOfSaleStage5
-      if (!(currentState == IcoStates.SaleStage4 && freeMoney == 0) && startDateOfSaleStage5 > now) {
+      //переход осуществляется если на состоянии SaleStage7 не осталось свободных токенов
+      //или на одном из состояний SaleStages наступило время startDateOfSaleStageLast
+      if (!(currentState == IcoStates.SaleStage7 && freeMoney == 0) && startDateOfSaleStageLast > now) {
         return false;
       }
       return true;
     }
     else if (toState == IcoStates.PostIco) {
-      return (currentState == IcoStates.SaleStage5 && endDateOfSaleStage5 <= now);
+      return (currentState == IcoStates.SaleStageLast && endDateOfSaleStageLast <= now);
     }
   }
 
@@ -508,6 +585,12 @@ contract RobomedIco is Ownable, Destructible, ERC20 {
       currentState == IcoStates.SaleStage4
       ||
       currentState == IcoStates.SaleStage5
+      ||
+      currentState == IcoStates.SaleStage6
+      ||
+      currentState == IcoStates.SaleStage7
+      ||
+      currentState == IcoStates.SaleStageLast
       );
 
       //выполняем покупку для вызывающего
@@ -536,10 +619,16 @@ contract RobomedIco is Ownable, Destructible, ERC20 {
       ||
       currentState == IcoStates.SaleStage3
       ||
-      currentState == IcoStates.SaleStage4) {
+      currentState == IcoStates.SaleStage4
+      ||
+      currentState == IcoStates.SaleStage5
+      ||
+      currentState == IcoStates.SaleStage6
+      ||
+      currentState == IcoStates.SaleStage7) {
 
         //уменьшаем количество остатка по токенам которые необходимо продать на этих стадиях
-        remForSalesBeforeStage5 = remForSalesBeforeStage5.sub(tokens);
+        remForSalesBeforeStageLast = remForSalesBeforeStageLast.sub(tokens);
 
         //пробуем перейти между SaleStages
         transitionBetweenSaleStages();
@@ -718,10 +807,18 @@ contract RobomedIco is Ownable, Destructible, ERC20 {
     setMoney(EMISSION_FOR_SALESTAGE1, EMISSION_FOR_SALESTAGE1, RATE_SALESTAGE1);
 
     //определяем количество токенов которое можно продать на всех стадиях Sale кроме последней
-    remForSalesBeforeStage5 = EMISSION_FOR_SALESTAGE1 + EMISSION_FOR_SALESTAGE2 + EMISSION_FOR_SALESTAGE3 + EMISSION_FOR_SALESTAGE4;
+    remForSalesBeforeStageLast =
+    EMISSION_FOR_SALESTAGE1 +
+    EMISSION_FOR_SALESTAGE2 +
+    EMISSION_FOR_SALESTAGE3 +
+    EMISSION_FOR_SALESTAGE4 +
+    EMISSION_FOR_SALESTAGE5 +
+    EMISSION_FOR_SALESTAGE6 +
+    EMISSION_FOR_SALESTAGE7;
+
 
     //устанавливаем дату начала последней стадии продаж
-    startDateOfSaleStage5 = now.add(DURATION_SALESTAGES);
+    startDateOfSaleStageLast = now.add(DURATION_SALESTAGES);
 
     //разим событие изменения состояния
     StateChanged(IcoStates.SaleStage1);
@@ -740,10 +837,16 @@ contract RobomedIco is Ownable, Destructible, ERC20 {
     &&
     currentState != IcoStates.SaleStage3
     &&
-    currentState != IcoStates.SaleStage4) return;
+    currentState != IcoStates.SaleStage4
+    &&
+    currentState != IcoStates.SaleStage5
+    &&
+    currentState != IcoStates.SaleStage6
+    &&
+    currentState != IcoStates.SaleStage7) return;
 
-    //если есть возможность сразу переходим в состояние Stage5
-    if (gotoSaleStage5()) {
+    //если есть возможность сразу переходим в состояние StageLast
+    if (gotoSaleStageLast()) {
       return;
     }
 
@@ -763,25 +866,40 @@ contract RobomedIco is Ownable, Destructible, ERC20 {
       setMoney(EMISSION_FOR_SALESTAGE4, EMISSION_FOR_SALESTAGE4, RATE_SALESTAGE4);
       StateChanged(IcoStates.SaleStage4);
     }
+    else if (canGotoState(IcoStates.SaleStage5)) {
+      currentState = IcoStates.SaleStage5;
+      setMoney(EMISSION_FOR_SALESTAGE5, EMISSION_FOR_SALESTAGE5, RATE_SALESTAGE5);
+      StateChanged(IcoStates.SaleStage5);
+    }
+    else if (canGotoState(IcoStates.SaleStage6)) {
+      currentState = IcoStates.SaleStage6;
+      setMoney(EMISSION_FOR_SALESTAGE6, EMISSION_FOR_SALESTAGE6, RATE_SALESTAGE6);
+      StateChanged(IcoStates.SaleStage6);
+    }
+    else if (canGotoState(IcoStates.SaleStage7)) {
+      currentState = IcoStates.SaleStage7;
+      setMoney(EMISSION_FOR_SALESTAGE7, EMISSION_FOR_SALESTAGE7, RATE_SALESTAGE7);
+      StateChanged(IcoStates.SaleStage7);
+    }
   }
 
   /**
-    * Метод переводящий контракт в состояние SaleStage5
+    * Метод переводящий контракт в состояние SaleStageLast
     */
-  function gotoSaleStage5() private returns (bool) {
-    if (!canGotoState(IcoStates.SaleStage5)) return false;
+  function gotoSaleStageLast() private returns (bool) {
+    if (!canGotoState(IcoStates.SaleStageLast)) return false;
 
-    //ок переходим на состояние SaleStage5
-    currentState = IcoStates.SaleStage5;
+    //ок переходим на состояние SaleStageLast
+    currentState = IcoStates.SaleStageLast;
 
     //выставляем состояние токенов, с учётом всех остатков
-    setMoney(remForSalesBeforeStage5 + EMISSION_FOR_SALESTAGE5, EMISSION_FOR_SALESTAGE5, RATE_SALESTAGE5);
+    setMoney(remForSalesBeforeStageLast + EMISSION_FOR_SALESTAGELAST, EMISSION_FOR_SALESTAGELAST, RATE_SALESTAGELAST);
 
 
-    //устанавливаем дату окончания SaleStage5
-    endDateOfSaleStage5 = now.add(DURATION_SALESTAGE5);
+    //устанавливаем дату окончания SaleStageLast
+    endDateOfSaleStageLast = now.add(DURATION_SALESTAGELAST);
 
-    StateChanged(IcoStates.SaleStage5);
+    StateChanged(IcoStates.SaleStageLast);
     return true;
   }
 
