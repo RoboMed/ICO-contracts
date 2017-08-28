@@ -1,7 +1,6 @@
 import {Config} from "./config";
-
-let child_process = require('child_process');
-let fs = require('fs');
+import * as fs from "fs";
+import * as child_process from "child_process";
 
 export module U {
 
@@ -15,7 +14,7 @@ export module U {
 
 		try {
 			let configFile = env["CONFIGFILE"];
-			let data = fs.readFileSync(configFile);
+			let data = fs.readFileSync(configFile).toString();
 			let config = JSON.parse(data);
 
 			return config;

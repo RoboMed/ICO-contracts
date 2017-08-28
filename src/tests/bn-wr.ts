@@ -1,7 +1,7 @@
 import * as BigNumber from 'bignumber.js';
 
 export interface BnWr extends BigNumber.BigNumber {
-	numVal: any;
+	numVal: number;
 	strVal: string;
 }
 

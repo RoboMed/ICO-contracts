@@ -6,20 +6,34 @@ import {U} from "./u";
 import {Config} from "./config";
 import {ContractConstants} from "./contract-constants";
 import {IcoStates} from "./ico-states";
-import {bnWr} from "./bn-wr";
+import {bnWr, BnWr} from "./bn-wr";
 import {TestAccounts, prepare} from "./prepare-test-data";
 import {deploy} from "./deploy-to-target";
+import {Contract, txParams} from "./Contract";
 
 //add extra mocha options: --require ts-node/register --timeout 100000
 
 let web3: any;
-let contract: any;
+let contract: Contract;
 let config: Config = null;
 let accs: TestAccounts;
-let CONSTANTS: any;
+let CONSTANTS: ContractConstants;
+
+/**
+ * Параметры для проверки свойств контракта
+ */
+interface CheckContractParams {
+	currentState?: BnWr;
+	totalBalance?: BnWr;
+	freeMoney?: BnWr;
+	totalSupply?: BnWr;
+	totalBought?: BnWr;
+	vipPlacementNotDistributed?: BnWr;
+	remForPreSale?: BnWr;
+	rate?: BnWr;
+}
 
 describe('Test Ico-contract', () => {
-
 
 	/**
 	 * runs before all tests in this block
@@ -75,26 +89,37 @@ describe('Test Ico-contract', () => {
 		assert.equal(balance.strVal, CONSTANTS.INITIAL_COINS_FOR_VIPPLACEMENT.strVal)
 	});
 
+	/**
+	 * Тест передачи всех токенов одному юзеру
+	 */
 	it('test-transfer-all', () => {
-		// Тест на передачу VIP токенов одному юзеру
 
-		let txHash = contract.transfer(accs.user1, CONSTANTS.INITIAL_COINS_FOR_VIPPLACEMENT);
-		U.waitForTransactions(web3, txHash);
+		// Передаем все имеющиеся токены одному юзеру
+		let res = execInEth(() => contract.transfer(accs.user1, CONSTANTS.INITIAL_COINS_FOR_VIPPLACEMENT, txParams(accs.owner)));
+		assert.ok(res);
 
 		let contractRmTokens = contract.balanceOf(accs.owner);
 		let user1RmTokens = contract.balanceOf(accs.user1);
 
 		assert.ok(contractRmTokens.equals(0));
 		assert.ok(user1RmTokens.equals(CONSTANTS.INITIAL_COINS_FOR_VIPPLACEMENT));
+
+		checkContract({
+			currentState: IcoStates.VipPlacement,
+			totalBalance: bnWr(new BigNumber(0)),
+			totalSupply: CONSTANTS.INITIAL_COINS_FOR_VIPPLACEMENT,
+			totalBought: bnWr(new BigNumber(0)),
+			rate: bnWr(new BigNumber(0)),
+		});
 	});
 
 	/**
-	 * Тест, что нельзя передавать VIP токенов больше чем есть
+	 * Тест, что нельзя передавать токенов больше чем есть
 	 */
-	it('test-transfer-vipTokens-overflow', () => {
+	it('test-transfer-tokens-overflow', () => {
 
-		// Кол-во оставшихся VIP токенов + 1
-		let count = bnWr(contract.vipPlacementNotDistributed().add(1));
+		// Кол-во оставшихся токенов + 1
+		let count = bnWr(contract.vipPlacementNotDistributed().plus(1));
 
 		// Пытаемся передать VIP токенов больше чем осталось
 		let res = execInEth(() => contract.transfer(accs.user1, count, txParams(accs.owner)));
@@ -108,36 +133,45 @@ describe('Test Ico-contract', () => {
 		assert.ok(user1RmTokens.equals(0));
 
 		checkContract({
-			totalBought: new BigNumber(0),
+			totalBought: bnWr(new BigNumber(0)),
 			vipPlacementNotDistributed: CONSTANTS.INITIAL_COINS_FOR_VIPPLACEMENT
 		});
 	});
 
+	/**
+	 * Тест распределения токенов между юзерами
+	 */
 	it('test-transfer-3-distribution', () => {
 
-		// user1 получает 100 rmToken
-		// user2 получает 200 rmToken
-		let txHash1 = contract.transfer(accs.user1, new BigNumber(100));
-		let txHash2 = contract.transfer(accs.user2, new BigNumber(200));
-		U.waitForTransactions(web3, [txHash1, txHash2]);
+		let contractBalance = bnWr(contract.balanceOf(accs.owner));
+		let sum1 = bnWr(contractBalance.dividedToIntegerBy(4));
+		let sum2 = bnWr(contractBalance.dividedToIntegerBy(4));
 
-		let contractRmTokens = contract.balanceOf(accs.owner);
-		let user1RmTokens = contract.balanceOf(accs.user1);
-		let user2RmTokens = contract.balanceOf(accs.user2);
+		// user1 получает 1/4 rmToken
+		// user2 получает 1/4 rmToken
+		let res1 = execInEth(() => contract.transfer(accs.user1, sum1, txParams(accs.owner)));
+		let res2 = execInEth(() => contract.transfer(accs.user2, sum2, txParams(accs.owner)));
+		assert.ok(res1);
+		assert.ok(res2);
 
-		assert.ok(contractRmTokens.equals(CONSTANTS.INITIAL_COINS_FOR_VIPPLACEMENT.minus(100 + 200)));
-		assert.ok(user1RmTokens.equals(100));
-		assert.ok(user2RmTokens.equals(200));
+		// Проверяем, что монеты успешно переведены
+		let contractRmTokens = bnWr(contract.balanceOf(accs.owner));
+		let user1RmTokens = bnWr(contract.balanceOf(accs.user1));
+		let user2RmTokens = bnWr(contract.balanceOf(accs.user2));
 
-		// пытаемся перечислить user1 max - 100 - 200 + 1
-		let txHashErr = contract.transfer(accs.user1, CONSTANTS.INITIAL_COINS_FOR_VIPPLACEMENT.minus(100 + 200).add(1));
-		//u.delaySync(4000);
-		//let res = web3.eth.getTransactionReceipt(txHashErr);
+		let remainingCoins = CONSTANTS.INITIAL_COINS_FOR_VIPPLACEMENT.minus(sum1.plus(sum2));
+		assert.ok(contractRmTokens.equals(remainingCoins));
+		assert.ok(user1RmTokens.equals(sum1));
+		assert.ok(user2RmTokens.equals(sum2));
+
+		// пытаемся перечислить оставшиеся монеты + 1
+		let res3 = execInEth(() => contract.transfer(accs.user1, remainingCoins.plus(1), txParams(accs.owner)));
+		assert(!res3);
 
 		// Ничего не должно измениться
-		assert.ok(contractRmTokens.equals(CONSTANTS.INITIAL_COINS_FOR_VIPPLACEMENT.minus(100 + 200)));
-		assert.ok(user1RmTokens.equals(100));
-		assert.ok(user2RmTokens.equals(200));
+		assert.ok(contractRmTokens.equals(remainingCoins));
+		assert.ok(user1RmTokens.equals(sum1));
+		assert.ok(user2RmTokens.equals(sum2));
 	});
 
 	/**
@@ -162,7 +196,7 @@ describe('Test Ico-contract', () => {
 		assert.ok(contract.currentState().equals(IcoStates.PreSale));
 
 		//Проверяем, что получили приз
-		let priceRes = contract.balanceOf(addr);
+		let priceRes = bnWr(contract.balanceOf(addr));
 		assert.ok(priceRes.equals(CONSTANTS.PRIZE_SIZE_FORGOTO));
 	});
 
@@ -173,10 +207,10 @@ describe('Test Ico-contract', () => {
 	it('test-cannot-transfer-tokens-before-postIco', () => {
 
 		// Сумма, которую будем покупать, передавать
-		let sum = bnWr(new BigNumber(1));
+		let sum = bnWr(new BigNumber(1)); //ToDo: если указать 0.63 то будет совершена покупка на 1
 		let bUser1, bUser2;
 
-		// Передаем vipTokens юзеру 1
+		// Передаем tokens юзеру
 		let res1 = execInEth(() => contract.transfer(accs.user1, sum, txParams(accs.owner)));
 		assert.ok(res1);
 
@@ -208,7 +242,7 @@ describe('Test Ico-contract', () => {
 		// Свободные токены должны быть в ко-ве эмиссии
 		checkContract({
 			freeMoney: CONSTANTS.EMISSION_FOR_PRESALE,
-			totalBought: new BigNumber(0)
+			totalBought: bnWr(new BigNumber(0))
 		});
 
 		// Пытаемся купить rmToken
@@ -226,78 +260,31 @@ describe('Test Ico-contract', () => {
 
 		assert.ok(userRmTokens.equals(count));
 		checkContract({
-			freeMoney: CONSTANTS.EMISSION_FOR_PRESALE.minus(count),
+			freeMoney: bnWr(CONSTANTS.EMISSION_FOR_PRESALE.minus(count)),
 			totalBought: count
 		});
 	});
 
 	/**
 	 * Вспомагательная функция проверяет значения полей контракта
-	 * @param params
+	 * @param params Параметры для проверки
 	 */
-	function checkContract(params: any) {
+	function checkContract(params: CheckContractParams) {
 
-		if (params.hasOwnProperty('currentState')) {
-			let value = bnWr(contract.currentState());
-			let expected = params.currentState;
-			assert.equal(value.strVal, expected.strVal, "currentState");
-		}
+		for (let key in params) {
 
-		if (params.hasOwnProperty('totalBalance')) {
-			let value = bnWr(contract.totalBalance());
-			let expected = params.totalBalance;
-			assert.equal(value.strVal, expected.strVal, "totalBalance");
-		}
+			let value = bnWr((<any>contract)[key]());
+			let expected = (<any>params)[key];
 
-		if (params.hasOwnProperty('freeMoney')) {
-			let value = bnWr(contract.freeMoney());
-			let expected = params.freeMoney;
-			assert.equal(value.strVal, expected.strVal, "freeMoney");
-		}
-
-		if (params.hasOwnProperty('totalSupply')) {
-			let value = bnWr(contract.totalSupply());
-			let expected = params.totalSupply;
-			assert.equal(value.strVal, expected.strVal, "totalSupply");
-		}
-
-		if (params.hasOwnProperty('totalBought')) {
-			let value = bnWr(contract.totalBought());
-			let expected = params.totalBought;
-			assert.equal(value.strVal, expected.strVal, "totalBought");
-		}
-
-		if (params.hasOwnProperty('vipPlacementNotDistributed')) {
-			let value = bnWr(contract.vipPlacementNotDistributed());
-			let expected = params.vipPlacementNotDistributed;
-			assert.equal(value.strVal, expected.strVal, "vipPlacementNotDistributed");
-		}
-
-		if (params.hasOwnProperty('remForPreSale')) {
-			let value = bnWr(contract.remForPreSale());
-			let expected = params.remForPreSale;
-			assert.equal(value.strVal, expected.strVal, "remForPreSale");
-		}
-
-		if (params.hasOwnProperty('rate')) {
-			let value = bnWr(contract.rate());
-			let expected = params.rate;
-			assert.equal(value.strVal, expected.strVal, "rate");
+			assert.ok(value.equals(expected), `${key} expected: ${expected} value: ${value}`);
 		}
 	}
 
-	function txParams(addr: string, value?: BigNumber.BigNumber): any {
-		let res = {from: addr, gas: 200000};
-		if (value != null) {
-
-			res = <any>{
-				...res,
-				value: value
-			};
-		}
-		return res;
-	}
-
+	/**
+	 * Вспомагательный метод для вызова методов контракта
+	 * @param {() => string} act Вызов метода контракта
+	 * @returns {boolean} Успешность вызова
+	 */
 	function execInEth(act: () => string) {
 		let txHash = null;
 		try {
@@ -305,12 +292,12 @@ describe('Test Ico-contract', () => {
 		} catch (err) {
 			return false;
 		}
-		while (web3.eth.getTransactionReceipt(txHash) === null) {
+		while (web3.eth.getTransactionReceipt(txHash) == null) {
 		}
 
 		let txRec = web3.eth.getTransactionReceipt(txHash);
 		let tx = web3.eth.getTransaction(txHash);
-		if (txRec.blockNumber === null || tx.blockNumber === null) {
+		if (txRec.blockNumber == null || tx.blockNumber == null) {
 			throw `${txRec.blockNumber} - ${tx.blockNumber}`;
 		}
 
