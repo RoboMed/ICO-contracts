@@ -168,9 +168,9 @@ describe('Test Ico-contract', () => {
 
 
 	/**
-	 * Тест, что юзеры не могут передать vipTokens до PostIco
+	 * Тест, что юзеры не могут передать свои токены до PostIco
 	 */
-	it('test-cannot-transfer-vipTokens-before-postIco', () => {
+	it('test-cannot-transfer-tokens-before-postIco', () => {
 
 		// Сумма, которую будем покупать, передавать
 		let sum = bnWr(new BigNumber(1));
