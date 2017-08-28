@@ -177,7 +177,7 @@ contract RobomedIco is Ownable, Destructible, ERC20 {
   /**
    * Длительность стадии VipPlacement
   */
-  uint256 public constant DURATION_VIPPLACEMENT = 1 minutes;//  1 days;
+  uint256 public constant DURATION_VIPPLACEMENT = 1 seconds;// 1 minutes;//  1 days;
 
   //end VipPlacement constants
 
@@ -191,7 +191,7 @@ contract RobomedIco is Ownable, Destructible, ERC20 {
   /**
    * Длительность стадии PreSale
   */
-  uint256 public constant DURATION_PRESALE = 2 minutes;//1 days;
+  uint256 public constant DURATION_PRESALE = 1 seconds;//2 minutes;//1 days;
 
   /**
    * Курс стадии PreSale
@@ -205,7 +205,7 @@ contract RobomedIco is Ownable, Destructible, ERC20 {
   /**
    * Общая длительность стадий Sale с SaleStage1 по SaleStage4 включительно
   */
-  uint256 public constant DURATION_SALESTAGES = 2 minutes;//30 days;
+  uint256 public constant DURATION_SALESTAGES = 1 seconds;//2 minutes;//30 days;
 
   /**
    * Курс стадии SaleStage1
@@ -227,8 +227,8 @@ contract RobomedIco is Ownable, Destructible, ERC20 {
   uint256 public constant RATE_SALESTAGE2 = 2700;
 
   /**
-    * Эмиссия токенов для стадии SaleStage2
-    */
+  * Эмиссия токенов для стадии SaleStage2
+  */
   uint256 public constant EMISSION_FOR_SALESTAGE2 = 101250000 * 10 ** 18;
 
   //end SaleStage2 constants
@@ -288,9 +288,14 @@ contract RobomedIco is Ownable, Destructible, ERC20 {
   //end PostIco constants
 
   /**
-  * Максимально доступное количество очков баунти
+  * Эмиссия токенов для BOUNTY
   */
-  uint256 public constant BOUNTY_POINTS_SIZE = 1000;
+  uint256 public constant EMISSION_FOR_BOUNTY = 10000 * 10 ** 18;
+
+  /**
+  * Эмиссия токенов для TEAM
+  */
+  uint256 public constant EMISSION_FOR_TEAM = 10000 * 10 ** 18;
 
   /**
    * Размер премии для аккаунта, с которого успешно выполнили goto на очередную стадию
@@ -371,15 +376,26 @@ contract RobomedIco is Ownable, Destructible, ERC20 {
 
   mapping (address => mapping (address => uint256))  allowed;
 
-  /**
-  * Здесь храним начисленные премиальные токены, могут быть выведены на кошелёк начиная с даты startDateOfUseTeamTokens
-  */
-  mapping (address => uint256) public teamBalances;
 
   /**
-  * Здесь храним начисленные очки баунти
+  * Адрес на счёте которого находиться нераспределённые bounty токены
   */
-  mapping (address => uint256) public bountyPointsBalances;
+  address public bountyTokensAccount;
+
+  /**
+  * Адрес на счёте которого находиться нераспределённые team токены
+  */
+  address public teamTokensAccount;
+
+  /**
+   * Количество нераспределённых токенов bounty
+   * */
+  uint256 public bountyTokensNotDistributed;
+
+  /**
+   * Количество нераспределённых токенов team
+   * */
+  uint256 public teamTokensNotDistributed;
 
   /**
     * Текущее состояние
@@ -406,10 +422,7 @@ contract RobomedIco is Ownable, Destructible, ERC20 {
    * */
   uint256 public totalBought = 0;
 
-  /**
-   * Количество нераспределённых баунти очков
-   * */
-  uint256 public bountyPointsNotDistributed;
+
 
   /**
    * Количество не распределённых токенов от стадии VipPlacement
@@ -436,30 +449,12 @@ contract RobomedIco is Ownable, Destructible, ERC20 {
   */
   uint256 public endDateOfSaleStage5 = 0;
 
-  /**
-   * Остаток нераспроданных токенов для состояния PreSale, которые переходят в свободные на момент наступления SaleStage5
-   */
-  uint256 public remForPreSale = 0;
 
   /**
    * Остаток нераспроданных токенов для состояний с SaleStage1 по SaleStage4, которые переходят в свободные на момент наступления SaleStage5
    */
   uint256 public remForSalesBeforeStage5 = 0;
 
-  /**
-   * Количество выпущенных премиальных токенов для команды
-   */
-  uint256 public teamTokens = 0;
-
-  /**
-   * Количество выпущенных премиальных токенов для баунти
-   */
-  uint256 public bountyTokens = 0;
-
-  /**
-  * Дата, начиная с которой можно получить team токены непосредственно на кошелёк
-  */
-  uint256 public startDateOfUseTeamTokens = 0;
 
   /**
    * How many token units a buyer gets per wei
@@ -487,6 +482,8 @@ contract RobomedIco is Ownable, Destructible, ERC20 {
     _;
   }
 
+
+
   /**
    * Событие изменения состояния контракта
    */
@@ -496,45 +493,33 @@ contract RobomedIco is Ownable, Destructible, ERC20 {
   /**
   * @dev Конструктор
   */
-  function RobomedIco(){
+  function RobomedIco(address _bountyTokensAccount, address _teamTokensAccount){
+    require(_bountyTokensAccount != 0x0 && _bountyTokensAccount != msg.sender);
+    require(_teamTokensAccount != 0x0 && _teamTokensAccount != msg.sender);
+    require(_bountyTokensAccount != _teamTokensAccount);
+
+    //выставляем адреса на которые выкладываем токены team и bounty
+    bountyTokensAccount = _bountyTokensAccount;
+    teamTokensAccount = _teamTokensAccount;
+
+    //устанавливаем начальное значение на предопределённых аккаунтах
     balances[owner] = INITIAL_COINS_FOR_VIPPLACEMENT;
-    currentState = IcoStates.VipPlacement;
-    totalSupply = INITIAL_COINS_FOR_VIPPLACEMENT;
+    balances[bountyTokensAccount] = EMISSION_FOR_BOUNTY;
+    balances[teamTokensAccount] = EMISSION_FOR_TEAM;
+
+    //нераспределённые токены
+    bountyTokensNotDistributed = EMISSION_FOR_BOUNTY;
+    teamTokensNotDistributed = EMISSION_FOR_TEAM;
     vipPlacementNotDistributed = INITIAL_COINS_FOR_VIPPLACEMENT;
+
+    currentState = IcoStates.VipPlacement;
+    totalSupply = INITIAL_COINS_FOR_VIPPLACEMENT + EMISSION_FOR_BOUNTY + EMISSION_FOR_TEAM;
+
     endDateOfVipPlacement = now.add(DURATION_VIPPLACEMENT);
     remForSalesBeforeStage5 = 0;
-    bountyPointsNotDistributed = BOUNTY_POINTS_SIZE;
   }
 
-  /**
-  * Метод зачисляющий предварительно распределённые team токены на кошелёк
-  */
-  function accrueTeamTokens() afterIco {
-    //зачисление возможно только после определённой даты
-    require(startDateOfUseTeamTokens <= now);
 
-    //добавляем в общее количество выпущенных
-    totalSupply = totalSupply.add(teamBalances[msg.sender]);
-
-    //зачисляем на кошелёк и обнуляем не начисленные
-    balances[msg.sender] = balances[msg.sender].add(teamBalances[msg.sender]);
-    teamBalances[msg.sender] = 0;
-  }
-
-  /**
-  * Метод зачисляющий предварительно распределённые bounty токены на кошелёк
-  */
-  function accrueBountyTokens() afterIco {
-    //вычисляем сколько должны выдать токенов
-    uint256 tokens = (bountyTokens / BOUNTY_POINTS_SIZE) * bountyPointsBalances[msg.sender];
-
-    //добавляем в общее количество выпущенных
-    totalSupply = totalSupply.add(tokens);
-
-    //зачисляем на кошелёк и обнуляем не начисленные
-    balances[msg.sender] = balances[msg.sender].add(tokens);
-    bountyPointsBalances[msg.sender] = 0;
-  }
 
   /**
    * Метод переводящий контракт в следующее доступное состояние,
@@ -561,18 +546,7 @@ contract RobomedIco is Ownable, Destructible, ERC20 {
     owner.transfer(_value);
   }
 
-  /**
-  * Метод выполняющий добавление боунти-поинтов на указанный адрес
-  */
-  function addBounty(address beneficiary, uint256 _value) beforeIco onlyOwner {
-    require(beneficiary != 0x0);
 
-    //уменьшаем общее количество доступных очков баунти
-    bountyPointsNotDistributed = bountyPointsNotDistributed.sub(_value);
-
-    //зачисляем очки баунти адресату
-    bountyPointsBalances[beneficiary] = bountyPointsBalances[beneficiary].add(_value);
-  }
 
   /**
    * Метод проверяющий возможность перехода в указанное состояние
@@ -630,6 +604,8 @@ contract RobomedIco is Ownable, Destructible, ERC20 {
     require(beneficiary != 0x0);
     require(msg.value != 0);
 
+    checkAllowForBountyAndTeam(beneficiary);
+
     //выставляем остаток средств
     //в процессе покупки будем его уменьшать на каждой итерации - итерация - покупка токенов на определённой стадии
     //суть - если покупающий переводит количество эфира,
@@ -676,13 +652,9 @@ contract RobomedIco is Ownable, Destructible, ERC20 {
       totalBought = totalBought.add(tokens);
       balances[beneficiary] = balances[beneficiary].add(tokens);
 
-      //если покупка была выполнена на PreSale
-      if (currentState == IcoStates.PreSale) {
-        //уменьшаем количество остатка по токенам которые необходимо продать на PreSale
-        remForPreSale = remForPreSale.sub(tokens);
-      }
+
       //если покупка была выполнена на любой из стадий Sale кроме последней
-      else if (
+      if (
       currentState == IcoStates.SaleStage1
       ||
       currentState == IcoStates.SaleStage2
@@ -701,6 +673,39 @@ contract RobomedIco is Ownable, Destructible, ERC20 {
 
   }
 
+  /**
+  * Метод выполняющий выдачу баунти-токенов на указанный адрес
+  */
+  function transferBounty(address _to, uint256 _value) onlyOwner {
+    //проверяем кошелёк назначения
+    require(_to != 0x0 && _to != msg.sender);
+
+    //уменьшаем количество нераспределённых
+    bountyTokensNotDistributed = bountyTokensNotDistributed.sub(_value);
+
+    //переводим с акаунта баунти на акаунт назначения
+    balances[_to] = balances[_to].add(_value);
+    balances[bountyTokensAccount] = balances[bountyTokensAccount].sub(_value);
+
+    Transfer(bountyTokensAccount, _to, _value);
+  }
+
+  /**
+  * Метод выполняющий выдачу баунти-токенов на указанный адрес
+  */
+  function transferTeam(address _to, uint256 _value) onlyOwner {
+    //проверяем кошелёк назначения
+    require(_to != 0x0 && _to != msg.sender);
+
+    //уменьшаем количество нераспределённых
+    teamTokensNotDistributed = teamTokensNotDistributed.sub(_value);
+
+    //переводим с акаунта team на акаунт назначения
+    balances[_to] = balances[_to].add(_value);
+    balances[teamTokensAccount] = balances[teamTokensAccount].sub(_value);
+
+    Transfer(teamTokensAccount, _to, _value);
+  }
 
   /**
   * @dev transfer token for a specified address
@@ -711,10 +716,12 @@ contract RobomedIco is Ownable, Destructible, ERC20 {
     //проверяем кошелёк назначения
     require(_to != 0x0 && _to != msg.sender);
 
+    checkAllowForBountyAndTeam(_to);
 
     if (currentState != IcoStates.PostIco) {
       //переводить деньги до ico может только владелец
       require(msg.sender == owner);
+
 
       //общая сумма переводов от владельца (до завершения) ico не может превышать InitialCoinsFor_VipPlacement
       vipPlacementNotDistributed = vipPlacementNotDistributed.sub(_value);
@@ -745,6 +752,8 @@ contract RobomedIco is Ownable, Destructible, ERC20 {
 
     var _allowance = allowed[_from][msg.sender];
 
+    checkAllowForBountyAndTeam(_from);
+    checkAllowForBountyAndTeam(_to);
     // Check is not needed because sub(_allowance, _value) will already throw if this condition is not met
     // require (_value <= _allowance);
 
@@ -761,6 +770,7 @@ contract RobomedIco is Ownable, Destructible, ERC20 {
    * @param _value The amount of tokens to be spent.
    */
   function approve(address _spender, uint256 _value) afterIco returns (bool) {
+    checkAllowForBountyAndTeam(_spender);
 
     // To change the approve amount you first have to reduce the addresses`
     //  allowance to zero by calling `approve(_spender, 0)` if it is not
@@ -807,10 +817,6 @@ contract RobomedIco is Ownable, Destructible, ERC20 {
 
     //выставляем состояние токенов
     setMoney(EMISSION_FOR_PRESALE, EMISSION_FOR_PRESALE, RATE_PRESALE);
-
-    //остаток не распроданных токенов на PreSale - равен размеру их эмиссии
-    remForPreSale = EMISSION_FOR_PRESALE;
-
 
     //устанавливаем дату окончания PreSale
     endDateOfPreSale = now.add(DURATION_PRESALE);
@@ -893,7 +899,7 @@ contract RobomedIco is Ownable, Destructible, ERC20 {
     currentState = IcoStates.SaleStage5;
 
     //выставляем состояние токенов, с учётом всех остатков
-    setMoney(remForPreSale + remForSalesBeforeStage5 + EMISSION_FOR_SALESTAGE5, EMISSION_FOR_SALESTAGE5, RATE_SALESTAGE5);
+    setMoney(remForSalesBeforeStage5 + EMISSION_FOR_SALESTAGE5, EMISSION_FOR_SALESTAGE5, RATE_SALESTAGE5);
 
 
     //устанавливаем дату окончания SaleStage5
@@ -909,34 +915,22 @@ contract RobomedIco is Ownable, Destructible, ERC20 {
   function gotoPostIco() private returns (bool) {
     if (!canGotoState(IcoStates.PostIco)) return false;
 
-    //ок переходим на состояние SaleStage5
+    //ок переходим на состояние PostIco
     currentState = IcoStates.PostIco;
 
     //уничтожаем свободные токены
     totalSupply = totalSupply.sub(freeMoney);
     setMoney(0, 0, 0);
 
-    //определяем количество премиальных токенов для команды и баунти - на этом этапе они не попадают в выпущенные
-    //попадут только при получении
-    teamTokens = (totalBought + INITIAL_COINS_FOR_VIPPLACEMENT) / 5;
-
-    bountyTokens = (totalBought + INITIAL_COINS_FOR_VIPPLACEMENT) / 20;
-
-    //выставляем дату после которой можно использовать премиальные токены
-    startDateOfUseTeamTokens = now + DURATION_NONUSETEAM;
-
-    //проводим распределение TeamTokens -
-
-    //member1
-    //teamBalances[0x0] = teamBalances[0x0].add(teamTokens / 2);
-
-    //member2
-    //teamBalances[0x0] = teamBalances[0x0].add(teamTokens / 2);
-
-
     StateChanged(IcoStates.PostIco);
     return true;
   }
 
-
+  /**
+    * Метод проверяющий допустимость операций с баунти и тим токенами
+    */
+  function checkAllowForBountyAndTeam(address addr) private {
+    //операции на bounty и team не допустимы до окончания ico
+    require(currentState == IcoStates.PostIco || (addr != bountyTokensAccount && addr != teamTokensAccount));
+  }
 }
