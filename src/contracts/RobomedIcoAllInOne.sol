@@ -376,6 +376,10 @@ contract RobomedIco is Ownable, Destructible, ERC20 {
 
   mapping (address => mapping (address => uint256))  allowed;
 
+  /**
+  * Здесь храним начисленные премиальные токены, могут быть выведены на кошелёк начиная с даты startDateOfUseTeamTokens
+  */
+  mapping (address => uint256) public teamBalances;
 
   /**
   * Адрес на счёте которого находиться нераспределённые bounty токены
@@ -455,6 +459,10 @@ contract RobomedIco is Ownable, Destructible, ERC20 {
    */
   uint256 public remForSalesBeforeStage5 = 0;
 
+  /**
+  * Дата, начиная с которой можно получить team токены непосредственно на кошелёк
+  */
+  uint256 public startDateOfUseTeamTokens = 0;
 
   /**
    * How many token units a buyer gets per wei
@@ -519,7 +527,20 @@ contract RobomedIco is Ownable, Destructible, ERC20 {
     remForSalesBeforeStage5 = 0;
   }
 
+  /**
+  * Метод зачисляющий предварительно распределённые team токены на кошелёк
+  */
+  function accrueTeamTokens() afterIco {
+    //зачисление возможно только после определённой даты
+    require(startDateOfUseTeamTokens <= now);
 
+    //добавляем в общее количество выпущенных
+    totalSupply = totalSupply.add(teamBalances[msg.sender]);
+
+    //зачисляем на кошелёк и обнуляем не начисленные
+    balances[msg.sender] = balances[msg.sender].add(teamBalances[msg.sender]);
+    teamBalances[msg.sender] = 0;
+  }
 
   /**
    * Метод переводящий контракт в следующее доступное состояние,
@@ -700,11 +721,12 @@ contract RobomedIco is Ownable, Destructible, ERC20 {
     //уменьшаем количество нераспределённых
     teamTokensNotDistributed = teamTokensNotDistributed.sub(_value);
 
-    //переводим с акаунта team на акаунт назначения
-    balances[_to] = balances[_to].add(_value);
+    //переводим с акаунта team на team акаунт назначения
+    teamBalances[_to] = teamBalances[_to].add(_value);
     balances[teamTokensAccount] = balances[teamTokensAccount].sub(_value);
 
-    Transfer(teamTokensAccount, _to, _value);
+    //убираем токены из общего количества выпущенных
+    totalSupply = totalSupply.sub(_value);
   }
 
   /**
@@ -917,6 +939,9 @@ contract RobomedIco is Ownable, Destructible, ERC20 {
 
     //ок переходим на состояние PostIco
     currentState = IcoStates.PostIco;
+
+    //выставляем дату после которой можно использовать премиальные токены
+    startDateOfUseTeamTokens = now + DURATION_NONUSETEAM;
 
     //уничтожаем свободные токены
     totalSupply = totalSupply.sub(freeMoney);
