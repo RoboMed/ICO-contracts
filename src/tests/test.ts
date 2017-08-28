@@ -86,7 +86,7 @@ describe('Test Ico-contract', () => {
 
 		//Проверяем, что была выполнена эмиссия на кошелек владельца
 		let balance = bnWr(contract.balanceOf(accs.owner));
-		assert.equal(balance.strVal, CONSTANTS.INITIAL_COINS_FOR_VIPPLACEMENT.strVal)
+		assertEq(CONSTANTS.INITIAL_COINS_FOR_VIPPLACEMENT, balance);
 	});
 
 	/**
@@ -276,7 +276,7 @@ describe('Test Ico-contract', () => {
 			let value = bnWr((<any>contract)[key]());
 			let expected = (<any>params)[key];
 
-			assert.ok(value.equals(expected), `${key} expected: ${expected} value: ${value}`);
+			assertEq(expected, value, key);
 		}
 	}
 
@@ -315,6 +315,15 @@ describe('Test Ico-contract', () => {
 		let res = execInEth(() => contract.gotoNextStateAndPrize(txParams(accs.lucky)));
 
 		assert.ok(res);
+	}
+
+	/**
+	 * Вспомагательный метод для проверки равенства значений BigNumber
+	 * @param {BigNumber.BigNumber} expected Ожидаемое значение
+	 * @param {BigNumber.BigNumber} value Текущее значение
+	 */
+	function assertEq(expected: BigNumber.BigNumber, value: BigNumber.BigNumber, message?: string): void {
+		assert.ok(expected.equals(value), (message + " expected: " + expected + " value: " + value).trim());
 	}
 
 });
