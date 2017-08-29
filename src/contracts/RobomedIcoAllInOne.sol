@@ -444,12 +444,12 @@ contract RobomedIco is Ownable, Destructible, ERC20 {
   mapping (address => uint256) public teamBalances;
 
   /**
-  * Адрес на счёте которого находиться нераспределённые bounty токены
+  * Адрес на счёте которого находятся нераспределённые bounty токены
   */
   address public bountyTokensAccount;
 
   /**
-  * Адрес на счёте которого находиться нераспределённые team токены
+  * Адрес на счёте которого находятся нераспределённые team токены
   */
   address public teamTokensAccount;
 
@@ -749,6 +749,11 @@ contract RobomedIco is Ownable, Destructible, ERC20 {
       else
       {
         remVal = 0;
+        //если остаток свободных токенов меньше чем курс - отдаём их покупателю
+        uint256 remFreeTokens = freeMoney - tokens;
+        if (remFreeTokens > 0 && remFreeTokens < rate) {
+          tokens = freeMoney;
+        }
       }
       assert(tokens > 0);
 
