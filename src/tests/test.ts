@@ -211,7 +211,7 @@ describe('Test Ico-contract', () => {
 		// Проверяем, что мы на стадии PreSale
 		assert.ok(contract.currentState().equals(IcoStates.PreSale));
 
-		// Ждем пока нельзя переходить на PreSale
+		// Ждем пока нельзя переходить на SaleStage1
 		while (!contract.canGotoState(IcoStates.SaleStage1)) {
 		}
 
@@ -225,6 +225,56 @@ describe('Test Ico-contract', () => {
 		//Проверяем, что получили приз
 		let priceRes = bnWr(contract.balanceOf(addr));
 		assert.ok(priceRes.equals(CONSTANTS.PRIZE_SIZE_FORGOTO));
+	});
+
+	/**
+	 * Тест перехода стадий PreSale -> SaleStage1
+	 */
+	it('test-goToState-saleStage2', () => {
+
+		let addr = accs.user1;
+		goToSaleStage1();
+
+		// Проверяем, что мы на стадии SaleStage1
+		assert.ok(contract.currentState().equals(IcoStates.SaleStage1));
+
+		// Необходимо все выкупить
+		let rate = bnWr(contract.rate());
+		let userEthBalance = bnWr(web3.eth.getBalance(addr));
+		let freeMoney = bnWr(contract.freeMoney());
+
+		let ccc = bnWr(new BigNumber(10).divToInt(new BigNumber(3)));
+
+		//Считаем сколько надо eth на выкуп всего
+		let ethCountWei = bnWr(freeMoney.divToInt(rate));
+
+		// Проверяем, что у юзера достаточно монет на покупку
+		assert.ok(ethCountWei.lessThanOrEqualTo(userEthBalance));
+
+		let buyFreeMoneyRes = execInEth(() => contract.buyTokens(addr, txParams(addr, ethCountWei)));
+
+		let r1 = bnWr(contract.balanceOf(addr));
+		let r2 = bnWr(contract.balanceOf(accs.owner));
+		assert.ok(buyFreeMoneyRes);
+
+		// Проверяем, что все выкупили
+		assertEq(new BigNumber(0), contract.freeMoney());
+
+		// Ждем пока нельзя переходить на SaleStage2
+		while (!contract.canGotoState(IcoStates.SaleStage2)) {
+		}
+
+		// Дергаем ручку
+		let balanceBeforePrize = bnWr(contract.balanceOf(addr));
+		let res = execInEth(() => contract.gotoNextStateAndPrize(txParams(addr)));
+		assert.ok(res);
+
+		// Должны быть на стадии SaleStage2
+		assertEq(IcoStates.SaleStage2, contract.currentState());
+
+		//Проверяем, что получили приз
+		let balanceAfterPrize = bnWr(contract.balanceOf(addr));
+		assertEq(CONSTANTS.PRIZE_SIZE_FORGOTO, balanceAfterPrize.minus(balanceBeforePrize));
 	});
 
 
@@ -351,6 +401,8 @@ describe('Test Ico-contract', () => {
 	 */
 	function goToSaleStage1() {
 
+		goToPreSale();
+
 		while (!contract.canGotoState(IcoStates.SaleStage1)) {
 		}
 
@@ -363,6 +415,17 @@ describe('Test Ico-contract', () => {
 	 * Вспомагательный метод переводит контракт на SaleStage2
 	 */
 	function goToSaleStage2() {
+
+		goToSaleStage1();
+
+		// Необходимо все выкупить
+		let freeMoney = contract.freeMoney();
+		contract.buyTokens(accs.lucky, txParams(accs.lucky, freeMoney));
+
+		// Проверяем, что все выкупили
+		assertEq(new BigNumber(0), contract.freeMoney());
+
+		// Дожидаемся время для перехода
 		while (!contract.canGotoState(IcoStates.SaleStage2)) {
 		}
 
