@@ -16,7 +16,7 @@ export interface TxParams {
  * @returns {TxParams}
  */
 export function txParams(addr: string, value?: BigNumber.BigNumber): TxParams {
-	let res: TxParams = {from: addr, gas: 200000};
+	let res: TxParams = {from: addr, gas: 2000000};
 	if (value != null) {
 		res = {
 			...res,

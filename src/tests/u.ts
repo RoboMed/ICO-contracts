@@ -5,6 +5,18 @@ import * as child_process from "child_process";
 export module U {
 
 	/**
+	 * Вспомагательный метод для задержки
+	 * @param {number} ms Задержка в ms
+	 */
+	export function delay(ms: number): Promise<void> {
+		return new Promise(((resolve, reject) => {
+			setTimeout(() => {
+				resolve()
+			}, ms);
+		}))
+	}
+
+	/**
 	 * Метод получает конфиг приложения
 	 * @returns {Config} Конфиг
 	 */
@@ -36,7 +48,6 @@ export module U {
 			if (error != null) throw error;
 		});
 	}
-
 
 	export function waitForTransactions(web3: any, txObj: string | string[]) {
 

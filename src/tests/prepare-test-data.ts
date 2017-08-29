@@ -71,7 +71,7 @@ export function prepare(config: Config = null): TestAccounts {
 	let coinSourceAccount = web3.eth.coinbase;
 	web3.personal.unlockAccount(coinSourceAccount, config.accountPass);
 	let tx1 = web3.eth.sendTransaction({from: coinSourceAccount, to: owner, value: web3.toWei(5, "ether")});
-	let tx2 = web3.eth.sendTransaction({from: coinSourceAccount, to: user1, value: web3.toWei(10, "ether")});
+	let tx2 = web3.eth.sendTransaction({from: coinSourceAccount, to: user1, value: web3.toWei(50, "ether")});
 	let tx3 = web3.eth.sendTransaction({from: coinSourceAccount, to: user2, value: web3.toWei(1, "ether")});
 	let tx4 = web3.eth.sendTransaction({from: coinSourceAccount, to: lucky, value: web3.toWei(1, "ether")});
 	let tx5 = web3.eth.sendTransaction({from: coinSourceAccount, to: bounty, value: web3.toWei(1, "ether")});

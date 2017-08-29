@@ -203,16 +203,17 @@ describe('Test Ico-contract', () => {
 	/**
 	 * Тест перехода стадий PreSale -> SaleStage1
 	 */
-	it('test-goToState-saleStage1', () => {
+	it('test-goToState-saleStage1', async () => {
 
 		let addr = accs.user1;
-		goToPreSale();
+		await goToPreSale();
 
 		// Проверяем, что мы на стадии PreSale
 		assert.ok(contract.currentState().equals(IcoStates.PreSale));
 
 		// Ждем пока нельзя переходить на SaleStage1
 		while (!contract.canGotoState(IcoStates.SaleStage1)) {
+			U.delay(1000);
 		}
 
 		// Дергаем ручку
@@ -230,31 +231,28 @@ describe('Test Ico-contract', () => {
 	/**
 	 * Тест перехода стадий PreSale -> SaleStage1
 	 */
-	it('test-goToState-saleStage2', () => {
+	it('test-goToState-saleStage2', async () => {
 
 		let addr = accs.user1;
-		goToSaleStage1();
+		await goToSaleStage1();
 
 		// Проверяем, что мы на стадии SaleStage1
 		assert.ok(contract.currentState().equals(IcoStates.SaleStage1));
 
 		// Необходимо все выкупить
 		let rate = bnWr(contract.rate());
-		let userEthBalance = bnWr(web3.eth.getBalance(addr));
+		let userWeiBalance = bnWr(web3.eth.getBalance(addr));
 		let freeMoney = bnWr(contract.freeMoney());
-
-		let ccc = bnWr(new BigNumber(10).divToInt(new BigNumber(3)));
 
 		//Считаем сколько надо eth на выкуп всего
 		let ethCountWei = bnWr(freeMoney.divToInt(rate));
 
 		// Проверяем, что у юзера достаточно монет на покупку
-		assert.ok(ethCountWei.lessThanOrEqualTo(userEthBalance));
+		assert.ok(ethCountWei.lessThanOrEqualTo(userWeiBalance));
 
 		let buyFreeMoneyRes = execInEth(() => contract.buyTokens(addr, txParams(addr, ethCountWei)));
 
 		let r1 = bnWr(contract.balanceOf(addr));
-		let r2 = bnWr(contract.balanceOf(accs.owner));
 		assert.ok(buyFreeMoneyRes);
 
 		// Проверяем, что все выкупили
@@ -311,10 +309,10 @@ describe('Test Ico-contract', () => {
 	/**
 	 * Тест покупки на preSale
 	 */
-	it('test-buy-on-preSale', () => {
+	it('test-buy-on-preSale', async () => {
 
 		let user = accs.user1;
-		goToPreSale();
+		await goToPreSale();
 
 		// Свободные токены должны быть в ко-ве эмиссии
 		checkContract({
@@ -386,9 +384,10 @@ describe('Test Ico-contract', () => {
 	/**
 	 * Вспомагательный метод переводит контракт на PreSale
 	 */
-	function goToPreSale() {
+	async function goToPreSale() {
 
 		while (!contract.canGotoState(IcoStates.PreSale)) {
+			await U.delay(1000);
 		}
 
 		let res = execInEth(() => contract.gotoNextStateAndPrize(txParams(accs.lucky)));
@@ -399,11 +398,12 @@ describe('Test Ico-contract', () => {
 	/**
 	 * Вспомагательный метод переводит контракт на SaleStage1
 	 */
-	function goToSaleStage1() {
+	async function goToSaleStage1() {
 
-		goToPreSale();
+		await goToPreSale();
 
 		while (!contract.canGotoState(IcoStates.SaleStage1)) {
+			await U.delay(1000);
 		}
 
 		let res = execInEth(() => contract.gotoNextStateAndPrize(txParams(accs.lucky)));
@@ -414,9 +414,9 @@ describe('Test Ico-contract', () => {
 	/**
 	 * Вспомагательный метод переводит контракт на SaleStage2
 	 */
-	function goToSaleStage2() {
+	async function goToSaleStage2() {
 
-		goToSaleStage1();
+		await goToSaleStage1();
 
 		// Необходимо все выкупить
 		let freeMoney = contract.freeMoney();
@@ -427,6 +427,7 @@ describe('Test Ico-contract', () => {
 
 		// Дожидаемся время для перехода
 		while (!contract.canGotoState(IcoStates.SaleStage2)) {
+			await U.delay(1000);
 		}
 
 		let res = execInEth(() => contract.gotoNextStateAndPrize(txParams(accs.lucky)));
