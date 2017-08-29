@@ -603,6 +603,11 @@ contract RobomedIco is Ownable, Destructible, ERC20 {
       else
       {
         remVal = 0;
+        //если остаток свободных токенов меньше чем курс - отдаём их покупателю
+        uint256 remFreeTokens = freeMoney - tokens;
+        if (remFreeTokens > 0 && remFreeTokens < rate) {
+          tokens = freeMoney;
+        }
       }
       assert(tokens > 0);
 
