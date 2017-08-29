@@ -160,6 +160,26 @@ export interface Contract {
 	PRIZE_SIZE_FORGOTO (): BigNumber.BigNumber;
 
 	/**
+	 * Адрес на счёте которого находятся нераспределённые bounty токены
+	 */
+	bountyTokensAccount(): string;
+
+	/**
+	 * Адрес на счёте которого находятся нераспределённые team токены
+	 */
+	teamTokensAccount(): string;
+
+	/**
+	 * Количество нераспределённых токенов bounty
+	 * */
+	bountyTokensNotDistributed(): BigNumber.BigNumber;
+
+	/**
+	 * Количество нераспределённых токенов team
+	 */
+	teamTokensNotDistributed(): BigNumber.BigNumber;
+
+	/**
 	 * Текущее состояние
 	 */
 	currentState(): BigNumber.BigNumber;
@@ -205,34 +225,20 @@ export interface Contract {
 	endDateOfPreSale(): BigNumber.BigNumber;
 
 	/**
-	 * Дата начала стадии SaleStage5
+	 * Дата начала стадии SaleStageLast
 	 */
-	startDateOfSaleStage5(): BigNumber.BigNumber;
+	startDateOfSaleStageLast(): BigNumber.BigNumber;
 
 	/**
-	 * Дата окончания стадии SaleStage5
+	 * Дата окончания стадии SaleStageLast
 	 */
-	endDateOfSaleStage5(): BigNumber.BigNumber;
+	endDateOfSaleStageLast(): BigNumber.BigNumber;
+
 
 	/**
-	 * Остаток нераспроданных токенов для состояния PreSale, которые переходят в свободные на момент наступления SaleStage5
+	 * Остаток нераспроданных токенов для состояний с SaleStage1 по SaleStage7, которые переходят в свободные на момент наступления SaleStageLast
 	 */
-	remForPreSale(): BigNumber.BigNumber;
-
-	/**
-	 * Остаток нераспроданных токенов для состояний с SaleStage1 по SaleStage4, которые переходят в свободные на момент наступления SaleStage5
-	 */
-	remForSalesBeforeStage5(): BigNumber.BigNumber;
-
-	/**
-	 * Количество выпущенных премиальных токенов для команды
-	 */
-	teamTokens(): BigNumber.BigNumber;
-
-	/**
-	 * Количество выпущенных премиальных токенов для баунти
-	 */
-	bountyTokens(): BigNumber.BigNumber;
+	remForSalesBeforeStageLast(): BigNumber.BigNumber;
 
 	/**
 	 * Дата, начиная с которой можно получить team токены непосредственно на кошелёк
@@ -243,7 +249,6 @@ export interface Contract {
 	 * How many token units a buyer gets per wei
 	 */
 	rate(): BigNumber.BigNumber;
-
 
 	/**
 	 * Метод зачисляющий предварительно распределённые team токены на кошелёк

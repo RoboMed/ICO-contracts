@@ -10,8 +10,8 @@
     "prepareTestDataMur": "set CONFIGFILE=./src/configs/config-mur.json&& node -e \"require('./dist/prepare-test-data').prepare()\" ",
     "prepareTestDataRum": "set CONFIGFILE=./src/configs/config-rum.json&& node -e \"require('./dist/prepare-test-data').prepare()\" ",
 
-    "deployMur": "node -e \"require('./dist/deploy-to-target').deploy('http://localhost:8545', '0x39ce8539d78364e6697c5a0e884559e2db397913', '12345')\" ",
-    "deployRum": "node -e \"require('./dist/deploy-to-target').deploy('http://localhost:8545', '', '12345')\" ",
+    "deployMur": "node -e \"require('./dist/deploy-to-target').deploy('http://localhost:8545', '0x39ce8539d78364e6697c5a0e884559e2db397913', '12345', '', '')\" ",
+    "deployRum": "node -e \"require('./dist/deploy-to-target').deploy('http://localhost:8545', '', '12345', '', '')\" ",
 
     "build": "build.bat"
   },

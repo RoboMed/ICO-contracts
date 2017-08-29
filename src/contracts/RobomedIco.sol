@@ -298,12 +298,12 @@ contract RobomedIco is Ownable, Destructible, ERC20 {
   mapping (address => uint256) public teamBalances;
 
   /**
-  * Адрес на счёте которого находиться нераспределённые bounty токены
+  * Адрес на счёте которого находятся нераспределённые bounty токены
   */
   address public bountyTokensAccount;
 
   /**
-  * Адрес на счёте которого находиться нераспределённые team токены
+  * Адрес на счёте которого находятся нераспределённые team токены
   */
   address public teamTokensAccount;
 

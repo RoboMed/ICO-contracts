@@ -9,7 +9,7 @@ import {IcoStates} from "./ico-states";
 import {bnWr, BnWr} from "./bn-wr";
 import {TestAccounts, prepare} from "./prepare-test-data";
 import {deploy} from "./deploy-to-target";
-import {Contract, txParams} from "./Contract";
+import {Contract, txParams} from "./contract";
 
 //add extra mocha options: --require ts-node/register --timeout 100000
 
@@ -55,7 +55,7 @@ describe('Test Ico-contract', () => {
 	beforeEach('beforeEach', async () => {
 
 		accs = prepare(config);
-		let c = await deploy(config.rpcAddress, accs.owner, config.accountPass);
+		let c = await deploy(config.rpcAddress, accs.owner, config.accountPass, accs.bounty, accs.team);
 
 		contract = web3.eth.contract(c.abi).at(c.address);
 		CONSTANTS = new ContractConstants(contract);
@@ -200,6 +200,33 @@ describe('Test Ico-contract', () => {
 		assert.ok(priceRes.equals(CONSTANTS.PRIZE_SIZE_FORGOTO));
 	});
 
+	/**
+	 * Тест перехода стадий PreSale -> SaleStage1
+	 */
+	it('test-goToState-saleStage1', () => {
+
+		let addr = accs.user1;
+		goToPreSale();
+
+		// Проверяем, что мы на стадии PreSale
+		assert.ok(contract.currentState().equals(IcoStates.PreSale));
+
+		// Ждем пока нельзя переходить на PreSale
+		while (!contract.canGotoState(IcoStates.SaleStage1)) {
+		}
+
+		// Дергаем ручку
+		let res = execInEth(() => contract.gotoNextStateAndPrize(txParams(addr)));
+		assert.ok(res);
+
+		// Должны быть на стадии SaleStage1
+		assert.ok(contract.currentState().equals(IcoStates.SaleStage1));
+
+		//Проверяем, что получили приз
+		let priceRes = bnWr(contract.balanceOf(addr));
+		assert.ok(priceRes.equals(CONSTANTS.PRIZE_SIZE_FORGOTO));
+	});
+
 
 	/**
 	 * Тест, что юзеры не могут передать свои токены до PostIco
@@ -304,6 +331,8 @@ describe('Test Ico-contract', () => {
 		return tx.gas > txRec.gasUsed;
 	}
 
+	//<editor-fold desc="goToStage">
+
 	/**
 	 * Вспомагательный метод переводит контракт на PreSale
 	 */
@@ -316,6 +345,33 @@ describe('Test Ico-contract', () => {
 
 		assert.ok(res);
 	}
+
+	/**
+	 * Вспомагательный метод переводит контракт на SaleStage1
+	 */
+	function goToSaleStage1() {
+
+		while (!contract.canGotoState(IcoStates.SaleStage1)) {
+		}
+
+		let res = execInEth(() => contract.gotoNextStateAndPrize(txParams(accs.lucky)));
+
+		assert.ok(res);
+	}
+
+	/**
+	 * Вспомагательный метод переводит контракт на SaleStage2
+	 */
+	function goToSaleStage2() {
+		while (!contract.canGotoState(IcoStates.SaleStage2)) {
+		}
+
+		let res = execInEth(() => contract.gotoNextStateAndPrize(txParams(accs.lucky)));
+
+		assert.ok(res);
+	}
+
+	//</editor-fold>
 
 	/**
 	 * Вспомагательный метод для проверки равенства значений BigNumber

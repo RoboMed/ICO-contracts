@@ -13,39 +13,40 @@ function compileSol() {
 
 /**
  * Функция для загрузки контракта в сеть
- * @param {string} rpcHost rpc host
- * @param {string} owner owner контракта
- * @param {string} ownerPass пароль owner
+ * @param {string} param Параметры
  * @returns {Promise<any>} Контракт
  */
-function uploadContract(rpcHost: string, owner: string, ownerPass: string): Promise<any> {
+function uploadContract(param: { rpcHost: string, owner: string, ownerPass: string, bountyAcc: string, teamAcc: string }): Promise<any> {
 
-	let web3 = new Web3(new Web3.providers.HttpProvider(rpcHost));
+	let web3 = new Web3(new Web3.providers.HttpProvider(param.rpcHost));
 
 	let abi = JSON.parse(fs.readFileSync('out/RobomedIco.abi').toString());
 	let compiled = '0x' + fs.readFileSync("out/RobomedIco.bin");
 
-	let gasEstimate = web3.eth.estimateGas({data: compiled}) + 1000000;
-	//console.log("gasEstimate: " + gasEstimate);
+	let gasLimit = web3.eth.getBlock(web3.eth.blockNumber).gasLimit;
+	console.log("gasLimit: " + gasLimit);
 
-	web3.personal.unlockAccount(owner, ownerPass);
+	web3.personal.unlockAccount(param.owner, param.ownerPass);
 	//console.log("unlockAccount: " + from);
 
 	return new Promise((resolve, reject) => {
 
-		(<any>web3.eth.contract(abi)).new({
-			data: compiled,
-			from: owner,
-			gas: gasEstimate
-		}, (err: any, contract: any) => {
-			if (err) {
-				console.log(err);
-				reject(err);
-			}
-			else if (contract.address) {
-				resolve(contract);
-			}
-		});
+		(<any>web3.eth.contract(abi)).new(
+			param.bountyAcc,
+			param.teamAcc,
+			{
+				data: compiled,
+				from: param.owner,
+				gas: gasLimit
+			}, (err: any, contract: any) => {
+				if (err) {
+					console.log(err);
+					reject(err);
+				}
+				else if (contract.address) {
+					resolve(contract);
+				}
+			});
 	});
 }
 
@@ -54,15 +55,23 @@ function uploadContract(rpcHost: string, owner: string, ownerPass: string): Prom
  * @param {string} rpcHost rpc host
  * @param {string} owner owner контракта
  * @param {string} ownerPass пароль owner
+ * @param bountyAcc Адрес на счёте которого находятся нераспределённые bounty токены
+ * @param teamAcc Адрес на счёте которого находятся нераспределённые team токены
  * @returns {Promise<any>} Контракт
  */
-export async function deploy(rpcHost: string, owner: string, ownerPass: string): Promise<any> {
+export async function deploy(rpcHost: string, owner: string, ownerPass: string, bountyAcc: string, teamAcc: string): Promise<any> {
 
 	// компилируем
 	compileSol();
 
 	// загружаем в сеть
-	let contract = await uploadContract(rpcHost, owner, ownerPass); //Promise;
+	let contract = await uploadContract({
+		rpcHost: rpcHost,
+		owner: owner,
+		ownerPass: ownerPass,
+		bountyAcc: bountyAcc,
+		teamAcc: teamAcc
+	}); //Promise;
 
 	console.log("contract.owner: " + owner);
 	console.log("contract.address: " + contract.address);
