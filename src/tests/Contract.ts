@@ -251,11 +251,6 @@ export interface Contract {
 	accrueTeamTokens(): void;
 
 	/**
-	 * Метод зачисляющий предварительно распределённые bounty токены на кошелёк
-	 */
-	accrueBountyTokens(): void;
-
-	/**
 	 * Метод переводящий контракт в следующее доступное состояние,
 	 * если переход состоялся, вызывающий метод получает приз в размере PRIZE_SIZE_FORGOTO
 	 * Для выяснения возможности перехода можно использовать метод canGotoState
@@ -268,11 +263,6 @@ export interface Contract {
 	ownerWithdrawal(value: BigNumber.BigNumber): void;
 
 	/**
-	 * Метод выполняющий добавление боунти-поинтов на указанный адрес
-	 */
-	addBounty(beneficiary: string, value: BigNumber.BigNumber): void;
-
-	/**
 	 * Метод проверяющий возможность перехода в указанное состояние
 	 */
 	canGotoState(toState: BigNumber.BigNumber): boolean;
@@ -281,6 +271,16 @@ export interface Contract {
 	 * Метод покупки токенов
 	 */
 	buyTokens(beneficiary: string, params: TxParams): string;
+
+	/**
+	 * Метод выполняющий выдачу баунти-токенов на указанный адрес
+	 */
+	transferBounty(_to: string, _value: BigNumber.BigNumber): string;
+
+	/**
+	 * Метод выполняющий выдачу баунти-токенов на указанный адрес
+	 */
+	transferTeam(_to: string, _value: BigNumber.BigNumber): string;
 
 	/**
 	 * @dev transfer token for a specified address
@@ -319,5 +319,4 @@ export interface Contract {
 	 * @return A uint256 specifing the amount of tokens still available for the spender.
 	 */
 	allowance(_owner: string, _spender: string): BigNumber.BigNumber;
-
 }

@@ -23,7 +23,6 @@ export class ContractConstants {
 	 */
 	public EMISSION_FOR_PRESALE: BnWr;
 
-
 	/**
 	 * Длительность стадии PreSale
 	 */
@@ -58,11 +57,6 @@ export class ContractConstants {
 	//<editor-fold desc="SaleStage2 constants">
 
 	/**
-	 * Длительность стадии SaleStage2
-	 */
-	public DURATION_SALESTAGE2: BnWr;
-
-	/**
 	 * Курс стадии SaleStage2
 	 */
 	public RATE_SALESTAGE2: BnWr;
@@ -75,11 +69,6 @@ export class ContractConstants {
 	//</editor-fold>
 
 	//<editor-fold desc="SaleStage3 constants">
-
-	/**
-	 * Длительность стадии SaleStage3
-	 */
-	public DURATION_SALESTAGE3: BnWr;
 
 	/**
 	 * Курс стадии SaleStage3
@@ -96,11 +85,6 @@ export class ContractConstants {
 	//<editor-fold desc="SaleStage4 constants">
 
 	/**
-	 * Длительность стадии SaleStage4
-	 */
-	public DURATION_SALESTAGE4: BnWr;
-
-	/**
 	 * Курс стадии SaleStage4
 	 */
 	public RATE_SALESTAGE4: BnWr;
@@ -115,11 +99,6 @@ export class ContractConstants {
 	//<editor-fold desc="SaleStage5 constants">
 
 	/**
-	 * Длительность стадии SaleStage5
-	 */
-	public DURATION_SALESTAGE5: BnWr;
-
-	/**
 	 * Курс стадии SaleStage5
 	 */
 	public RATE_SALESTAGE5: BnWr;
@@ -131,6 +110,50 @@ export class ContractConstants {
 
 	//</editor-fold>
 
+	/**
+	 * Курс стадии SaleStage6
+	 */
+	public RATE_SALESTAGE6: BnWr;
+
+	/**
+	 * Эмиссия токенов для стадии SaleStage6
+	 */
+	public EMISSION_FOR_SALESTAGE6: BnWr;
+
+	//</editor-fold>
+
+	/**
+	 * Курс стадии SaleStage7
+	 */
+	public RATE_SALESTAGE7: BnWr;
+
+	/**
+	 * Эмиссия токенов для стадии SaleStage7
+	 */
+	public EMISSION_FOR_SALESTAGE7: BnWr;
+
+	//</editor-fold>
+
+	//</editor-fold>
+
+	/**
+	 * Длительность стадии SaleStageLast
+	 */
+	public DURATION_SALESTAGELAST: BnWr;
+
+	/**
+	 * Курс стадии SaleStageLast
+	 */
+	public RATE_SALESTAGELAST: BnWr;
+
+	/**
+	 * Эмиссия токенов для стадии SaleStageLast
+	 */
+	public EMISSION_FOR_SALESTAGELAST: BnWr;
+
+	//</editor-fold>
+
+
 	//<editor-fold desc="PostIco constants">
 
 	/**
@@ -141,9 +164,14 @@ export class ContractConstants {
 	//</editor-fold>
 
 	/**
-	 *Максимально доступное количество очков баунти
+	 * Эмиссия токенов для TEAM
 	 */
-	public BOUNTY_POINTS_SIZE: BnWr;
+	public EMISSION_FOR_BOUNTY: BnWr;
+
+	/**
+	 * Размер премии для аккаунта, с которого успешно выполнили goto на очередную стадию
+	 */
+	public EMISSION_FOR_TEAM: BnWr;
 
 	/**
 	 * Размер премии для аккаунта, с которого успешно выполнили goto на очередную стадию
@@ -179,17 +207,26 @@ export class ContractConstants {
 		this.EMISSION_FOR_SALESTAGE4 = bnWr(contract.EMISSION_FOR_SALESTAGE4());
 
 		//SALESTAGE5
-		this.DURATION_SALESTAGE5 = bnWr(contract.DURATION_SALESTAGE5());
 		this.RATE_SALESTAGE5 = bnWr(contract.RATE_SALESTAGE5());
 		this.EMISSION_FOR_SALESTAGE5 = bnWr(contract.EMISSION_FOR_SALESTAGE5());
 
-		//BOUNTY_POINTS
+		//SALESTAGE6
+		this.RATE_SALESTAGE6 = bnWr(contract.RATE_SALESTAGE6());
+		this.EMISSION_FOR_SALESTAGE6 = bnWr(contract.EMISSION_FOR_SALESTAGE6());
+
+		//SALESTAGE7
+		this.RATE_SALESTAGE7 = bnWr(contract.RATE_SALESTAGE7());
+		this.EMISSION_FOR_SALESTAGE7 = bnWr(contract.EMISSION_FOR_SALESTAGE7());
+
+		//SALESTAGELAST
+		this.DURATION_SALESTAGELAST = bnWr(contract.DURATION_SALESTAGELAST());
+		this.RATE_SALESTAGELAST = bnWr(contract.RATE_SALESTAGELAST());
+		this.EMISSION_FOR_SALESTAGELAST = bnWr(contract.EMISSION_FOR_SALESTAGELAST());
+
 		this.DURATION_NONUSETEAM = bnWr(contract.DURATION_NONUSETEAM());
-		this.BOUNTY_POINTS_SIZE = bnWr(contract.BOUNTY_POINTS_SIZE());
-
-		//PRIZE_SIZE_FORGOTO
+		this.EMISSION_FOR_BOUNTY = bnWr(contract.EMISSION_FOR_BOUNTY());
+		this.EMISSION_FOR_TEAM = bnWr(contract.EMISSION_FOR_TEAM());
 		this.PRIZE_SIZE_FORGOTO = bnWr(contract.PRIZE_SIZE_FORGOTO());
-
 	}
 }
 

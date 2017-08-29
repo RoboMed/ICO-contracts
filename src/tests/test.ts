@@ -207,7 +207,7 @@ describe('Test Ico-contract', () => {
 	it('test-cannot-transfer-tokens-before-postIco', () => {
 
 		// Сумма, которую будем покупать, передавать
-		let sum = bnWr(new BigNumber(1)); //ToDo: если указать 0.63 то будет совершена покупка на 1
+		let sum = bnWr(new BigNumber(1));
 		let bUser1, bUser2;
 
 		// Передаем tokens юзеру
