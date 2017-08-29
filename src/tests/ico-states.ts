@@ -48,15 +48,30 @@ export const IcoStates = {
 	 */
 	SaleStage4: bnWr(new BigNumber(5)),
 
+	/**
+	 * Аналогично SaleStage1
+	 */
+	SaleStage5: bnWr(new BigNumber(6)),
+
+	/**
+	 * Аналогично SaleStage1
+	 */
+	SaleStage6: bnWr(new BigNumber(7)),
+
+	/**
+	 * Аналогично SaleStage1
+	 */
+	SaleStage7: bnWr(new BigNumber(8)),
+
 
 	/**
 	 * Состояние представляющее из себя последнюю подстадию продаж,
 	 * при наступлении данного состояния выпускается заданное количество токенов,
 	 * количество свободных токенов приравнивается к этой эмиссии,
-	 * плюс остатки нераспроданных токенов со стадии PreSale и стадий SaleStage1,SaleStage2,SaleStage3,SaleStage4
-	 * Состояние завершается по наступлению времени endDateOfSaleStage5.
+	 * плюс остатки нераспроданных токенов со стадий SaleStage1,SaleStage2,SaleStage3,SaleStage4,SaleStage5,SaleStage6,SaleStage7
+	 * Состояние завершается по наступлению времени endDateOfSaleStageLast.
 	 */
-	SaleStage5: bnWr(new BigNumber(6)),
+	SaleStageLast: bnWr(new BigNumber(9)),
 
 	/**
 	 * Состояние наступающее после завершения Ico,
@@ -64,5 +79,5 @@ export const IcoStates = {
 	 * также происходит бонусное распределение дополнительных токенов Bounty и Team,
 	 * С момента наступления PostIco покупка токенов невозможна
 	 */
-	PostIco: bnWr(new BigNumber(7))
+	PostIco: bnWr(new BigNumber(10))
 };
