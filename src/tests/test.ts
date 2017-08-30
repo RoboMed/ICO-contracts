@@ -562,7 +562,6 @@ describe('Test Ico-contract', () => {
 		});
 	});
 
-
 	/**
 	 * Тест, что юзеры не могут передать свои токены до PostIco
 	 */
@@ -626,6 +625,67 @@ describe('Test Ico-contract', () => {
 			totalBought: count
 		});
 	});
+
+	/**
+	 * Тест выкупа всех эмитированных токенов
+	 */
+	it('test-buy-all-emissioned-tokens', async () => {
+
+		let addr = accs.user1;
+		await goToState(IcoStates.PreSale);
+		await goToState(IcoStates.SaleStage1);
+
+		// Проверяем, что мы на стадии SaleStage1
+		let currStage = contract.currentState();
+		assert.ok(contract.currentState().equals(IcoStates.SaleStage1));
+
+		// Будем покупать все токены со Stage1 по StageLast
+
+		// Необходимо все выкупить
+		let userWeiBalance = bnWr(web3.eth.getBalance(addr));
+		let freeMoney = bnWr(contract.freeMoney());
+		let goingToBuyTokenCount = bnWr(CONSTANTS.EMISSION_FOR_SALESTAGE1
+			.plus(CONSTANTS.EMISSION_FOR_SALESTAGE2)
+			.plus(CONSTANTS.EMISSION_FOR_SALESTAGE3)
+			.plus(CONSTANTS.EMISSION_FOR_SALESTAGE4)
+			.plus(CONSTANTS.EMISSION_FOR_SALESTAGE5)
+			.plus(CONSTANTS.EMISSION_FOR_SALESTAGE6)
+			.plus(CONSTANTS.EMISSION_FOR_SALESTAGE7)
+			.plus(CONSTANTS.EMISSION_FOR_SALESTAGELAST));
+
+		//Считаем сколько надо eth на покупку (emission1 / rate1) + (emission2 / rate2) + ... + (emission7 / rate7)
+		let ethCountWei = bnWr(CONSTANTS.EMISSION_FOR_SALESTAGE1.divToInt(CONSTANTS.RATE_SALESTAGE1));
+		ethCountWei = bnWr(ethCountWei.plus(CONSTANTS.EMISSION_FOR_SALESTAGE2.divToInt(CONSTANTS.RATE_SALESTAGE2)));
+		ethCountWei = bnWr(ethCountWei.plus(CONSTANTS.EMISSION_FOR_SALESTAGE3.divToInt(CONSTANTS.RATE_SALESTAGE3)));
+		ethCountWei = bnWr(ethCountWei.plus(CONSTANTS.EMISSION_FOR_SALESTAGE4.divToInt(CONSTANTS.RATE_SALESTAGE4)));
+		ethCountWei = bnWr(ethCountWei.plus(CONSTANTS.EMISSION_FOR_SALESTAGE5.divToInt(CONSTANTS.RATE_SALESTAGE5)));
+		ethCountWei = bnWr(ethCountWei.plus(CONSTANTS.EMISSION_FOR_SALESTAGE6.divToInt(CONSTANTS.RATE_SALESTAGE6)));
+		ethCountWei = bnWr(ethCountWei.plus(CONSTANTS.EMISSION_FOR_SALESTAGE7.divToInt(CONSTANTS.RATE_SALESTAGE7)));
+		ethCountWei = bnWr(ethCountWei.plus(CONSTANTS.EMISSION_FOR_SALESTAGELAST.divToInt(CONSTANTS.RATE_SALESTAGELAST)));
+
+		// Проверяем, что у юзера достаточно монет на покупку
+		assert.ok(ethCountWei.lessThanOrEqualTo(userWeiBalance));
+
+		// Выполняем покупку
+		let buyRes = execInEth(() => contract.buyTokens(addr, txParams(addr, ethCountWei)));
+		assert.ok(buyRes);
+
+		// Проверяем, что юзер получил токены
+		let userTokenBalanceAfterBuy = bnWr(contract.balanceOf(addr));
+		assertEq(goingToBuyTokenCount, userTokenBalanceAfterBuy);
+
+		// Проверяем, что произошел перешли на SaleStageLast и там же остались
+		checkContract({
+			currentState: IcoStates.SaleStageLast,
+			freeMoney: bnWr(new BigNumber(0))
+		});
+
+		// Проверяем, что больше купить не удасться
+		let buyResErr = execInEth(() => contract.buyTokens(addr, txParams(addr, new BigNumber(1))));
+		assert.ok(!buyResErr);
+
+	});
+
 
 	/**
 	 * Вспомагательная функция проверяет значения полей контракта
