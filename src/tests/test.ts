@@ -686,6 +686,52 @@ describe('Test Ico-contract', () => {
 
 	});
 
+	/**
+	 * Тест покупки большего кол-ва токенов, чем было эмитировано
+	 */
+	it('test-buy-all-emissioned-tokens-overflow', async () => {
+
+		let addr = accs.user1;
+		await goToState(IcoStates.PreSale);
+		await goToState(IcoStates.SaleStage1);
+
+		// Проверяем, что мы на стадии SaleStage1
+		let currStage = contract.currentState();
+		assert.ok(contract.currentState().equals(IcoStates.SaleStage1));
+
+		// Будем покупать все токены со Stage1 по StageLast + 1
+
+		// Считаем сколько надо eth на покупку (emission1 / rate1) + (emission2 / rate2) + ... + (emission7 / rate7) + 1
+		let ethCountWei = bnWr(CONSTANTS.EMISSION_FOR_SALESTAGE1.divToInt(CONSTANTS.RATE_SALESTAGE1));
+		ethCountWei = bnWr(ethCountWei.plus(CONSTANTS.EMISSION_FOR_SALESTAGE2.divToInt(CONSTANTS.RATE_SALESTAGE2)));
+		ethCountWei = bnWr(ethCountWei.plus(CONSTANTS.EMISSION_FOR_SALESTAGE3.divToInt(CONSTANTS.RATE_SALESTAGE3)));
+		ethCountWei = bnWr(ethCountWei.plus(CONSTANTS.EMISSION_FOR_SALESTAGE4.divToInt(CONSTANTS.RATE_SALESTAGE4)));
+		ethCountWei = bnWr(ethCountWei.plus(CONSTANTS.EMISSION_FOR_SALESTAGE5.divToInt(CONSTANTS.RATE_SALESTAGE5)));
+		ethCountWei = bnWr(ethCountWei.plus(CONSTANTS.EMISSION_FOR_SALESTAGE6.divToInt(CONSTANTS.RATE_SALESTAGE6)));
+		ethCountWei = bnWr(ethCountWei.plus(CONSTANTS.EMISSION_FOR_SALESTAGE7.divToInt(CONSTANTS.RATE_SALESTAGE7)));
+		ethCountWei = bnWr(ethCountWei.plus(CONSTANTS.EMISSION_FOR_SALESTAGELAST.divToInt(CONSTANTS.RATE_SALESTAGELAST)));
+		ethCountWei = bnWr(ethCountWei.plus(1));
+
+		// Проверяем, что у юзера достаточно монет на покупку
+		let userWeiBalance = bnWr(web3.eth.getBalance(addr));
+		assert.ok(ethCountWei.lessThanOrEqualTo(userWeiBalance));
+
+		// Выполняем покупку
+		let buyRes = execInEth(() => contract.buyTokens(addr, txParams(addr, ethCountWei)));
+		assert.ok(!buyRes);
+
+		// Проверяем, что юзер не получил токены
+		let userTokenBalanceAfterBuy = bnWr(contract.balanceOf(addr));
+		assertEq(bnWr(new BigNumber(0)), userTokenBalanceAfterBuy);
+
+		// Проверяем, что произошел не был выполнен переход
+		checkContract({
+			currentState: IcoStates.SaleStage1,
+			freeMoney: CONSTANTS.EMISSION_FOR_SALESTAGE1
+		});
+
+	});
+
 
 	/**
 	 * Вспомагательная функция проверяет значения полей контракта
