@@ -737,7 +737,7 @@ contract RobomedIco is Ownable, Destructible, ERC20 {
      */
     function approve(address _spender, uint256 _value) afterIco returns (bool) {
         checkAllowForBountyAndTeam(_spender);
-
+        checkAllowForBountyAndTeam(msg.sender);
         // To change the approve amount you first have to reduce the addresses`
         //  allowance to zero by calling `approve(_spender, 0)` if it is not
         //  already 0 to mitigate the race condition described here:
