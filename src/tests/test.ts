@@ -473,7 +473,7 @@ describe('Test Ico-contract', () => {
 	});
 
 	/**
-	 * Тест подкупки на Stage1 монет больше, чем выпущено для Stage1
+	 * Тест покупки на Stage1 монет больше, чем выпущено для Stage1
 	 */
 	it('test-buy-more-than-was-emissioned-on-stage1', async () => {
 
@@ -507,18 +507,18 @@ describe('Test Ico-contract', () => {
 
 		// Проверяем, что юзер получил токены
 		let userTokenBalanceAfterBuy = bnWr(contract.balanceOf(addr));
-		//ToDo проверить	assertEq(goingToBuyTokenCount, userTokenBalanceAfterBuy);
+		assertEq(goingToBuyTokenCount, userTokenBalanceAfterBuy);
 
 		// Проверяем, что произошел переход на Stage2
 		//ToDo на стадию перешли, но остаток 2 стадии не изменился
 		checkContract({
 			currentState: IcoStates.SaleStage2,
-			freeMoney: bnWr(CONSTANTS.EMISSION_FOR_SALESTAGE2.minus(1))
+			freeMoney: bnWr(CONSTANTS.EMISSION_FOR_SALESTAGE2.minus(CONSTANTS.RATE_SALESTAGE2))
 		});
 	});
 
 	/**
-	 * Тест подкупки на Stage1 монет больше, чем выпущено для Stage1 и Stage2
+	 * Тест покупки на Stage1 монет больше, чем выпущено для Stage1 и Stage2
 	 */
 	it('test-buy-more-than-was-emissioned-on-stage1-and-stage2', async () => {
 
@@ -541,7 +541,7 @@ describe('Test Ico-contract', () => {
 
 		//Считаем сколько надо eth на покупку (emission1 / rate1) + (emission2 / rate2) + 1 токенов
 		let ethCountWei = bnWr(CONSTANTS.EMISSION_FOR_SALESTAGE1.divToInt(CONSTANTS.RATE_SALESTAGE1));
-		ethCountWei = bnWr(CONSTANTS.EMISSION_FOR_SALESTAGE2.divToInt(CONSTANTS.RATE_SALESTAGE2));
+		ethCountWei = bnWr(ethCountWei.plus(CONSTANTS.EMISSION_FOR_SALESTAGE2.divToInt(CONSTANTS.RATE_SALESTAGE2)));
 		ethCountWei = bnWr(ethCountWei.plus(1));
 
 		// Проверяем, что у юзера достаточно монет на покупку
@@ -553,13 +553,12 @@ describe('Test Ico-contract', () => {
 
 		// Проверяем, что юзер получил токены
 		let userTokenBalanceAfterBuy = bnWr(contract.balanceOf(addr));
-		//ToDo проверить	assertEq(goingToBuyTokenCount, userTokenBalanceAfterBuy);
+		assertEq(goingToBuyTokenCount, userTokenBalanceAfterBuy);
 
 		// Проверяем, что произошел переход на Stage3
-		//ToDo на стадию перешли, но остаток 3 стадии не изменился
 		checkContract({
 			currentState: IcoStates.SaleStage3,
-			freeMoney: bnWr(CONSTANTS.EMISSION_FOR_SALESTAGE3.minus(1))
+			freeMoney: bnWr(CONSTANTS.EMISSION_FOR_SALESTAGE3.minus(CONSTANTS.RATE_SALESTAGE3))
 		});
 	});
 
