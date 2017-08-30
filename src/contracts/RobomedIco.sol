@@ -781,6 +781,7 @@ contract RobomedIco is Ownable, Destructible, ERC20 {
         //переходим в PreSale
         currentState = IcoStates.PreSale;
 
+
         //выставляем состояние токенов
         setMoney(EMISSION_FOR_PRESALE, EMISSION_FOR_PRESALE, RATE_PRESALE);
 
@@ -803,6 +804,9 @@ contract RobomedIco is Ownable, Destructible, ERC20 {
 
         //переходим в SaleStage1
         currentState = IcoStates.SaleStage1;
+
+        //непроданные токены сгорают
+        totalSupply = totalSupply.sub(freeMoney);
 
         //выставляем состояние токенов
         setMoney(EMISSION_FOR_SALESTAGE1, EMISSION_FOR_SALESTAGE1, RATE_SALESTAGE1);
