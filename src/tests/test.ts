@@ -277,6 +277,7 @@ describe('Test Ico-contract', () => {
 		await goToState(IcoStates.SaleStage2);
 
 		// Проверяем, что мы на стадии SaleStage2
+		let currState = contract.currentState();
 		assert.ok(contract.currentState().equals(IcoStates.SaleStage2));
 
 		// Необходимо все выкупить
@@ -472,6 +473,98 @@ describe('Test Ico-contract', () => {
 	});
 
 	/**
+	 * Тест подкупки на Stage1 монет больше, чем выпущено для Stage1
+	 */
+	it('test-buy-more-than-was-emissioned-on-stage1', async () => {
+
+		let addr = accs.user1;
+		await goToState(IcoStates.PreSale);
+		await goToState(IcoStates.SaleStage1);
+
+		// Проверяем, что мы на стадии SaleStage1
+		let currStage = contract.currentState();
+		assert.ok(contract.currentState().equals(IcoStates.SaleStage1));
+
+		// Будем покупать больше, чем есть freeMoney на Stage1
+
+		// Необходимо все выкупить
+		let rate1 = bnWr(contract.rate());
+		let rate2 = CONSTANTS.RATE_SALESTAGE2;
+		let userWeiBalance = bnWr(web3.eth.getBalance(addr));
+		let freeMoney = bnWr(contract.freeMoney());
+		let goingToBuyTokenCount = bnWr(freeMoney.plus(rate2));
+
+		//Считаем сколько надо eth на покупку (freemoney / rate1) + 1 токенов
+		let ethCountWei = bnWr(freeMoney.divToInt(rate1));
+		ethCountWei = bnWr(ethCountWei.plus(1));
+
+		// Проверяем, что у юзера достаточно монет на покупку
+		assert.ok(ethCountWei.lessThanOrEqualTo(userWeiBalance));
+
+		// Выполняем покупку
+		let buyRes = execInEth(() => contract.buyTokens(addr, txParams(addr, ethCountWei)));
+		assert.ok(buyRes);
+
+		// Проверяем, что юзер получил токены
+		let userTokenBalanceAfterBuy = bnWr(contract.balanceOf(addr));
+		//ToDo проверить	assertEq(goingToBuyTokenCount, userTokenBalanceAfterBuy);
+
+		// Проверяем, что произошел переход на Stage2
+		//ToDo на стадию перешли, но остаток 2 стадии не изменился
+		checkContract({
+			currentState: IcoStates.SaleStage2,
+			freeMoney: bnWr(CONSTANTS.EMISSION_FOR_SALESTAGE2.minus(1))
+		});
+	});
+
+	/**
+	 * Тест подкупки на Stage1 монет больше, чем выпущено для Stage1 и Stage2
+	 */
+	it('test-buy-more-than-was-emissioned-on-stage1-and-stage2', async () => {
+
+		let addr = accs.user1;
+		await goToState(IcoStates.PreSale);
+		await goToState(IcoStates.SaleStage1);
+
+		// Проверяем, что мы на стадии SaleStage1
+		let currStage = contract.currentState();
+		assert.ok(contract.currentState().equals(IcoStates.SaleStage1));
+
+		// Будем покупать больше, чем есть freeMoney на Stage1 и Stage2
+
+		// Необходимо все выкупить
+		let userWeiBalance = bnWr(web3.eth.getBalance(addr));
+		let freeMoney = bnWr(contract.freeMoney());
+		let goingToBuyTokenCount = bnWr(CONSTANTS.EMISSION_FOR_SALESTAGE1
+			.plus(CONSTANTS.EMISSION_FOR_SALESTAGE2)
+			.plus(CONSTANTS.RATE_SALESTAGE3));
+
+		//Считаем сколько надо eth на покупку (emission1 / rate1) + (emission2 / rate2) + 1 токенов
+		let ethCountWei = bnWr(CONSTANTS.EMISSION_FOR_SALESTAGE1.divToInt(CONSTANTS.RATE_SALESTAGE1));
+		ethCountWei = bnWr(CONSTANTS.EMISSION_FOR_SALESTAGE2.divToInt(CONSTANTS.RATE_SALESTAGE2));
+		ethCountWei = bnWr(ethCountWei.plus(1));
+
+		// Проверяем, что у юзера достаточно монет на покупку
+		assert.ok(ethCountWei.lessThanOrEqualTo(userWeiBalance));
+
+		// Выполняем покупку
+		let buyRes = execInEth(() => contract.buyTokens(addr, txParams(addr, ethCountWei)));
+		assert.ok(buyRes);
+
+		// Проверяем, что юзер получил токены
+		let userTokenBalanceAfterBuy = bnWr(contract.balanceOf(addr));
+		//ToDo проверить	assertEq(goingToBuyTokenCount, userTokenBalanceAfterBuy);
+
+		// Проверяем, что произошел переход на Stage3
+		//ToDo на стадию перешли, но остаток 3 стадии не изменился
+		checkContract({
+			currentState: IcoStates.SaleStage3,
+			freeMoney: bnWr(CONSTANTS.EMISSION_FOR_SALESTAGE3.minus(1))
+		});
+	});
+
+
+	/**
 	 * Тест, что юзеры не могут передать свои токены до PostIco
 	 */
 	it('test-cannot-transfer-tokens-before-postIco', () => {
@@ -578,38 +671,36 @@ describe('Test Ico-contract', () => {
 
 	/**
 	 * Вспомагательный метод для перехода на стадию
-	 * @param {BigNumber.BigNumber} stage Стадия для перехода
+	 * @param {BigNumber.BigNumber} toStage Стадия для перехода
+	 * @param isAllowGreater Признак, что можно перейти более чем на указанную стадию
 	 * @returns {Promise<void>}
 	 */
-	async function goToState(stage: BigNumber.BigNumber): Promise<void> {
+	async function goToState(toStage: BigNumber.BigNumber, isAllowGreater: boolean = true): Promise<void> {
 
 		//Если текущая или уже была, выходим
-		if(contract.currentState().lessThanOrEqualTo(stage)) return;
+		if (toStage.lessThanOrEqualTo(contract.currentState())) return;
 
-		console.log("goToState: " + stage);
+		console.log("goToState: " + toStage);
 
 		// PreSale и SaleStage1
-		if (stage.equals(IcoStates.PreSale) || stage.equals(IcoStates.SaleStage1)) {
+		if (toStage.equals(IcoStates.PreSale) || toStage.equals(IcoStates.SaleStage1)) {
 
 			// Достаточно дождаться и дернуть ручку
-			while (!contract.canGotoState(IcoStates.SaleStage1)) {
+			while (!contract.canGotoState(toStage)) {
 				await U.delay(1000);
 			}
 
 			let res = execInEth(() => contract.gotoNextStateAndPrize(txParams(accs.lucky)));
-
 			assert.ok(res);
-
-			return;
 		}
 
 		// SaleStage2 - SaleStage7
-		else if (stage.equals(IcoStates.SaleStage2) ||
-			stage.equals(IcoStates.SaleStage3) ||
-			stage.equals(IcoStates.SaleStage4) ||
-			stage.equals(IcoStates.SaleStage5) ||
-			stage.equals(IcoStates.SaleStage6) ||
-			stage.equals(IcoStates.SaleStage7)) {
+		else if (toStage.equals(IcoStates.SaleStage2) ||
+			toStage.equals(IcoStates.SaleStage3) ||
+			toStage.equals(IcoStates.SaleStage4) ||
+			toStage.equals(IcoStates.SaleStage5) ||
+			toStage.equals(IcoStates.SaleStage6) ||
+			toStage.equals(IcoStates.SaleStage7)) {
 
 			// Необходимо выкупить freemoney
 			let rate = bnWr(contract.rate());
@@ -621,7 +712,13 @@ describe('Test Ico-contract', () => {
 			// Выполняем покупку
 			let res = execInEth(() => contract.buyTokens(accs.lucky, txParams(accs.lucky, ethCountWei)));
 			assert.ok(res);
-			return;
+		}
+
+		//Проверяем, что переход был выполнен
+		if (isAllowGreater) {
+			assert.ok(contract.currentState().greaterThanOrEqualTo(toStage));
+		} else {
+			assert.ok(contract.currentState().equals(toStage));
 		}
 	}
 

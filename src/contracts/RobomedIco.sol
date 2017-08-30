@@ -11,30 +11,6 @@ contract RobomedIco is Ownable, Destructible, ERC20 {
 
     using SafeMath for uint256;
 
-
-    uint256 public logNum1 = 0;
-
-    uint256 public logNum2 = 0;
-
-    uint256 public logNum3 = 0;
-
-    uint256 public logNum4 = 0;
-
-    string public log1 = "";
-
-    string public log2 = "";
-
-    string public log3 = "";
-
-    string public log4 = "";
-
-    string public log5 = "";
-
-    string public log6 = "";
-
-    string public log7 = "";
-
-
     string public constant name = "RobomedToken";
 
     string public constant symbol = "RBM";
@@ -88,7 +64,7 @@ contract RobomedIco is Ownable, Destructible, ERC20 {
     /**
      * Эмиссия токенов для стадии SaleStage1
     */
-    uint256 public constant EMISSION_FOR_SALESTAGE1 = 1125 * 10 ** 18;
+    uint256 public constant EMISSION_FOR_SALESTAGE1 = 100;
 
     //end SaleStage1 constants
 
@@ -102,7 +78,7 @@ contract RobomedIco is Ownable, Destructible, ERC20 {
     /**
     * Эмиссия токенов для стадии SaleStage2
     */
-    uint256 public constant EMISSION_FOR_SALESTAGE2 = 1012 * 10 ** 18;
+    uint256 public constant EMISSION_FOR_SALESTAGE2 = 200;
 
     //end SaleStage2 constants
 
@@ -116,7 +92,7 @@ contract RobomedIco is Ownable, Destructible, ERC20 {
     /**
     * Эмиссия токенов для стадии SaleStage3
     */
-    uint256 public constant EMISSION_FOR_SALESTAGE3 = 862 * 10 ** 18;
+    uint256 public constant EMISSION_FOR_SALESTAGE3 = 300;
     //end SaleStage3 constants
 
     //SaleStage4 constants
@@ -129,7 +105,7 @@ contract RobomedIco is Ownable, Destructible, ERC20 {
     /**
     * Эмиссия токенов для стадии SaleStage4
     */
-    uint256 public constant EMISSION_FOR_SALESTAGE4 = 787 * 10 ** 18;
+    uint256 public constant EMISSION_FOR_SALESTAGE4 = 400;
 
     //end SaleStage4 constants
 
@@ -144,7 +120,7 @@ contract RobomedIco is Ownable, Destructible, ERC20 {
     /**
     * Эмиссия токенов для стадии SaleStage5
     */
-    uint256 public constant EMISSION_FOR_SALESTAGE5 = 787 * 10 ** 18;
+    uint256 public constant EMISSION_FOR_SALESTAGE5 = 500;
 
     //end SaleStage5 constants
 
@@ -160,7 +136,7 @@ contract RobomedIco is Ownable, Destructible, ERC20 {
     /**
     * Эмиссия токенов для стадии SaleStage6
     */
-    uint256 public constant EMISSION_FOR_SALESTAGE6 = 787 * 10 ** 18;
+    uint256 public constant EMISSION_FOR_SALESTAGE6 = 600;
 
     //end SaleStage6 constants
 
@@ -175,7 +151,7 @@ contract RobomedIco is Ownable, Destructible, ERC20 {
     /**
     * Эмиссия токенов для стадии SaleStage7
     */
-    uint256 public constant EMISSION_FOR_SALESTAGE7 = 787 * 10 ** 18;
+    uint256 public constant EMISSION_FOR_SALESTAGE7 = 700;
 
     //end SaleStage7 constants
 
@@ -195,7 +171,7 @@ contract RobomedIco is Ownable, Destructible, ERC20 {
     /**
     * Эмиссия токенов для стадии SaleStageLast
     */
-    uint256 public constant EMISSION_FOR_SALESTAGELAST = 30000 * 10 ** 18;
+    uint256 public constant EMISSION_FOR_SALESTAGELAST = 800;
     //end SaleStageLast constants
 
     //PostIco constants
@@ -549,28 +525,11 @@ contract RobomedIco is Ownable, Destructible, ERC20 {
             &&
             currentState != IcoStates.SaleStage7) return false;
 
-
-            logNum1 = startDateOfSaleStageLast;
-            logNum2 = now;
-            if (startDateOfSaleStageLast > now) {
-                log1 = "startDateOfSaleStageLast > now";
-            }
-            if (!(currentState == IcoStates.SaleStage7 && freeMoney == 0)) {
-                log2 = "!(currentState == IcoStates.SaleStage7 && freeMoney == 0)";
-            }
-            if (freeMoney == 0) {
-                log3 = "freeMoney == 0";
-            }
-            if (currentState == IcoStates.SaleStage7) {
-                log4 = "currentState == IcoStates.SaleStage7";
-            }
-
             //переход осуществляется если на состоянии SaleStage7 не осталось свободных токенов
             //или на одном из состояний SaleStages наступило время startDateOfSaleStageLast
             if (!(currentState == IcoStates.SaleStage7 && freeMoney == 0) && startDateOfSaleStageLast > now) {
                 return false;
             }
-
 
             return true;
         }
