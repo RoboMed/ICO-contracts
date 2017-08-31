@@ -139,62 +139,201 @@ describe('Test Ico-contract', () => {
 	});
 
 	/**
-	 * Тест распределения токенов между юзерами
+	 * Тест распределения токенов между юзерами на стадии VipPlacement
 	 */
-	it('test-transfer-tokens-distribution', async () => {
+	it('test-transfer-tokens-distribution-on-vipPlacement', async () => {
 
-		let contractBalance = bnWr(contract.balanceOf(accs.owner));
-		let sum1 = bnWr(contractBalance.dividedToIntegerBy(4));
-		let sum2 = bnWr(contractBalance.dividedToIntegerBy(4));
+		await testTransferTokensDistributionOnStage(IcoStates.VipPlacement);
+	});
 
-		// user1 получает 1/4 rmToken
-		// user2 получает 1/4 rmToken
-		let res1 = await execInEth(() => contract.transfer(accs.user1, sum1, txParams(accs.owner)));
-		let res2 = await execInEth(() => contract.transfer(accs.user2, sum2, txParams(accs.owner)));
+	/**
+	 * Тест распределения токенов между юзерами на стадии PreSale
+	 */
+	it('test-transfer-tokens-distribution-on-preSale', async () => {
+
+		await goToState(IcoStates.PreSale);
+		await testTransferTokensDistributionOnStage(IcoStates.PreSale);
+	});
+
+	/**
+	 * Тест распределения токенов между юзерами на стадии SaleStage1
+	 */
+	it('test-transfer-tokens-distribution-on-saleStage1', async () => {
+
+		await goToState(IcoStates.PreSale);
+		await goToState(IcoStates.SaleStage1);
+		await testTransferTokensDistributionOnStage(IcoStates.SaleStage1);
+	});
+
+	/**
+	 * Тест распределения токенов между юзерами на стадии SaleStage2
+	 */
+	it('test-transfer-tokens-distribution-on-saleStage2', async () => {
+
+		await goToState(IcoStates.PreSale);
+		await goToState(IcoStates.SaleStage1);
+		await goToState(IcoStates.SaleStage2);
+
+		await testTransferTokensDistributionOnStage(IcoStates.SaleStage2);
+	});
+
+	/**
+	 * Тест распределения токенов между юзерами на стадии SaleStage3
+	 */
+	it('test-transfer-tokens-distribution-on-saleStage3', async () => {
+
+		await goToState(IcoStates.PreSale);
+		await goToState(IcoStates.SaleStage1);
+		await goToState(IcoStates.SaleStage2);
+		await goToState(IcoStates.SaleStage3);
+
+		await testTransferTokensDistributionOnStage(IcoStates.SaleStage3);
+	});
+
+	/**
+	 * Тест распределения токенов между юзерами на стадии SaleStage4
+	 */
+	it('test-transfer-tokens-distribution-on-saleStage4', async () => {
+
+		await goToState(IcoStates.PreSale);
+		await goToState(IcoStates.SaleStage1);
+		await goToState(IcoStates.SaleStage2);
+		await goToState(IcoStates.SaleStage3);
+		await goToState(IcoStates.SaleStage4);
+
+		await testTransferTokensDistributionOnStage(IcoStates.SaleStage4);
+	});
+
+	/**
+	 * Тест распределения токенов между юзерами на стадии SaleStage5
+	 */
+	it('test-transfer-tokens-distribution-on-saleStage5', async () => {
+
+		await goToState(IcoStates.PreSale);
+		await goToState(IcoStates.SaleStage1);
+		await goToState(IcoStates.SaleStage2);
+		await goToState(IcoStates.SaleStage3);
+		await goToState(IcoStates.SaleStage4);
+		await goToState(IcoStates.SaleStage5);
+
+		await testTransferTokensDistributionOnStage(IcoStates.SaleStage5);
+	});
+
+	/**
+	 * Тест распределения токенов между юзерами на стадии SaleStage6
+	 */
+	it('test-transfer-tokens-distribution-on-saleStage6', async () => {
+
+		await goToState(IcoStates.PreSale);
+		await goToState(IcoStates.SaleStage1);
+		await goToState(IcoStates.SaleStage2);
+		await goToState(IcoStates.SaleStage3);
+		await goToState(IcoStates.SaleStage4);
+		await goToState(IcoStates.SaleStage5);
+		await goToState(IcoStates.SaleStage6);
+
+		await testTransferTokensDistributionOnStage(IcoStates.SaleStage6);
+	});
+
+	/**
+	 * Тест распределения токенов между юзерами на стадии SaleStage7
+	 */
+	it('test-transfer-tokens-distribution-on-saleStage7', async () => {
+
+		await goToState(IcoStates.PreSale);
+		await goToState(IcoStates.SaleStage1);
+		await goToState(IcoStates.SaleStage2);
+		await goToState(IcoStates.SaleStage3);
+		await goToState(IcoStates.SaleStage4);
+		await goToState(IcoStates.SaleStage5);
+		await goToState(IcoStates.SaleStage6);
+		await goToState(IcoStates.SaleStage7);
+
+		await testTransferTokensDistributionOnStage(IcoStates.SaleStage7);
+	});
+
+	/**
+	 * Тест распределения токенов между юзерами на стадии SaleStageLast
+	 */
+	it('test-transfer-tokens-distribution-on-saleStageLast', async () => {
+
+		await goToState(IcoStates.PreSale);
+		await goToState(IcoStates.SaleStage1);
+		await goToState(IcoStates.SaleStage2);
+		await goToState(IcoStates.SaleStage3);
+		await goToState(IcoStates.SaleStage4);
+		await goToState(IcoStates.SaleStage5);
+		await goToState(IcoStates.SaleStage6);
+		await goToState(IcoStates.SaleStage7);
+		await goToState(IcoStates.SaleStageLast);
+
+		await testTransferTokensDistributionOnStage(IcoStates.SaleStageLast);
+	});
+
+	/**
+	 * Вспомагательный метод для тестирования распределения токенов между юзерами на стадии
+	 * @param {BigNumber.BigNumber} stage Стадия на которой тестируем
+	 * @returns {Promise<void>}
+	 */
+	async function testTransferTokensDistributionOnStage(stage: BigNumber.BigNumber): Promise<void> {
+
+		assert.ok(contract.currentState().equals(stage));
+
+		//-----------------------------------------------
+		let ownerTokenBalance = bnWr(contract.balanceOf(accs.owner));
+		let sumToken1 = bnWr(new BigNumber(11));
+		let sumToken2 = bnWr(new BigNumber(22));
+
+		let user1Tokens = bnWr(contract.balanceOf(accs.user1));
+		let user2Tokens = bnWr(contract.balanceOf(accs.user2));
+
+		// user1 получает 1/8 ownerTokenBalance
+		// user2 получает 1/8 ownerTokenBalance
+		let res1 = await execInEth(() => contract.transfer(accs.user1, sumToken1, txParams(accs.owner)));
+		let res2 = await execInEth(() => contract.transfer(accs.user2, sumToken2, txParams(accs.owner)));
 		assert.ok(res1);
 		assert.ok(res2);
 
 		// Проверяем, что монеты успешно переведены
-		let contractRmTokens = bnWr(contract.balanceOf(accs.owner));
-		let user1RmTokens = bnWr(contract.balanceOf(accs.user1));
-		let user2RmTokens = bnWr(contract.balanceOf(accs.user2));
+		let ownerTokenBalanceAfterTransfer = bnWr(contract.balanceOf(accs.owner));
+		let user1TokensAfterTransfer = bnWr(contract.balanceOf(accs.user1));
+		let user2TokensAfterTransfer = bnWr(contract.balanceOf(accs.user2));
 
-		let remainingCoins = CONSTANTS.INITIAL_COINS_FOR_VIPPLACEMENT.minus(sum1.plus(sum2));
-		assert.ok(contractRmTokens.equals(remainingCoins));
-		assert.ok(user1RmTokens.equals(sum1));
-		assert.ok(user2RmTokens.equals(sum2));
+		assert.ok(ownerTokenBalanceAfterTransfer.equals(ownerTokenBalance.minus(sumToken1).minus(sumToken2)));
+		assert.ok(user1TokensAfterTransfer.equals(user1Tokens.plus(sumToken1)));
+		assert.ok(user2TokensAfterTransfer.equals(user2Tokens.plus(sumToken2)));
 
 		//-----------------------------------------------
-
-		// пытаемся перечислить оставшиеся монеты + 1
-		let res3 = await execInEth(() => contract.transfer(accs.user1, remainingCoins.plus(1), txParams(accs.owner)));
+		// Пытаемся перечислить оставшиеся монеты + 1
+		let res3 = await execInEth(() => contract.transfer(accs.user1, ownerTokenBalanceAfterTransfer.plus(1), txParams(accs.owner)));
 		assert(!res3);
 
 		// Ничего не должно измениться
-		assert.ok(contractRmTokens.equals(remainingCoins));
-		assert.ok(user1RmTokens.equals(sum1));
-		assert.ok(user2RmTokens.equals(sum2));
+		let ownerTokenBalanceAfterTransferErr = bnWr(contract.balanceOf(accs.owner));
+		assert.ok(ownerTokenBalanceAfterTransferErr.equals(ownerTokenBalanceAfterTransfer));
+		assert.ok(contract.balanceOf(accs.user1).equals(user1TokensAfterTransfer));
+		assert.ok(contract.balanceOf(accs.user2).equals(user2TokensAfterTransfer));
 
 		//-----------------------------------------------
-
 		// Пытаемся передать токены на аккаунт bounty
 		let resBounty = await execInEth(() => contract.transfer(accs.bounty, new BigNumber(1), txParams(accs.owner)));
 		assert(!resBounty);
 
 		// Ничего не должно измениться
-		assert.ok(contractRmTokens.equals(remainingCoins));
+		let ownerTokenBalanceAfterTransferToBounty = bnWr(contract.balanceOf(accs.owner));
+		assert.ok(ownerTokenBalanceAfterTransferToBounty.equals(ownerTokenBalanceAfterTransfer));
 		assertEq(CONSTANTS.EMISSION_FOR_BOUNTY, contract.balanceOf(accs.bounty));
 
 		//-----------------------------------------------
-
 		// Пытаемся передать токены на аккаунт team
 		let resTeam = await execInEth(() => contract.transfer(accs.team, new BigNumber(1), txParams(accs.owner)));
 		assert(!resTeam);
 
 		// Ничего не должно измениться
-		assert.ok(contractRmTokens.equals(remainingCoins));
+		let ownerTokenBalanceAfterTransferToTeam = bnWr(contract.balanceOf(accs.owner));
+		assert.ok(ownerTokenBalanceAfterTransferToTeam.equals(ownerTokenBalanceAfterTransfer));
 		assertEq(CONSTANTS.EMISSION_FOR_TEAM, contract.balanceOf(accs.team));
-	});
+	}
 
 	/**
 	 * Тест перехода стадий VipPlacement -> PreSale
@@ -235,7 +374,7 @@ describe('Test Ico-contract', () => {
 
 		// Ждем пока нельзя переходить на SaleStage1
 		while (!contract.canGotoState(IcoStates.SaleStage1)) {
-			U.delay(1000);
+			await U.delay(1000);
 		}
 
 		// Дергаем ручку
@@ -862,7 +1001,6 @@ describe('Test Ico-contract', () => {
 			}
 
 			let res = await execInEth(() => contract.gotoNextStateAndPrize(txParams(accs.lucky)));
-			assert.ok(res);
 		}
 
 		// SaleStage2 - SaleStage7
@@ -871,7 +1009,8 @@ describe('Test Ico-contract', () => {
 			toStage.equals(IcoStates.SaleStage4) ||
 			toStage.equals(IcoStates.SaleStage5) ||
 			toStage.equals(IcoStates.SaleStage6) ||
-			toStage.equals(IcoStates.SaleStage7)) {
+			toStage.equals(IcoStates.SaleStage7) ||
+			toStage.equals(IcoStates.SaleStageLast)) {
 
 			// Необходимо выкупить freemoney
 			let rate = bnWr(contract.rate());
@@ -880,9 +1019,18 @@ describe('Test Ico-contract', () => {
 			//Считаем сколько надо eth на выкуп всего
 			let ethCountWei = bnWr(freeMoney.divToInt(rate));
 
+			//Чтобы попасть на SaleStageLast надо дождаться
+			if(toStage.equals(IcoStates.SaleStageLast)) {
+				while (!contract.canGotoState(toStage)) {
+					await U.delay(1000);
+				}
+			}
+
 			// Выполняем покупку
 			let res = await execInEth(() => contract.buyTokens(accs.lucky, txParams(accs.lucky, ethCountWei)));
 			assert.ok(res);
+
+
 		}
 
 		//Проверяем, что переход был выполнен
