@@ -84,7 +84,7 @@ describe('Test Ico-contract', () => {
 			rate: bnWr(new BigNumber(0)),
 		});
 
-		//Проверяем, что была выполнена эмиссия на кошелек владельца
+		//Проверяем, что была выполнена эмиссия и монеты переданы на кошелек владельца
 		let balance = bnWr(contract.balanceOf(accs.owner));
 		assertEq(CONSTANTS.INITIAL_COINS_FOR_VIPPLACEMENT, balance);
 	});
@@ -510,7 +510,6 @@ describe('Test Ico-contract', () => {
 		assertEq(goingToBuyTokenCount, userTokenBalanceAfterBuy);
 
 		// Проверяем, что произошел переход на Stage2
-		//ToDo на стадию перешли, но остаток 2 стадии не изменился
 		checkContract({
 			currentState: IcoStates.SaleStage2,
 			freeMoney: bnWr(CONSTANTS.EMISSION_FOR_SALESTAGE2.minus(CONSTANTS.RATE_SALESTAGE2))
@@ -590,7 +589,6 @@ describe('Test Ico-contract', () => {
 		assert.ok(bUser1.equals(sum));
 		assert.ok(bUser2.equals(new BigNumber(0)));
 	});
-
 
 	/**
 	 * Тест покупки на preSale
@@ -674,7 +672,7 @@ describe('Test Ico-contract', () => {
 		let userTokenBalanceAfterBuy = bnWr(contract.balanceOf(addr));
 		assertEq(goingToBuyTokenCount, userTokenBalanceAfterBuy);
 
-		// Проверяем, что произошел перешли на SaleStageLast и там же остались
+		// Проверяем, что перешли на SaleStageLast и там же остались
 		checkContract({
 			currentState: IcoStates.SaleStageLast,
 			freeMoney: bnWr(new BigNumber(0))
@@ -724,10 +722,55 @@ describe('Test Ico-contract', () => {
 		let userTokenBalanceAfterBuy = bnWr(contract.balanceOf(addr));
 		assertEq(bnWr(new BigNumber(0)), userTokenBalanceAfterBuy);
 
-		// Проверяем, что произошел не был выполнен переход
+		// Проверяем, что не был выполнен переход
 		checkContract({
 			currentState: IcoStates.SaleStage1,
 			freeMoney: CONSTANTS.EMISSION_FOR_SALESTAGE1
+		});
+
+	});
+
+	/**
+	 * Тест переноса невыкупленных токенов со Stage1 - Stage7 на StageLast
+	 */
+	it('test-transfer-residues-from-stages-to-stageLast', async () => {
+
+		let addr = accs.user1;
+		await goToState(IcoStates.PreSale);
+		await goToState(IcoStates.SaleStage1);
+
+		// Проверяем, что мы на стадии SaleStage1
+		assert.ok(contract.currentState().equals(IcoStates.SaleStage1));
+
+		// Ждем пока не наступит время перехода на StageLast
+		while (!contract.canGotoState(IcoStates.SaleStageLast)) {
+			await U.delay(1000);
+		}
+
+		// Покупаем токенов на 1 wei
+		let goingToBuyTokenCount = CONSTANTS.RATE_SALESTAGE1;
+		let buyRes = execInEth(() => contract.buyTokens(addr, txParams(addr, new BigNumber(1))));
+		assert.ok(buyRes);
+
+		// Проверяем, что купили токенов по курсу Stage1,
+		let userTokenBalanceAfterBuy = bnWr(contract.balanceOf(addr));
+		assertEq(goingToBuyTokenCount, userTokenBalanceAfterBuy);
+
+		// freeBalance равен эмиссии для StageLast + сумме всего, что не выкупили на Stage1 - Stage7
+		let expectedFreeMoney = bnWr(CONSTANTS.EMISSION_FOR_SALESTAGELAST
+			.plus(CONSTANTS.EMISSION_FOR_SALESTAGE1)
+			.minus(userTokenBalanceAfterBuy)
+			.plus(CONSTANTS.EMISSION_FOR_SALESTAGE2)
+			.plus(CONSTANTS.EMISSION_FOR_SALESTAGE3)
+			.plus(CONSTANTS.EMISSION_FOR_SALESTAGE4)
+			.plus(CONSTANTS.EMISSION_FOR_SALESTAGE5)
+			.plus(CONSTANTS.EMISSION_FOR_SALESTAGE6)
+			.plus(CONSTANTS.EMISSION_FOR_SALESTAGE7));
+
+		// Проверяем, что произошел переход на SaleStageLast и freebalance
+		checkContract({
+			currentState: IcoStates.SaleStageLast,
+			freeMoney: expectedFreeMoney
 		});
 
 	});
@@ -820,6 +863,7 @@ describe('Test Ico-contract', () => {
 		}
 
 		//Проверяем, что переход был выполнен
+		//ToDo Проверять состояние контракта при переходе на новую стадию с помощью checkContract
 		if (isAllowGreater) {
 			assert.ok(contract.currentState().greaterThanOrEqualTo(toStage));
 		} else {
@@ -836,6 +880,17 @@ describe('Test Ico-contract', () => {
 	 */
 	function assertEq(expected: BigNumber.BigNumber, value: BigNumber.BigNumber, message?: string): void {
 		assert.ok(expected.equals(value), (message + " expected: " + expected + " value: " + value).trim());
+	}
+
+	/**
+	 * Вспомагательный метод переводит время контракта в Date
+	 * @param {BigNumber.BigNumber} sec Время контракта
+	 * @returns {Date} Время в js
+	 */
+	function toDateTimeUtc(sec: BigNumber.BigNumber): Date {
+		let dt = new Date(1970, 0, 0);
+		dt.setSeconds(sec.toNumber());
+		return dt;
 	}
 
 });
