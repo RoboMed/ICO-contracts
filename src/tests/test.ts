@@ -1,6 +1,6 @@
 import "mocha";
 import * as assert from "assert";
-import * as BigNumber from 'bignumber.js';
+import * as BigNumber from "bignumber.js";
 import * as Web3 from "web3";
 import {U} from "./u";
 import {Config} from "./config";
@@ -92,10 +92,10 @@ describe('Test Ico-contract', () => {
 	/**
 	 * Тест передачи всех токенов одному юзеру
 	 */
-	it('test-transfer-all', () => {
+	it('test-transfer-all', async () => {
 
 		// Передаем все имеющиеся токены одному юзеру
-		let res = execInEth(() => contract.transfer(accs.user1, CONSTANTS.INITIAL_COINS_FOR_VIPPLACEMENT, txParams(accs.owner)));
+		let res = await execInEth(() => contract.transfer(accs.user1, CONSTANTS.INITIAL_COINS_FOR_VIPPLACEMENT, txParams(accs.owner)));
 		assert.ok(res);
 
 		let contractRmTokens = contract.balanceOf(accs.owner);
@@ -116,13 +116,13 @@ describe('Test Ico-contract', () => {
 	/**
 	 * Тест, что нельзя передавать токенов больше чем есть
 	 */
-	it('test-transfer-tokens-overflow', () => {
+	it('test-transfer-tokens-overflow', async () => {
 
 		// Кол-во оставшихся токенов + 1
 		let count = bnWr(contract.vipPlacementNotDistributed().plus(1));
 
 		// Пытаемся передать VIP токенов больше чем осталось
-		let res = execInEth(() => contract.transfer(accs.user1, count, txParams(accs.owner)));
+		let res = await execInEth(() => contract.transfer(accs.user1, count, txParams(accs.owner)));
 		assert.ok(!res);
 
 		let contractRmTokens = bnWr(contract.balanceOf(accs.owner));
@@ -141,7 +141,7 @@ describe('Test Ico-contract', () => {
 	/**
 	 * Тест распределения токенов между юзерами
 	 */
-	it('test-transfer-3-distribution', () => {
+	it('test-transfer-tokens-distribution', async () => {
 
 		let contractBalance = bnWr(contract.balanceOf(accs.owner));
 		let sum1 = bnWr(contractBalance.dividedToIntegerBy(4));
@@ -149,8 +149,8 @@ describe('Test Ico-contract', () => {
 
 		// user1 получает 1/4 rmToken
 		// user2 получает 1/4 rmToken
-		let res1 = execInEth(() => contract.transfer(accs.user1, sum1, txParams(accs.owner)));
-		let res2 = execInEth(() => contract.transfer(accs.user2, sum2, txParams(accs.owner)));
+		let res1 = await execInEth(() => contract.transfer(accs.user1, sum1, txParams(accs.owner)));
+		let res2 = await execInEth(() => contract.transfer(accs.user2, sum2, txParams(accs.owner)));
 		assert.ok(res1);
 		assert.ok(res2);
 
@@ -164,20 +164,42 @@ describe('Test Ico-contract', () => {
 		assert.ok(user1RmTokens.equals(sum1));
 		assert.ok(user2RmTokens.equals(sum2));
 
+		//-----------------------------------------------
+
 		// пытаемся перечислить оставшиеся монеты + 1
-		let res3 = execInEth(() => contract.transfer(accs.user1, remainingCoins.plus(1), txParams(accs.owner)));
+		let res3 = await execInEth(() => contract.transfer(accs.user1, remainingCoins.plus(1), txParams(accs.owner)));
 		assert(!res3);
 
 		// Ничего не должно измениться
 		assert.ok(contractRmTokens.equals(remainingCoins));
 		assert.ok(user1RmTokens.equals(sum1));
 		assert.ok(user2RmTokens.equals(sum2));
+
+		//-----------------------------------------------
+
+		// Пытаемся передать токены на аккаунт bounty
+		let resBounty = await execInEth(() => contract.transfer(accs.bounty, new BigNumber(1), txParams(accs.owner)));
+		assert(!resBounty);
+
+		// Ничего не должно измениться
+		assert.ok(contractRmTokens.equals(remainingCoins));
+		assertEq(CONSTANTS.EMISSION_FOR_BOUNTY, contract.balanceOf(accs.bounty));
+
+		//-----------------------------------------------
+
+		// Пытаемся передать токены на аккаунт team
+		let resTeam = await execInEth(() => contract.transfer(accs.team, new BigNumber(1), txParams(accs.owner)));
+		assert(!resTeam);
+
+		// Ничего не должно измениться
+		assert.ok(contractRmTokens.equals(remainingCoins));
+		assertEq(CONSTANTS.EMISSION_FOR_TEAM, contract.balanceOf(accs.team));
 	});
 
 	/**
 	 * Тест перехода стадий VipPlacement -> PreSale
 	 */
-	it('test-goToState-preSale', () => {
+	it('test-goToState-preSale', async () => {
 
 		let addr = accs.user1;
 
@@ -189,7 +211,7 @@ describe('Test Ico-contract', () => {
 		}
 
 		// Дергаем ручку
-		let res = execInEth(() => contract.gotoNextStateAndPrize(txParams(addr)));
+		let res = await execInEth(() => contract.gotoNextStateAndPrize(txParams(addr)));
 		assert.ok(res);
 
 		// Должны быть на стадии PreSale
@@ -217,7 +239,7 @@ describe('Test Ico-contract', () => {
 		}
 
 		// Дергаем ручку
-		let res = execInEth(() => contract.gotoNextStateAndPrize(txParams(addr)));
+		let res = await execInEth(() => contract.gotoNextStateAndPrize(txParams(addr)));
 		assert.ok(res);
 
 		// Должны быть на стадии SaleStage1
@@ -252,7 +274,7 @@ describe('Test Ico-contract', () => {
 		assert.ok(ethCountWei.lessThanOrEqualTo(userWeiBalance));
 
 		// Выполняем покупку
-		let buyFreeMoneyRes = execInEth(() => contract.buyTokens(addr, txParams(addr, ethCountWei)));
+		let buyFreeMoneyRes = await execInEth(() => contract.buyTokens(addr, txParams(addr, ethCountWei)));
 		assert.ok(buyFreeMoneyRes);
 
 		// Проверяем, что юзер получил токены
@@ -292,7 +314,7 @@ describe('Test Ico-contract', () => {
 		assert.ok(ethCountWei.lessThanOrEqualTo(userWeiBalance));
 
 		// Выполняем покупку
-		let buyFreeMoneyRes = execInEth(() => contract.buyTokens(addr, txParams(addr, ethCountWei)));
+		let buyFreeMoneyRes = await execInEth(() => contract.buyTokens(addr, txParams(addr, ethCountWei)));
 		assert.ok(buyFreeMoneyRes);
 
 		// Проверяем, что юзер получил токены
@@ -332,7 +354,7 @@ describe('Test Ico-contract', () => {
 		assert.ok(ethCountWei.lessThanOrEqualTo(userWeiBalance));
 
 		// Выполняем покупку
-		let buyFreeMoneyRes = execInEth(() => contract.buyTokens(addr, txParams(addr, ethCountWei)));
+		let buyFreeMoneyRes = await execInEth(() => contract.buyTokens(addr, txParams(addr, ethCountWei)));
 		assert.ok(buyFreeMoneyRes);
 
 		// Проверяем, что юзер получил токены
@@ -373,7 +395,7 @@ describe('Test Ico-contract', () => {
 		assert.ok(ethCountWei.lessThanOrEqualTo(userWeiBalance));
 
 		// Выполняем покупку
-		let buyFreeMoneyRes = execInEth(() => contract.buyTokens(addr, txParams(addr, ethCountWei)));
+		let buyFreeMoneyRes = await execInEth(() => contract.buyTokens(addr, txParams(addr, ethCountWei)));
 		assert.ok(buyFreeMoneyRes);
 
 		// Проверяем, что юзер получил токены
@@ -415,7 +437,7 @@ describe('Test Ico-contract', () => {
 		assert.ok(ethCountWei.lessThanOrEqualTo(userWeiBalance));
 
 		// Выполняем покупку
-		let buyFreeMoneyRes = execInEth(() => contract.buyTokens(addr, txParams(addr, ethCountWei)));
+		let buyFreeMoneyRes = await execInEth(() => contract.buyTokens(addr, txParams(addr, ethCountWei)));
 		assert.ok(buyFreeMoneyRes);
 
 		// Проверяем, что юзер получил токены
@@ -458,7 +480,7 @@ describe('Test Ico-contract', () => {
 		assert.ok(ethCountWei.lessThanOrEqualTo(userWeiBalance));
 
 		// Выполняем покупку
-		let buyFreeMoneyRes = execInEth(() => contract.buyTokens(addr, txParams(addr, ethCountWei)));
+		let buyFreeMoneyRes = await execInEth(() => contract.buyTokens(addr, txParams(addr, ethCountWei)));
 		assert.ok(buyFreeMoneyRes);
 
 		// Проверяем, что юзер получил токены
@@ -502,7 +524,7 @@ describe('Test Ico-contract', () => {
 		assert.ok(ethCountWei.lessThanOrEqualTo(userWeiBalance));
 
 		// Выполняем покупку
-		let buyRes = execInEth(() => contract.buyTokens(addr, txParams(addr, ethCountWei)));
+		let buyRes = await execInEth(() => contract.buyTokens(addr, txParams(addr, ethCountWei)));
 		assert.ok(buyRes);
 
 		// Проверяем, что юзер получил токены
@@ -547,7 +569,7 @@ describe('Test Ico-contract', () => {
 		assert.ok(ethCountWei.lessThanOrEqualTo(userWeiBalance));
 
 		// Выполняем покупку
-		let buyRes = execInEth(() => contract.buyTokens(addr, txParams(addr, ethCountWei)));
+		let buyRes = await execInEth(() => contract.buyTokens(addr, txParams(addr, ethCountWei)));
 		assert.ok(buyRes);
 
 		// Проверяем, что юзер получил токены
@@ -564,14 +586,14 @@ describe('Test Ico-contract', () => {
 	/**
 	 * Тест, что юзеры не могут передать свои токены до PostIco
 	 */
-	it('test-cannot-transfer-tokens-before-postIco', () => {
+	it('test-cannot-transfer-tokens-before-postIco', async () => {
 
 		// Сумма, которую будем покупать, передавать
 		let sum = bnWr(new BigNumber(1));
 		let bUser1, bUser2;
 
 		// Передаем tokens юзеру
-		let res1 = execInEth(() => contract.transfer(accs.user1, sum, txParams(accs.owner)));
+		let res1 = await execInEth(() => contract.transfer(accs.user1, sum, txParams(accs.owner)));
 		assert.ok(res1);
 
 		// Проверяем баланс
@@ -579,7 +601,7 @@ describe('Test Ico-contract', () => {
 		assert.ok(bUser1.equals(sum));
 
 		// Юзер 1 пытается передать их юзеру 2
-		let res2 = execInEth(() => contract.transfer(accs.user2, sum, txParams(accs.user1)));
+		let res2 = await execInEth(() => contract.transfer(accs.user2, sum, txParams(accs.user1)));
 		assert.ok(!res2);
 
 		// Проверяем балансы
@@ -611,7 +633,7 @@ describe('Test Ico-contract', () => {
 		let count = bnWr(web3.toWei(etherCount).mul(CONSTANTS.RATE_PRESALE));
 
 		// Выполняем покупку
-		let res = execInEth(() => contract.buyTokens(user, txParams(user, web3.toWei(etherCount))));
+		let res = await execInEth(() => contract.buyTokens(user, txParams(user, web3.toWei(etherCount))));
 		assert.ok(res);
 
 		// Проверяем что купили
@@ -665,7 +687,7 @@ describe('Test Ico-contract', () => {
 		assert.ok(ethCountWei.lessThanOrEqualTo(userWeiBalance));
 
 		// Выполняем покупку
-		let buyRes = execInEth(() => contract.buyTokens(addr, txParams(addr, ethCountWei)));
+		let buyRes = await execInEth(() => contract.buyTokens(addr, txParams(addr, ethCountWei)));
 		assert.ok(buyRes);
 
 		// Проверяем, что юзер получил токены
@@ -679,7 +701,7 @@ describe('Test Ico-contract', () => {
 		});
 
 		// Проверяем, что больше купить не удасться
-		let buyResErr = execInEth(() => contract.buyTokens(addr, txParams(addr, new BigNumber(1))));
+		let buyResErr = await execInEth(() => contract.buyTokens(addr, txParams(addr, new BigNumber(1))));
 		assert.ok(!buyResErr);
 
 	});
@@ -715,7 +737,7 @@ describe('Test Ico-contract', () => {
 		assert.ok(ethCountWei.lessThanOrEqualTo(userWeiBalance));
 
 		// Выполняем покупку
-		let buyRes = execInEth(() => contract.buyTokens(addr, txParams(addr, ethCountWei)));
+		let buyRes = await execInEth(() => contract.buyTokens(addr, txParams(addr, ethCountWei)));
 		assert.ok(!buyRes);
 
 		// Проверяем, что юзер не получил токены
@@ -749,7 +771,7 @@ describe('Test Ico-contract', () => {
 
 		// Покупаем токенов на 1 wei
 		let goingToBuyTokenCount = CONSTANTS.RATE_SALESTAGE1;
-		let buyRes = execInEth(() => contract.buyTokens(addr, txParams(addr, new BigNumber(1))));
+		let buyRes = await execInEth(() => contract.buyTokens(addr, txParams(addr, new BigNumber(1))));
 		assert.ok(buyRes);
 
 		// Проверяем, что купили токенов по курсу Stage1,
@@ -796,7 +818,7 @@ describe('Test Ico-contract', () => {
 	 * @param {() => string} act Вызов метода контракта
 	 * @returns {boolean} Успешность вызова
 	 */
-	function execInEth(act: () => string) {
+	async function execInEth(act: () => string): Promise<boolean> {
 		let txHash = null;
 		try {
 			txHash = act();
@@ -804,6 +826,7 @@ describe('Test Ico-contract', () => {
 			return false;
 		}
 		while (web3.eth.getTransactionReceipt(txHash) == null) {
+			await U.delay(1000);
 		}
 
 		let txRec = web3.eth.getTransactionReceipt(txHash);
@@ -838,7 +861,7 @@ describe('Test Ico-contract', () => {
 				await U.delay(1000);
 			}
 
-			let res = execInEth(() => contract.gotoNextStateAndPrize(txParams(accs.lucky)));
+			let res = await execInEth(() => contract.gotoNextStateAndPrize(txParams(accs.lucky)));
 			assert.ok(res);
 		}
 
@@ -858,7 +881,7 @@ describe('Test Ico-contract', () => {
 			let ethCountWei = bnWr(freeMoney.divToInt(rate));
 
 			// Выполняем покупку
-			let res = execInEth(() => contract.buyTokens(accs.lucky, txParams(accs.lucky, ethCountWei)));
+			let res = await execInEth(() => contract.buyTokens(accs.lucky, txParams(accs.lucky, ethCountWei)));
 			assert.ok(res);
 		}
 
