@@ -766,13 +766,13 @@ describe('Test Ico-contract', () => {
 		});
 
 		// Пытаемся купить rmToken
-		let etherCount = bnWr(new BigNumber(1));
+		let weiCount = bnWr(new BigNumber(1));
 
-		// Считаем, сколько rmToken должны купить на 1 ether
-		let count = bnWr(web3.toWei(etherCount).mul(CONSTANTS.RATE_PRESALE));
+		// Считаем, сколько rmToken должны купить на 1 wei
+		let count = bnWr(weiCount.mul(CONSTANTS.RATE_PRESALE));
 
 		// Выполняем покупку
-		let res = await execInEth(() => contract.buyTokens(user, txParams(user, web3.toWei(etherCount))));
+		let res = await execInEth(() => contract.buyTokens(user, txParams(user, weiCount)));
 		assert.ok(res);
 
 		// Проверяем что купили
@@ -783,6 +783,42 @@ describe('Test Ico-contract', () => {
 			freeMoney: bnWr(CONSTANTS.EMISSION_FOR_PRESALE.minus(count)),
 			totalBought: count
 		});
+
+		//-----------------------------------------------
+
+		// Пытаемся купить больше, чем осталось
+		let freeMoney = bnWr(contract.freeMoney());
+		let weiOverPrice = freeMoney.divToInt(CONSTANTS.RATE_PRESALE).plus(1);
+
+		//Будем покупать на большую сумму, чтобы выйти за
+
+		// Выполняем покупку
+		let resErr = await execInEth(() => contract.buyTokens(user, txParams(user, weiOverPrice)));
+		assert.ok(!resErr);
+
+	  // Ничего не должно измениться
+		assertEq(userRmTokens, contract.balanceOf(user));
+		checkContract({
+			freeMoney: bnWr(CONSTANTS.EMISSION_FOR_PRESALE.minus(count)),
+			totalBought: count
+		});
+
+		//-----------------------------------------------
+		// Выкупаем токены в 0, проверяем, что остаемся на PreSale
+		let weiPrice = contract.freeMoney().divToInt(CONSTANTS.RATE_PRESALE);
+
+		let resBuyAll = await execInEth(() => contract.buyTokens(user, txParams(user, weiPrice)));
+		assert.ok(resBuyAll);
+
+		// Проверяем, что юзер выкупил все с PreSale
+		assertEq(CONSTANTS.EMISSION_FOR_PRESALE, bnWr(contract.balanceOf(user)));
+
+		checkContract({
+			currentState: IcoStates.PreSale,
+			freeMoney: bnWr(new BigNumber(0)),
+			totalBought: CONSTANTS.EMISSION_FOR_PRESALE
+		});
+
 	});
 
 	/**
