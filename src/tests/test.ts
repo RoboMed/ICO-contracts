@@ -29,7 +29,6 @@ interface CheckContractParams {
 	totalSupply?: BnWr;
 	totalBought?: BnWr;
 	vipPlacementNotDistributed?: BnWr;
-	remForPreSale?: BnWr;
 	rate?: BnWr;
 }
 
@@ -354,7 +353,12 @@ describe('Test Ico-contract', () => {
 		assert.ok(res);
 
 		// Должны быть на стадии PreSale
-		assert.ok(contract.currentState().equals(IcoStates.PreSale));
+		checkContract({
+			currentState: IcoStates.PreSale,
+			freeMoney: CONSTANTS.EMISSION_FOR_PRESALE,
+			totalBought: bnWr(new BigNumber(0)),
+			rate: CONSTANTS.RATE_PRESALE
+		});
 
 		//Проверяем, что получили приз
 		let priceRes = bnWr(contract.balanceOf(addr));
@@ -382,7 +386,11 @@ describe('Test Ico-contract', () => {
 		assert.ok(res);
 
 		// Должны быть на стадии SaleStage1
-		assert.ok(contract.currentState().equals(IcoStates.SaleStage1));
+		checkContract({
+			currentState: IcoStates.SaleStage1,
+			freeMoney: CONSTANTS.EMISSION_FOR_SALESTAGE1,
+			rate: CONSTANTS.RATE_SALESTAGE1
+		});
 
 		//Проверяем, что получили приз
 		let priceRes = bnWr(contract.balanceOf(addr));
@@ -423,7 +431,8 @@ describe('Test Ico-contract', () => {
 		// Проверяем, что произошел переход на Stage2
 		checkContract({
 			currentState: IcoStates.SaleStage2,
-			freeMoney: CONSTANTS.EMISSION_FOR_SALESTAGE2
+			freeMoney: CONSTANTS.EMISSION_FOR_SALESTAGE2,
+			rate: CONSTANTS.RATE_SALESTAGE2
 		});
 	});
 
@@ -463,7 +472,8 @@ describe('Test Ico-contract', () => {
 		// Проверяем, что произошел переход на Stage3
 		checkContract({
 			currentState: IcoStates.SaleStage3,
-			freeMoney: CONSTANTS.EMISSION_FOR_SALESTAGE3
+			freeMoney: CONSTANTS.EMISSION_FOR_SALESTAGE3,
+			rate: CONSTANTS.RATE_SALESTAGE3
 		});
 	});
 
@@ -503,7 +513,8 @@ describe('Test Ico-contract', () => {
 		// Проверяем, что произошел переход на Stage4
 		checkContract({
 			currentState: IcoStates.SaleStage4,
-			freeMoney: CONSTANTS.EMISSION_FOR_SALESTAGE4
+			freeMoney: CONSTANTS.EMISSION_FOR_SALESTAGE4,
+			rate: CONSTANTS.RATE_SALESTAGE4
 		});
 	});
 
@@ -544,7 +555,8 @@ describe('Test Ico-contract', () => {
 		// Проверяем, что произошел переход на Stage5
 		checkContract({
 			currentState: IcoStates.SaleStage5,
-			freeMoney: CONSTANTS.EMISSION_FOR_SALESTAGE5
+			freeMoney: CONSTANTS.EMISSION_FOR_SALESTAGE5,
+			rate: CONSTANTS.RATE_SALESTAGE5
 		});
 	});
 
@@ -586,7 +598,8 @@ describe('Test Ico-contract', () => {
 		// Проверяем, что произошел переход на Stage6
 		checkContract({
 			currentState: IcoStates.SaleStage6,
-			freeMoney: CONSTANTS.EMISSION_FOR_SALESTAGE6
+			freeMoney: CONSTANTS.EMISSION_FOR_SALESTAGE6,
+			rate: CONSTANTS.RATE_SALESTAGE6
 		});
 	});
 
@@ -629,7 +642,8 @@ describe('Test Ico-contract', () => {
 		// Проверяем, что произошел переход на Stage7
 		checkContract({
 			currentState: IcoStates.SaleStage7,
-			freeMoney: CONSTANTS.EMISSION_FOR_SALESTAGE7
+			freeMoney: CONSTANTS.EMISSION_FOR_SALESTAGE7,
+			rate: CONSTANTS.RATE_SALESTAGE7
 		});
 	});
 
