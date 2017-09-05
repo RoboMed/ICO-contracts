@@ -280,12 +280,12 @@ export interface Contract {
 	/**
 	 * Метод выполняющий выдачу баунти-токенов на указанный адрес
 	 */
-	transferBounty(_to: string, _value: BigNumber.BigNumber): string;
+	transferBounty(_to: string, _value: BigNumber.BigNumber, params: TxParams): string;
 
 	/**
 	 * Метод выполняющий выдачу баунти-токенов на указанный адрес
 	 */
-	transferTeam(_to: string, _value: BigNumber.BigNumber): string;
+	transferTeam(_to: string, _value: BigNumber.BigNumber, params: TxParams): string;
 
 	/**
 	 * @dev transfer token for a specified address

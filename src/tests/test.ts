@@ -63,7 +63,9 @@ describe('Test Ico-contract', () => {
 		[accs.owner,
 			accs.lucky,
 			accs.user1,
-			accs.user2
+			accs.user2,
+			accs.bounty,
+			accs.team
 		].map(acc => {
 			web3.personal.unlockAccount(acc, config.accountPass)
 		});
@@ -731,6 +733,72 @@ describe('Test Ico-contract', () => {
 		let priceRes = bnWr(contract.balanceOf(addr));
 		assert.ok(priceRes.equals(CONSTANTS.PRIZE_SIZE_FORGOTO));
 	});
+
+	/**
+	 * Тест распределения средств на стадии PostIco
+	 */
+	it('test-postIco-distribution', async () => {
+		//Распределяем токены
+		let trBounty = await execInEth(() => contract.transferBounty(accs.user1, new BigNumber(100), txParams(accs.owner)));
+		let trTeam = await execInEth(() => contract.transferTeam(accs.user1, new BigNumber(100), txParams(accs.owner)));
+
+		assert.ok(trBounty);
+		assert.ok(trTeam);
+
+		await goToState(IcoStates.PreSale);
+		await goToState(IcoStates.SaleStage1);
+		//...
+		await goToState(IcoStates.SaleStageLast);
+		await goToState(IcoStates.PostIco);
+
+		// Проверяем, что мы на стадии PostIco
+		assert.ok(contract.currentState().equals(IcoStates.PostIco));
+
+		//-----------------------------------------------
+
+		// Покупка токенов запрещена
+		let user1TokensCountBefore = contract.balanceOf(accs.user1);
+		let buyErr = await execInEth(() => contract.buyTokens(accs.user1, txParams(accs.user1, new BigNumber(1))));
+		assert.ok(!buyErr);
+		assert.ok(user1TokensCountBefore.equals(contract.balanceOf(accs.user1)));
+
+		//-----------------------------------------------
+		// Все владельцы кошельков могут переводить RBM кому угодно
+		let user1TokensBeforeTransfer = bnWr(contract.balanceOf(accs.user1));
+		let user2TokensBeforeTransfer = bnWr(contract.balanceOf(accs.user2));
+		let transCount = bnWr(new BigNumber(1));
+
+		// Transfer User1 -> User2
+		let trans = await execInEth(() => contract.transfer(accs.user2, transCount, txParams(accs.user1)));
+
+		let user1TokensAfterTransfer = bnWr(contract.balanceOf(accs.user1));
+		let user2TokensAfterTransfer = bnWr(contract.balanceOf(accs.user2));
+
+		assert.ok(trans);
+		assert.ok(user1TokensBeforeTransfer.equals(user1TokensAfterTransfer.plus(transCount)));
+		assert.ok(user2TokensBeforeTransfer.equals(user2TokensAfterTransfer.minus(transCount)));
+		//-----------------------------------------------
+
+		// Можно переводить с баунти аккаунтов
+		let bountyTokensBeforeTransferBounty = bnWr(contract.balanceOf(accs.bounty));
+		let user2TokensBeforeTransferBounty = bnWr(contract.balanceOf(accs.user2));
+		let transBountyCount = bnWr(new BigNumber(1));
+
+		// Transfer Bounty -> User2
+		let transBounty = await execInEth(() => contract.transfer(accs.user2, transBountyCount, txParams(accs.bounty)))
+
+		let bountyTokensAfterTransferBounty = bnWr(contract.balanceOf(accs.bounty));
+		let user2TokensAfterTransferBounty = bnWr(contract.balanceOf(accs.user2));
+
+		assert.ok(transBounty);
+		assert.ok(bountyTokensBeforeTransferBounty.equals(bountyTokensAfterTransferBounty.plus(transBountyCount)));
+		assert.ok(user2TokensBeforeTransferBounty.equals(user2TokensAfterTransferBounty.minus(transBountyCount)));
+
+		// Можно переводить с тим аккаунтов
+
+
+	});
+
 
 	/**
 	 * Тест покупки на Stage1 монет больше, чем выпущено для Stage1
