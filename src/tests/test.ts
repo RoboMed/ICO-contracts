@@ -485,7 +485,7 @@ describe('Test Ico-contract', () => {
 		let addr = accs.user1;
 		await goToState(IcoStates.PreSale);
 		await goToState(IcoStates.SaleStage1);
-		await goToState(IcoStates.SaleStage2);
+		//await goToState(IcoStates.SaleStage2);
 		await goToState(IcoStates.SaleStage3);
 
 		// Проверяем, что мы на стадии SaleStage3
@@ -526,8 +526,8 @@ describe('Test Ico-contract', () => {
 		let addr = accs.user1;
 		await goToState(IcoStates.PreSale);
 		await goToState(IcoStates.SaleStage1);
-		await goToState(IcoStates.SaleStage2);
-		await goToState(IcoStates.SaleStage3);
+		//await goToState(IcoStates.SaleStage2);
+		//await goToState(IcoStates.SaleStage3);
 		await goToState(IcoStates.SaleStage4);
 
 		// Проверяем, что мы на стадии SaleStage4
@@ -568,9 +568,9 @@ describe('Test Ico-contract', () => {
 		let addr = accs.user1;
 		await goToState(IcoStates.PreSale);
 		await goToState(IcoStates.SaleStage1);
-		await goToState(IcoStates.SaleStage2);
-		await goToState(IcoStates.SaleStage3);
-		await goToState(IcoStates.SaleStage4);
+		//await goToState(IcoStates.SaleStage2);
+		//await goToState(IcoStates.SaleStage3);
+		//await goToState(IcoStates.SaleStage4);
 		await goToState(IcoStates.SaleStage5);
 
 		// Проверяем, что мы на стадии SaleStage5
@@ -611,10 +611,10 @@ describe('Test Ico-contract', () => {
 		let addr = accs.user1;
 		await goToState(IcoStates.PreSale);
 		await goToState(IcoStates.SaleStage1);
-		await goToState(IcoStates.SaleStage2);
-		await goToState(IcoStates.SaleStage3);
-		await goToState(IcoStates.SaleStage4);
-		await goToState(IcoStates.SaleStage5);
+		//await goToState(IcoStates.SaleStage2);
+		//await goToState(IcoStates.SaleStage3);
+		//await goToState(IcoStates.SaleStage4);
+		//await goToState(IcoStates.SaleStage5);
 		await goToState(IcoStates.SaleStage6);
 
 		// Проверяем, что мы на стадии SaleStage6
@@ -645,6 +645,91 @@ describe('Test Ico-contract', () => {
 			freeMoney: CONSTANTS.EMISSION_FOR_SALESTAGE7,
 			rate: CONSTANTS.RATE_SALESTAGE7
 		});
+	});
+
+	/**
+	 * Тест перехода стадий SaleStage7 -> SaleStageLast
+	 */
+	it('test-goToState-saleStageLast', async () => {
+
+		let addr = accs.user1;
+		await goToState(IcoStates.PreSale);
+		await goToState(IcoStates.SaleStage1);
+		//await goToState(IcoStates.SaleStage2);
+		//await goToState(IcoStates.SaleStage3);
+		//await goToState(IcoStates.SaleStage4);
+		//await goToState(IcoStates.SaleStage5);
+		//await goToState(IcoStates.SaleStage6);
+		await goToState(IcoStates.SaleStage7);
+
+		// Проверяем, что мы на стадии SaleStage7
+		assert.ok(contract.currentState().equals(IcoStates.SaleStage7));
+
+		// Необходимо все выкупить
+		let rate = bnWr(contract.rate());
+		let userWeiBalance = bnWr(web3.eth.getBalance(addr));
+		let freeMoney = bnWr(contract.freeMoney());
+
+		//Считаем сколько надо eth на выкуп всего
+		let ethCountWei = bnWr(freeMoney.divToInt(rate));
+
+		// Проверяем, что у юзера достаточно монет на покупку
+		assert.ok(ethCountWei.lessThanOrEqualTo(userWeiBalance));
+
+		// Выполняем покупку
+		let buyFreeMoneyRes = await execInEth(() => contract.buyTokens(addr, txParams(addr, ethCountWei)));
+		assert.ok(buyFreeMoneyRes);
+
+		// Проверяем, что юзер получил токены
+		let userTokenBalanceAfterBuy = bnWr(contract.balanceOf(addr));
+		assertEq(freeMoney, userTokenBalanceAfterBuy);
+
+		// Проверяем, что произошел переход на SaleStageLast
+		checkContract({
+			currentState: IcoStates.SaleStageLast,
+			freeMoney: CONSTANTS.EMISSION_FOR_SALESTAGELAST,
+			rate: CONSTANTS.RATE_SALESTAGELAST
+		});
+	});
+
+	/**
+	 * Тест перехода стадий SaleStageLast -> PostIco
+	 */
+	it('test-goToState-postIco', async () => {
+
+		let addr = accs.user1;
+		await goToState(IcoStates.PreSale);
+		await goToState(IcoStates.SaleStage1);
+		//await goToState(IcoStates.SaleStage2);
+		//await goToState(IcoStates.SaleStage3);
+		//await goToState(IcoStates.SaleStage4);
+		//await goToState(IcoStates.SaleStage5);
+		//await goToState(IcoStates.SaleStage6);
+		//await goToState(IcoStates.SaleStage7);
+		await goToState(IcoStates.SaleStageLast);
+
+		// Проверяем, что мы на стадии SaleStageLast
+		assert.ok(contract.currentState().equals(IcoStates.SaleStageLast));
+
+		// Достаточно дождаться времени завершения SaleStageLast
+		while (!contract.canGotoState(IcoStates.PostIco)) {
+			await U.delay(1000);
+		}
+
+		// Дергаем ручку
+		let res = await execInEth(() => contract.gotoNextStateAndPrize(txParams(addr)));
+		assert.ok(res);
+
+		// Проверяем, что произошел переход на PostIco
+		checkContract({
+			currentState: IcoStates.PostIco,
+			freeMoney: bnWr(new BigNumber(0)),
+			rate: bnWr(new BigNumber(0))
+		});
+
+		//Проверяем, что получили приз
+		let priceRes = bnWr(contract.balanceOf(addr));
+		assert.ok(priceRes.equals(CONSTANTS.PRIZE_SIZE_FORGOTO));
 	});
 
 	/**
@@ -810,7 +895,7 @@ describe('Test Ico-contract', () => {
 		let resErr = await execInEth(() => contract.buyTokens(user, txParams(user, weiOverPrice)));
 		assert.ok(!resErr);
 
-	  // Ничего не должно измениться
+		// Ничего не должно измениться
 		assertEq(userRmTokens, contract.balanceOf(user));
 		checkContract({
 			freeMoney: bnWr(CONSTANTS.EMISSION_FOR_PRESALE.minus(count)),
@@ -1038,12 +1123,13 @@ describe('Test Ico-contract', () => {
 	async function goToState(toStage: BigNumber.BigNumber, isAllowGreater: boolean = true): Promise<void> {
 
 		//Если текущая или уже была, выходим
-		if (toStage.lessThanOrEqualTo(contract.currentState())) return;
+		let fromStage = bnWr(contract.currentState());
+		if (toStage.lessThanOrEqualTo(fromStage)) return;
 
 		console.log("goToState: " + toStage);
 
 		// PreSale и SaleStage1
-		if (toStage.equals(IcoStates.PreSale) || toStage.equals(IcoStates.SaleStage1)) {
+		if (toStage.equals(IcoStates.PreSale) || toStage.equals(IcoStates.SaleStage1) || toStage.equals(IcoStates.PostIco)) {
 
 			// Достаточно дождаться и дернуть ручку
 			while (!contract.canGotoState(toStage)) {
@@ -1051,6 +1137,7 @@ describe('Test Ico-contract', () => {
 			}
 
 			let res = await execInEth(() => contract.gotoNextStateAndPrize(txParams(accs.lucky)));
+			assert.ok(res);
 		}
 
 		// SaleStage2 - SaleStage7
@@ -1062,15 +1149,37 @@ describe('Test Ico-contract', () => {
 			toStage.equals(IcoStates.SaleStage7) ||
 			toStage.equals(IcoStates.SaleStageLast)) {
 
+			let freeMoney0 = bnWr(contract.freeMoney());
+			let currentState0 = bnWr(contract.currentState());
+
 			// Необходимо выкупить freemoney
-			let rate = bnWr(contract.rate());
-			let freeMoney = bnWr(contract.freeMoney());
-
 			//Считаем сколько надо eth на выкуп всего
-			let ethCountWei = bnWr(freeMoney.divToInt(rate));
+			let ethCountWei = bnWr(new BigNumber(0));
+			if (fromStage.lessThanOrEqualTo(IcoStates.SaleStage1) && IcoStates.SaleStage2.lessThanOrEqualTo(toStage)) {
+				ethCountWei = bnWr(ethCountWei.plus(CONSTANTS.EMISSION_FOR_SALESTAGE1.divToInt(CONSTANTS.RATE_SALESTAGE1)));
+			}
+			if (fromStage.lessThanOrEqualTo(IcoStates.SaleStage2) && IcoStates.SaleStage3.lessThanOrEqualTo(toStage)) {
+				ethCountWei = bnWr(ethCountWei.plus(CONSTANTS.EMISSION_FOR_SALESTAGE2.divToInt(CONSTANTS.RATE_SALESTAGE2)));
+			}
+			if (fromStage.lessThanOrEqualTo(IcoStates.SaleStage3) && IcoStates.SaleStage4.lessThanOrEqualTo(toStage)) {
+				ethCountWei = bnWr(ethCountWei.plus(CONSTANTS.EMISSION_FOR_SALESTAGE3.divToInt(CONSTANTS.RATE_SALESTAGE3)));
+			}
+			if (fromStage.lessThanOrEqualTo(IcoStates.SaleStage4) && IcoStates.SaleStage5.lessThanOrEqualTo(toStage)) {
+				ethCountWei = bnWr(ethCountWei.plus(CONSTANTS.EMISSION_FOR_SALESTAGE4.divToInt(CONSTANTS.RATE_SALESTAGE4)));
+			}
+			if (fromStage.lessThanOrEqualTo(IcoStates.SaleStage5) && IcoStates.SaleStage6.lessThanOrEqualTo(toStage)) {
+				ethCountWei = bnWr(ethCountWei.plus(CONSTANTS.EMISSION_FOR_SALESTAGE5.divToInt(CONSTANTS.RATE_SALESTAGE5)));
+			}
+			if (fromStage.lessThanOrEqualTo(IcoStates.SaleStage6) && IcoStates.SaleStage7.lessThanOrEqualTo(toStage)) {
+				ethCountWei = bnWr(ethCountWei.plus(CONSTANTS.EMISSION_FOR_SALESTAGE6.divToInt(CONSTANTS.RATE_SALESTAGE6)));
+			}
+			if (fromStage.lessThanOrEqualTo(IcoStates.SaleStage7) && IcoStates.SaleStageLast.lessThanOrEqualTo(toStage)) {
+				ethCountWei = bnWr(ethCountWei.plus(CONSTANTS.EMISSION_FOR_SALESTAGE7.divToInt(CONSTANTS.RATE_SALESTAGE7)));
+			}
 
-			//Чтобы попасть на SaleStageLast надо дождаться
-			if(toStage.equals(IcoStates.SaleStageLast)) {
+
+			//Чтобы попасть на SaleStageLast надо дождаться завершения SaleStageLast
+			if (toStage.equals(IcoStates.SaleStageLast)) {
 				while (!contract.canGotoState(toStage)) {
 					await U.delay(1000);
 				}
@@ -1080,8 +1189,10 @@ describe('Test Ico-contract', () => {
 			let res = await execInEth(() => contract.buyTokens(accs.lucky, txParams(accs.lucky, ethCountWei)));
 			assert.ok(res);
 
-
+			let freeMoney = bnWr(contract.freeMoney());
+			let currentState = bnWr(contract.currentState());
 		}
+
 
 		//Проверяем, что переход был выполнен
 		//ToDo Проверять состояние контракта при переходе на новую стадию с помощью checkContract
