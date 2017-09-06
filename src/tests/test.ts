@@ -325,6 +325,42 @@ describe('Test Ico-contract', () => {
 		let ownerTokenBalanceAfterTransferToTeam = bnWr(contract.balanceOf(accs.owner));
 		assert.ok(ownerTokenBalanceAfterTransferToTeam.equals(ownerTokenBalanceAfterTransfer));
 		assertEq(CONSTANTS.EMISSION_FOR_TEAM, contract.balanceOf(accs.team));
+
+		//-----------------------------------------------
+		// Распределяем bounty токены
+		let bountyRes = await execInEth(() => contract.transferBounty(accs.user1, new BigNumber(1), txParams(accs.owner)));
+		assert.ok(bountyRes);
+
+		// Распределять может только владелец
+		let bountyResErr = await execInEth(() => contract.transferBounty(accs.user1, new BigNumber(1), txParams(accs.user1)));
+		assert.ok(!bountyResErr);
+
+		//Распределять можно на любые аккаунты в т.ч. на team
+		let bountyToTeamRes = await execInEth(() => contract.transferBounty(accs.team, new BigNumber(1), txParams(accs.owner)));
+		assert.ok(bountyToTeamRes);
+
+		//Нельзя распределять на аккаунт владельца контракта
+		let bountyToOwnerRes = await execInEth(() => contract.transferBounty(accs.owner, new BigNumber(1), txParams(accs.owner)));
+		assert.ok(!bountyToOwnerRes);
+
+
+		//-----------------------------------------------
+		// Распределяем team токены
+		let teamRes = await execInEth(() => contract.transferTeam(accs.user1, new BigNumber(1), txParams(accs.owner)));
+		assert.ok(teamRes);
+
+		// Распределять может только владелец
+		let teamResErr = await execInEth(() => contract.transferTeam(accs.user1, new BigNumber(1), txParams(accs.user1)));
+		assert.ok(!teamResErr);
+
+		//Распределять можно на любые аккаунты в т.ч. на bounty
+		let teamToBountyRes = await execInEth(() => contract.transferTeam(accs.bounty, new BigNumber(1), txParams(accs.owner)));
+		assert.ok(teamToBountyRes);
+
+		//Нельзя распределять на аккаунт владельца контракта
+		let teamToOwnerRes = await execInEth(() => contract.transferTeam(accs.owner, new BigNumber(1), txParams(accs.owner)));
+		assert.ok(!teamToOwnerRes);
+
 	}
 
 	/**
@@ -744,7 +780,18 @@ describe('Test Ico-contract', () => {
 		assert.ok(contract.currentState().equals(IcoStates.PostIco));
 
 		//-----------------------------------------------
+		// На PostIco можно распределять bounty и team токены
+		// Bounty
+		let beforeTransferBountyCount = bnWr(contract.balanceOf(accs.user1));
+		let transferBounty = await execInEth(() => contract.transferBounty(accs.user1, new BigNumber(1), txParams(accs.owner)));
+		assert.ok(transferBounty);
+		assertEq(bnWr(beforeTransferBountyCount.plus(1)), bnWr(contract.balanceOf(accs.user1)));
+		// Team
+		let tranfserTeam = await execInEth(() => contract.transferTeam(accs.user1, new BigNumber(1), txParams(accs.owner)));
+		assert.ok(tranfserTeam);
+		assertEq(bnWr(beforeTransferBountyCount.plus(1)), bnWr(contract.balanceOf(accs.user1)));
 
+		//-----------------------------------------------
 		// Покупка токенов запрещена
 		let user1TokensCountBefore = contract.balanceOf(accs.user1);
 		let buyErr = await execInEth(() => contract.buyTokens(accs.user1, txParams(accs.user1, new BigNumber(1))));
@@ -1198,6 +1245,63 @@ describe('Test Ico-contract', () => {
 
 	});
 
+	/**
+	 * Тест распределение баунти возможно только в количестве не превышающим фиксированное значение EMISSION_FOR_BOUNTY
+	 */
+	it('test-bounty-emissioned', async () => {
+
+		// Передаем половину bounty user1
+		let count = bnWr(CONSTANTS.EMISSION_FOR_BOUNTY.divToInt(2));
+		assertEq(new BigNumber(0), contract.balanceOf(accs.user1));
+		let res1 = await execInEth(() => contract.transferBounty(accs.user1, count, txParams(accs.owner)));
+		assert.ok(res1);
+		assertEq(count, bnWr(contract.balanceOf(accs.user1)));
+
+		// Пытаемся передать остаток + 1
+		let overflowCount = bnWr(CONSTANTS.EMISSION_FOR_BOUNTY.minus(count).plus(1));
+		let res2 = await execInEth(() => contract.transferBounty(accs.user1, overflowCount, txParams(accs.owner)));
+		assert.ok(!res2);
+		assertEq(count, bnWr(contract.balanceOf(accs.user1)));
+
+		// Передаем остаток
+		let res3 = await execInEth(() => contract.transferBounty(accs.user1, CONSTANTS.EMISSION_FOR_BOUNTY.minus(count), txParams(accs.owner)));
+		assert.ok(res3);
+		assertEq(CONSTANTS.EMISSION_FOR_BOUNTY, bnWr(contract.balanceOf(accs.user1)));
+
+		// Пытаемя передать после того как все распределили
+		let res4 = await execInEth(() => contract.transferBounty(accs.user1, new BigNumber(1), txParams(accs.owner)));
+		assert.ok(!res4);
+		assertEq(CONSTANTS.EMISSION_FOR_BOUNTY, bnWr(contract.balanceOf(accs.user1)));
+	});
+
+	/**
+	 * Тест распределение team возможно только в количестве не превышающим фиксированное значение EMISSION_FOR_TEAM
+	 */
+	it('test-team-emissioned', async () => {
+
+		// Передаем половину bounty user1
+		let count = bnWr(CONSTANTS.EMISSION_FOR_TEAM.divToInt(2));
+		assertEq(new BigNumber(0), contract.balanceOf(accs.user1));
+		let res1 = await execInEth(() => contract.transferTeam(accs.user1, count, txParams(accs.owner)));
+		assert.ok(res1);
+		assertEq(new BigNumber(0), contract.balanceOf(accs.user1));
+
+		// Пытаемся передать остаток + 1
+		let overflowCount = bnWr(CONSTANTS.EMISSION_FOR_TEAM.minus(count).plus(1));
+		let res2 = await execInEth(() => contract.transferTeam(accs.user1, overflowCount, txParams(accs.owner)));
+		assert.ok(!res2);
+		assertEq(new BigNumber(0), contract.balanceOf(accs.user1));
+
+		// Передаем остаток
+		let res3 = await execInEth(() => contract.transferTeam(accs.user1, CONSTANTS.EMISSION_FOR_TEAM.minus(count), txParams(accs.owner)));
+		assert.ok(res3);
+		assertEq(new BigNumber(0), contract.balanceOf(accs.user1));
+
+		// Пытаемя передать после того как все распределили
+		let res4 = await execInEth(() => contract.transferTeam(accs.user1, new BigNumber(1), txParams(accs.owner)));
+		assert.ok(!res4);
+		assertEq(new BigNumber(0), contract.balanceOf(accs.user1));
+	});
 
 	/**
 	 * Вспомагательная функция проверяет значения полей контракта
