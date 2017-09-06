@@ -60,16 +60,7 @@ describe('Test Ico-contract', () => {
 		CONSTANTS = new ContractConstants(contract);
 
 		// Разлочиваем все счета
-		[accs.owner,
-			accs.lucky,
-			accs.user1,
-			accs.user2,
-			accs.bounty,
-			accs.team
-		].map(acc => {
-			web3.personal.unlockAccount(acc, config.accountPass)
-		});
-
+		unlockAll();
 	});
 
 	/**
@@ -738,12 +729,10 @@ describe('Test Ico-contract', () => {
 	 * Тест распределения средств на стадии PostIco
 	 */
 	it('test-postIco-distribution', async () => {
-		//Распределяем токены
-		let trBounty = await execInEth(() => contract.transferBounty(accs.user1, new BigNumber(100), txParams(accs.owner)));
-		let trTeam = await execInEth(() => contract.transferTeam(accs.user1, new BigNumber(100), txParams(accs.owner)));
 
-		assert.ok(trBounty);
-		assert.ok(trTeam);
+		//Распределяем токены
+		let tx = await execInEth(() => contract.transfer(accs.user1, new BigNumber(100), txParams(accs.owner)));
+		assert.ok(tx);
 
 		await goToState(IcoStates.PreSale);
 		await goToState(IcoStates.SaleStage1);
@@ -753,6 +742,9 @@ describe('Test Ico-contract', () => {
 
 		// Проверяем, что мы на стадии PostIco
 		assert.ok(contract.currentState().equals(IcoStates.PostIco));
+
+		// Разлочиваем все аккаунты
+		unlockAll();
 
 		//-----------------------------------------------
 
@@ -777,26 +769,40 @@ describe('Test Ico-contract', () => {
 		assert.ok(trans);
 		assert.ok(user1TokensBeforeTransfer.equals(user1TokensAfterTransfer.plus(transCount)));
 		assert.ok(user2TokensBeforeTransfer.equals(user2TokensAfterTransfer.minus(transCount)));
+
 		//-----------------------------------------------
 
-		// Можно переводить с баунти аккаунтов
+		// Можно переводить на баунти аккаунт
+		let user1TokensBeforeTransferBounty = bnWr(contract.balanceOf(accs.user1));
 		let bountyTokensBeforeTransferBounty = bnWr(contract.balanceOf(accs.bounty));
-		let user2TokensBeforeTransferBounty = bnWr(contract.balanceOf(accs.user2));
-		let transBountyCount = bnWr(new BigNumber(1));
+		let transferToBountyCount = bnWr(new BigNumber(10));
 
-		// Transfer Bounty -> User2
-		let transBounty = await execInEth(() => contract.transfer(accs.user2, transBountyCount, txParams(accs.bounty)))
+		// Transfer User1 -> Bounty
+		let transBounty = await execInEth(() => contract.transfer(accs.bounty, transferToBountyCount, txParams(accs.user1)));
 
+		let user1TokensAfterTransferBounty = bnWr(contract.balanceOf(accs.user1));
 		let bountyTokensAfterTransferBounty = bnWr(contract.balanceOf(accs.bounty));
-		let user2TokensAfterTransferBounty = bnWr(contract.balanceOf(accs.user2));
 
 		assert.ok(transBounty);
-		assert.ok(bountyTokensBeforeTransferBounty.equals(bountyTokensAfterTransferBounty.plus(transBountyCount)));
-		assert.ok(user2TokensBeforeTransferBounty.equals(user2TokensAfterTransferBounty.minus(transBountyCount)));
+		assert.ok(user1TokensBeforeTransferBounty.equals(user1TokensAfterTransferBounty.plus(transferToBountyCount)));
+		assert.ok(bountyTokensBeforeTransferBounty.equals(bountyTokensAfterTransferBounty.minus(transferToBountyCount)));
 
-		// Можно переводить с тим аккаунтов
+		//-----------------------------------------------
 
+		// Можно переводить на тим аккаунт
+		let user1TokensBeforeTransferTeam = bnWr(contract.balanceOf(accs.user1));
+		let teamTokensBeforeTransferTeam = bnWr(contract.balanceOf(accs.team));
+		let transferToTeamCount = bnWr(new BigNumber(20));
 
+		// Transfer User1 -> Team
+		let transTeam = await execInEth(() => contract.transfer(accs.team, transferToTeamCount, txParams(accs.user1)));
+
+		let user1TokensAfterTransferTeam = bnWr(contract.balanceOf(accs.user1));
+		let teamTokensAfterTransferTeam = bnWr(contract.balanceOf(accs.team));
+
+		assert.ok(transTeam);
+		assert.ok(user1TokensBeforeTransferTeam.equals(user1TokensAfterTransferTeam.plus(transferToTeamCount)));
+		assert.ok(teamTokensBeforeTransferTeam.equals(teamTokensAfterTransferTeam.minus(transferToTeamCount)));
 	});
 
 
@@ -1165,6 +1171,7 @@ describe('Test Ico-contract', () => {
 		try {
 			txHash = act();
 		} catch (err) {
+			console.log(err);
 			return false;
 		}
 		while (web3.eth.getTransactionReceipt(txHash) == null) {
@@ -1291,6 +1298,19 @@ describe('Test Ico-contract', () => {
 		let dt = new Date(1970, 0, 0);
 		dt.setSeconds(sec.toNumber());
 		return dt;
+	}
+
+	function unlockAll(){
+		// Разлочиваем все счета
+		[accs.owner,
+			accs.lucky,
+			accs.user1,
+			accs.user2,
+			accs.bounty,
+			accs.team
+		].map(acc => {
+			web3.personal.unlockAccount(acc, config.accountPass)
+		});
 	}
 
 });
