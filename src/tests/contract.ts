@@ -308,14 +308,14 @@ export interface Contract {
 	 * @param _to address The address which you want to transfer to
 	 * @param _value uint256 the amout of tokens to be transfered
 	 */
-	transferFrom(_from: string, _to: string, _value: BigNumber.BigNumber): boolean;
+	transferFrom(_from: string, _to: string, _value: BigNumber.BigNumber, params: TxParams): boolean;
 
 	/**
 	 * @dev Aprove the passed address to spend the specified amount of tokens on behalf of msg.sender.
 	 * @param _spender The address which will spend the funds.
 	 * @param _value The amount of tokens to be spent.
 	 */
-	approve(_spender: string, _value: BigNumber.BigNumber): boolean;
+	approve(_spender: string, _value: BigNumber.BigNumber, params: TxParams): boolean;
 
 	/**
 	 * @dev Function to check the amount of tokens that an owner allowed to a spender.

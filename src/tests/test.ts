@@ -743,9 +743,6 @@ describe('Test Ico-contract', () => {
 		// Проверяем, что мы на стадии PostIco
 		assert.ok(contract.currentState().equals(IcoStates.PostIco));
 
-		// Разлочиваем все аккаунты
-		unlockAll();
-
 		//-----------------------------------------------
 
 		// Покупка токенов запрещена
@@ -803,6 +800,62 @@ describe('Test Ico-contract', () => {
 		assert.ok(transTeam);
 		assert.ok(user1TokensBeforeTransferTeam.equals(user1TokensAfterTransferTeam.plus(transferToTeamCount)));
 		assert.ok(teamTokensBeforeTransferTeam.equals(teamTokensAfterTransferTeam.minus(transferToTeamCount)));
+	});
+
+	/**
+	 * Тест approve
+	 */
+	it('test-approve', async () => {
+
+		//Распределяем токены
+		let tx = await execInEth(() => contract.transfer(accs.user1, new BigNumber(100), txParams(accs.owner)));
+		assert.ok(tx);
+
+		await goToState(IcoStates.PreSale);
+		await goToState(IcoStates.SaleStage1);
+		//...
+		await goToState(IcoStates.SaleStageLast);
+		await goToState(IcoStates.PostIco);
+
+		// Проверяем, что мы на стадии PostIco
+		assert.ok(contract.currentState().equals(IcoStates.PostIco));
+		// User2 не должен иметь монет
+		assert.ok(await contract.transfer(accs.lucky, contract.balanceOf(accs.user2), txParams(accs.user2)));
+
+		//-----------------------------------------------
+
+		// User1 аппрувит 10 токенов User2
+		let beforeApprove = {
+			user1: bnWr(contract.balanceOf(accs.user1)),
+			user2: bnWr(contract.balanceOf(accs.user2)),
+		};
+		let approveCount = new BigNumber(10);
+		let res1 = await execInEth(() => contract.approve(accs.user2, approveCount, txParams(accs.user1)));
+		let afterApprove = {
+			user1: bnWr(contract.balanceOf(accs.user1)),
+			user2: bnWr(contract.balanceOf(accs.user2)),
+		};
+		assert.ok(res1);
+		assertEq(beforeApprove.user1, afterApprove.user1);
+		assertEq(beforeApprove.user2, afterApprove.user2);
+
+		// User2 выполняет перевод 5 RBM user1 -> lucky
+		let transferCount = new BigNumber(5);
+		let beforeTransfer = {
+			user1: bnWr(contract.balanceOf(accs.user1)),
+			user2: bnWr(contract.balanceOf(accs.user2)),
+			lucky: bnWr(contract.balanceOf(accs.lucky)),
+		};
+		let res2 = await execInEth(() => contract.transferFrom(accs.user1, accs.lucky, transferCount, txParams(accs.user2)));
+		let afterTransfer = {
+			user1: bnWr(contract.balanceOf(accs.user1)),
+			user2: bnWr(contract.balanceOf(accs.user2)),
+			lucky: bnWr(contract.balanceOf(accs.lucky)),
+		};
+		assert.ok(res2);
+		assertEq(beforeTransfer.user1, afterTransfer.user1.plus(transferCount));
+		assertEq(beforeTransfer.user2, afterTransfer.user2);
+		assertEq(beforeTransfer.lucky, afterTransfer.lucky.minus(transferCount));
 	});
 
 
@@ -1166,7 +1219,8 @@ describe('Test Ico-contract', () => {
 	 * @param {() => string} act Вызов метода контракта
 	 * @returns {boolean} Успешность вызова
 	 */
-	async function execInEth(act: () => string): Promise<boolean> {
+	async function execInEth(act: () => string | boolean): Promise<boolean> {
+		unlockAll();
 		let txHash = null;
 		try {
 			txHash = act();
@@ -1182,6 +1236,10 @@ describe('Test Ico-contract', () => {
 		let tx = web3.eth.getTransaction(txHash);
 		if (txRec.blockNumber == null || tx.blockNumber == null) {
 			throw `${txRec.blockNumber} - ${tx.blockNumber}`;
+		}
+
+		if (tx.gas > txRec.gasUsed) {
+			console.log("tx.gas: " + tx.gas + " > txRec.gasUsed: " + txRec.gasUsed);
 		}
 
 		return tx.gas > txRec.gasUsed;
@@ -1300,7 +1358,10 @@ describe('Test Ico-contract', () => {
 		return dt;
 	}
 
-	function unlockAll(){
+	/**
+	 * Вспомагательный метод для разлочки тестовых счетов
+	 */
+	function unlockAll() {
 		// Разлочиваем все счета
 		[accs.owner,
 			accs.lucky,
