@@ -198,7 +198,7 @@ contract RobomedIco is Ownable, Destructible, ERC20 {
   //SaleStage1 constants
 
   /**
-   * Общая длительность стадий Sale с SaleStage1 по SaleStage4 включительно
+   * Общая длительность стадий Sale с SaleStage1 по SaleStage7 включительно
   */
   uint256 public constant DURATION_SALESTAGES = 1 hours;//2 minutes;//30 days;
 
