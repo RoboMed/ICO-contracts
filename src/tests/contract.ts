@@ -253,7 +253,7 @@ export interface Contract {
 	/**
 	 * Метод зачисляющий предварительно распределённые team токены на кошелёк
 	 */
-	accrueTeamTokens(): void;
+	accrueTeamTokens(params: TxParams): void;
 
 	/**
 	 * Метод переводящий контракт в следующее доступное состояние,

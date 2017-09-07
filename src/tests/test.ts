@@ -905,6 +905,55 @@ describe('Test Ico-contract', () => {
 		assertEq(beforeTransfer.lucky, afterTransfer.lucky.minus(transferCount));
 	});
 
+	/**
+	 * Тест accrueTeamTokens
+	 */
+	it('test-accrueTeamTokens', async () => {
+
+		//Распределяем тим токены
+		let teamCount = bnWr(new BigNumber(100));
+		let tx = await execInEth(() => contract.transferTeam(accs.user1, teamCount, txParams(accs.owner)));
+		assert.ok(tx);
+
+		await goToState(IcoStates.PreSale);
+		await goToState(IcoStates.SaleStage1);
+		//...
+		await goToState(IcoStates.SaleStageLast);
+		await goToState(IcoStates.PostIco);
+
+		// Проверяем, что мы на стадии PostIco
+		assert.ok(contract.currentState().equals(IcoStates.PostIco));
+
+		// Проверяем, что баланс 0
+		assertEq(bnWr(new BigNumber(0)), bnWr(contract.balanceOf(accs.user1)));
+
+		// Проверяем, что не наступила дата с которой можно получить токены
+		let dtUtc = toDateTimeUtc(contract.startDateOfUseTeamTokens());
+		let nowUtc = U.getUtcNow();
+
+		let nowUtcTicks = nowUtc.getTime();
+		let tdUtcTicks = dtUtc.getTime();
+
+		assert.ok(nowUtcTicks < tdUtcTicks);
+
+		// Пробуем получить токены
+		let accrueErr = await execInEth(() => contract.accrueTeamTokens(txParams(accs.user1)));
+		assert.ok(!accrueErr);
+
+		// Дожидаемся, когда можно зачислить team токены
+		while (U.getUtcNow().getMilliseconds() < toDateTimeUtc(contract.startDateOfUseTeamTokens()).getMilliseconds()) {
+			await U.delay(1000);
+		}
+
+		// Получаем тим токены
+		let accrue = await execInEth(() => contract.accrueTeamTokens(txParams(accs.user1)));
+		assert.ok(accrue);
+
+		// Проверяем баланс
+		let balance = bnWr(contract.balanceOf(accs.user1));
+		assertEq(teamCount, balance);
+
+	});
 
 	/**
 	 * Тест покупки на Stage1 монет больше, чем выпущено для Stage1
@@ -1323,7 +1372,7 @@ describe('Test Ico-contract', () => {
 	 * @param {() => string} act Вызов метода контракта
 	 * @returns {boolean} Успешность вызова
 	 */
-	async function execInEth(act: () => string | boolean): Promise<boolean> {
+	async function execInEth(act: () => any): Promise<boolean> {
 		unlockAll();
 		let txHash = null;
 		try {
@@ -1457,7 +1506,7 @@ describe('Test Ico-contract', () => {
 	 * @returns {Date} Время в js
 	 */
 	function toDateTimeUtc(sec: BigNumber.BigNumber): Date {
-		let dt = new Date(1970, 0, 0);
+		let dt = new Date(1970, 0, 1);
 		dt.setSeconds(sec.toNumber());
 		return dt;
 	}

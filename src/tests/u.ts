@@ -60,4 +60,13 @@ export module U {
 			//do nothing
 		}
 	}
+
+	/**
+	 * Получение текущей даты в UTC
+	 * @returns {Date}
+	 */
+	export function getUtcNow() {
+		let now = new Date();
+		return new Date(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate(), now.getUTCHours(), now.getUTCMinutes(), now.getUTCSeconds());
+	}
 }
