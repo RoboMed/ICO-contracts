@@ -253,7 +253,7 @@ export interface Contract {
 	/**
 	 * Метод получающий количество начисленных премиальных токенов
 	 */
-	teamBalanceOf(_owner : string): BigNumber.BigNumber;
+	teamBalanceOf(_owner: string): BigNumber.BigNumber;
 
 	/**
 	 * Метод зачисляющий предварительно распределённые team токены на кошелёк
@@ -270,7 +270,7 @@ export interface Contract {
 	/**
 	 * Снятие эфира на кошелёк владельца
 	 */
-	ownerWithdrawal(value: BigNumber.BigNumber): void;
+	ownerWithdrawal(value: BigNumber.BigNumber, params: TxParams): void;
 
 	/**
 	 * Метод проверяющий возможность перехода в указанное состояние

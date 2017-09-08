@@ -1364,6 +1364,47 @@ describe('Test Ico-contract', () => {
 		assertEq(new BigNumber(0), contract.balanceOf(accs.user1));
 	});
 
+
+	/**
+	 * Тест снятия эфира на кошелек владельца
+	 */
+	it('test-ownerWithdrawal', async () => {
+
+		await goToState(IcoStates.PreSale);
+		await goToState(IcoStates.SaleStage1);
+		//...
+		await goToState(IcoStates.SaleStageLast);
+
+		// нельзя снимать до PostIco
+		let resErr = await execInEth(() => contract.ownerWithdrawal(web3.eth.getBalance((<any>contract).address), txParams(accs.owner)));
+		assert.ok(!resErr);
+
+		await goToState(IcoStates.PostIco);
+		// Снимать можно только на PostIco
+
+		// Не owner не может снимать
+		let resUserErr = await execInEth(() => contract.ownerWithdrawal(web3.eth.getBalance((<any>contract).address), txParams(accs.user1)));
+		assert.ok(!resUserErr);
+
+		//-----------------------------------------------
+		// Снимать может только владелец
+		let before = {
+			contractEth: bnWr(web3.eth.getBalance((<any>contract).address)),
+			ownerEth: bnWr(web3.eth.getBalance(accs.owner))
+		};
+		let res = await execInEth(() => contract.ownerWithdrawal(before.contractEth, txParams(accs.owner)));
+		let after = {
+			contractEth: bnWr(web3.eth.getBalance((<any>contract).address)),
+			ownerEth: bnWr(web3.eth.getBalance(accs.owner))
+		};
+
+		assert.ok(res);
+		assertEq(bnWr(new BigNumber(0)), after.contractEth);
+		assertEq(bnWr(before.ownerEth.plus(before.contractEth)), after.ownerEth);
+
+	});
+
+
 	/**
 	 * Вспомагательная функция проверяет значения полей контракта
 	 * @param params Параметры для проверки
