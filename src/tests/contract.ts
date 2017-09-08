@@ -251,6 +251,11 @@ export interface Contract {
 	rate(): BigNumber.BigNumber;
 
 	/**
+	 * Метод получающий количество начисленных премиальных токенов
+	 */
+	teamBalanceOf(_owner : string): BigNumber.BigNumber;
+
+	/**
 	 * Метод зачисляющий предварительно распределённые team токены на кошелёк
 	 */
 	accrueTeamTokens(params: TxParams): void;

@@ -871,12 +871,15 @@ describe('Test Ico-contract', () => {
 
 		//-----------------------------------------------
 
+		// Проверяем что ничего не заапрувлено
+		assertEq(bnWr(new BigNumber(0)), bnWr(contract.allowance(accs.user1, accs.user2)));
+
 		// User1 аппрувит 10 токенов User2
 		let beforeApprove = {
 			user1: bnWr(contract.balanceOf(accs.user1)),
 			user2: bnWr(contract.balanceOf(accs.user2)),
 		};
-		let approveCount = new BigNumber(10);
+		let approveCount = bnWr(new BigNumber(10));
 		let res1 = await execInEth(() => contract.approve(accs.user2, approveCount, txParams(accs.user1)));
 		let afterApprove = {
 			user1: bnWr(contract.balanceOf(accs.user1)),
@@ -885,6 +888,8 @@ describe('Test Ico-contract', () => {
 		assert.ok(res1);
 		assertEq(beforeApprove.user1, afterApprove.user1);
 		assertEq(beforeApprove.user2, afterApprove.user2);
+		assertEq(approveCount, bnWr(contract.allowance(accs.user1, accs.user2)));
+
 
 		// User2 выполняет перевод 5 RBM user1 -> lucky
 		let transferCount = new BigNumber(5);
@@ -903,6 +908,8 @@ describe('Test Ico-contract', () => {
 		assertEq(beforeTransfer.user1, afterTransfer.user1.plus(transferCount));
 		assertEq(beforeTransfer.user2, afterTransfer.user2);
 		assertEq(beforeTransfer.lucky, afterTransfer.lucky.minus(transferCount));
+		assertEq(bnWr(approveCount.minus(transferCount)), bnWr(contract.allowance(accs.user1, accs.user2)));
+
 	});
 
 	/**
@@ -926,6 +933,9 @@ describe('Test Ico-contract', () => {
 
 		// Проверяем, что баланс 0
 		assertEq(bnWr(new BigNumber(0)), bnWr(contract.balanceOf(accs.user1)));
+
+		// Проверяем, что есть team токены ожидающие зачисления
+		assertEq(teamCount, bnWr(contract.teamBalanceOf(accs.user1)));
 
 		// Проверяем, что не наступила дата с которой можно получить токены
 		let dtUtc = toDateTimeUtc(contract.startDateOfUseTeamTokens());
@@ -953,6 +963,8 @@ describe('Test Ico-contract', () => {
 		let balance = bnWr(contract.balanceOf(accs.user1));
 		assertEq(teamCount, balance);
 
+		// Проверяем, что нет team токенов ожидающих зачисления
+		assertEq(bnWr(new BigNumber(0)), bnWr(contract.teamBalanceOf(accs.user1)));
 	});
 
 	/**
@@ -1393,6 +1405,8 @@ describe('Test Ico-contract', () => {
 
 		if (tx.gas > txRec.gasUsed) {
 			console.log("tx.gas: " + tx.gas + " > txRec.gasUsed: " + txRec.gasUsed);
+		} else {
+			console.log("tx.gas: " + tx.gas + " == txRec.gasUsed: " + txRec.gasUsed);
 		}
 
 		return tx.gas > txRec.gasUsed;
