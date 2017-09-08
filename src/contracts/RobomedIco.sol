@@ -3,11 +3,10 @@ pragma solidity ^0.4.11;
 
 import "./zeppelin/SafeMath.sol";
 import "./zeppelin/Ownable.sol";
-import "./zeppelin/Destructible.sol";
 import "./zeppelin/ERC20.sol";
 
 
-contract RobomedIco is Ownable, Destructible, ERC20 {
+contract RobomedIco is Ownable, ERC20 {
 
   using SafeMath for uint256;
 
@@ -441,6 +440,14 @@ contract RobomedIco is Ownable, Destructible, ERC20 {
 
     endDateOfVipPlacement = now.add(DURATION_VIPPLACEMENT);
     remForSalesBeforeStageLast = 0;
+  }
+
+
+  /**
+  * Метод получающий количество начисленных премиальных токенов
+  */
+  function teamBalanceOf(address _owner) constant returns (uint256){
+    return teamBalances[_owner];
   }
 
   /**
