@@ -18,7 +18,7 @@ contract RobomedIco is Ownable, ERC20 {
 
   //VipPlacement constants
   /**
-   * Количество токенов для стадии VipPlacement x
+   * Количество токенов для стадии VipPlacement
   */
   uint256 public constant INITIAL_COINS_FOR_VIPPLACEMENT = 25 * 10 ** 18;
 
