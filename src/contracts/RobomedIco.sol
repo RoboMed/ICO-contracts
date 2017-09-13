@@ -289,7 +289,7 @@ contract RobomedIco is Ownable, ERC20 {
   /**
   * Здесь храним начисленные премиальные токены, могут быть выведены на кошелёк начиная с даты startDateOfUseTeamTokens
   */
-  mapping (address => uint256) public teamBalances;
+  mapping (address => uint256) teamBalances;
 
   /**
   * Адрес на счёте которого находятся нераспределённые bounty токены
