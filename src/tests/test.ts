@@ -378,7 +378,7 @@ describe('Test Ico-contract', () => {
 		}
 
 		// Дергаем ручку
-		let res = await execInEth(() => contract.gotoNextStateAndPrize(txParams(addr)));
+		let res = await execInEth(() => contract.gotoNextState(txParams(accs.owner)));
 		assert.ok(res);
 
 		// Должны быть на стадии PreSale
@@ -388,10 +388,6 @@ describe('Test Ico-contract', () => {
 			totalBought: bnWr(new BigNumber(0)),
 			rate: CONSTANTS.RATE_PRESALE
 		});
-
-		//Проверяем, что получили приз
-		let priceRes = bnWr(contract.balanceOf(addr));
-		assert.ok(priceRes.equals(CONSTANTS.PRIZE_SIZE_FORGOTO));
 	});
 
 	/**
@@ -411,7 +407,7 @@ describe('Test Ico-contract', () => {
 		}
 
 		// Дергаем ручку
-		let res = await execInEth(() => contract.gotoNextStateAndPrize(txParams(addr)));
+		let res = await execInEth(() => contract.gotoNextState(txParams(accs.owner)));
 		assert.ok(res);
 
 		// Должны быть на стадии SaleStage1
@@ -421,9 +417,6 @@ describe('Test Ico-contract', () => {
 			rate: CONSTANTS.RATE_SALESTAGE1
 		});
 
-		//Проверяем, что получили приз
-		let priceRes = bnWr(contract.balanceOf(addr));
-		assert.ok(priceRes.equals(CONSTANTS.PRIZE_SIZE_FORGOTO));
 	});
 
 	/**
@@ -746,7 +739,7 @@ describe('Test Ico-contract', () => {
 		}
 
 		// Дергаем ручку
-		let res = await execInEth(() => contract.gotoNextStateAndPrize(txParams(addr)));
+		let res = await execInEth(() => contract.gotoNextState(txParams(accs.owner)));
 		assert.ok(res);
 
 		// Проверяем, что произошел переход на PostIco
@@ -755,10 +748,6 @@ describe('Test Ico-contract', () => {
 			freeMoney: bnWr(new BigNumber(0)),
 			rate: bnWr(new BigNumber(0))
 		});
-
-		//Проверяем, что получили приз
-		let priceRes = bnWr(contract.balanceOf(addr));
-		assert.ok(priceRes.equals(CONSTANTS.PRIZE_SIZE_FORGOTO));
 	});
 
 	/**
@@ -1477,7 +1466,7 @@ describe('Test Ico-contract', () => {
 				await U.delay(1000);
 			}
 
-			let res = await execInEth(() => contract.gotoNextStateAndPrize(txParams(accs.lucky)));
+			let res = await execInEth(() => contract.gotoNextState(txParams(accs.owner)));
 			assert.ok(res);
 		}
 

@@ -164,19 +164,14 @@ export class ContractConstants {
 	//</editor-fold>
 
 	/**
-	 * Эмиссия токенов для TEAM
+	 * Эмиссия токенов для BOUNTY
 	 */
 	public EMISSION_FOR_BOUNTY: BnWr;
 
 	/**
-	 * Размер премии для аккаунта, с которого успешно выполнили goto на очередную стадию
+	 * Эмиссия токенов для TEAM
 	 */
 	public EMISSION_FOR_TEAM: BnWr;
-
-	/**
-	 * Размер премии для аккаунта, с которого успешно выполнили goto на очередную стадию
-	 */
-	public PRIZE_SIZE_FORGOTO: BnWr;
 
 	constructor(contract: any) {
 
@@ -226,7 +221,6 @@ export class ContractConstants {
 		this.DURATION_NONUSETEAM = bnWr(contract.DURATION_NONUSETEAM());
 		this.EMISSION_FOR_BOUNTY = bnWr(contract.EMISSION_FOR_BOUNTY());
 		this.EMISSION_FOR_TEAM = bnWr(contract.EMISSION_FOR_TEAM());
-		this.PRIZE_SIZE_FORGOTO = bnWr(contract.PRIZE_SIZE_FORGOTO());
 	}
 }
 

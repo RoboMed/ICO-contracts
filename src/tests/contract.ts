@@ -262,10 +262,9 @@ export interface Contract {
 
 	/**
 	 * Метод переводящий контракт в следующее доступное состояние,
-	 * если переход состоялся, вызывающий метод получает приз в размере PRIZE_SIZE_FORGOTO
 	 * Для выяснения возможности перехода можно использовать метод canGotoState
 	 */
-	gotoNextStateAndPrize(params: TxParams): string;
+	gotoNextState(params: TxParams): string;
 
 	/**
 	 * Снятие эфира на кошелёк владельца
