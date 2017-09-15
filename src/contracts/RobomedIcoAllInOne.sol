@@ -1,6 +1,8 @@
 pragma solidity ^0.4.11;
 
 
+
+
 /**
  * @title Math
  * @dev Assorted math operations y
@@ -22,6 +24,8 @@ library Math {
     return a < b ? a : b;
   }
 }
+
+
 
 
 /**
@@ -55,6 +59,7 @@ library SafeMath {
 }
 
 
+
 /**
  * @title Ownable
  * @dev The Ownable contract has an owner address, and provides basic authorization control
@@ -85,22 +90,8 @@ contract Ownable {
 }
 
 
-/**
- * @title Destructible
- * @dev Base contract that can be destroyed by owner. All funds in contract will be sent to the owner.
- */
-contract Destructible is Ownable {
 
-  function Destructible() payable {}
 
-  /**
-   * @dev Transfers the current balance to the owner and terminates the contract.
-   */
-  function destroy() onlyOwner {
-    selfdestruct(owner);
-  }
-
-}
 
 
 /**
@@ -119,6 +110,9 @@ contract ERC20Basic {
 }
 
 
+
+
+
 /**
  * @title ERC20 interface
  * @dev see https://github.com/ethereum/EIPs/issues/20
@@ -134,6 +128,11 @@ contract ERC20 is ERC20Basic {
 }
 
 
+
+
+
+
+
 contract RobomedIco is Ownable, ERC20 {
 
   using SafeMath for uint256;
@@ -146,7 +145,7 @@ contract RobomedIco is Ownable, ERC20 {
 
   //VipPlacement constants
   /**
-   * Количество токенов для стадии VipPlacement x
+   * Количество токенов для стадии VipPlacement
   */
   uint256 public constant INITIAL_COINS_FOR_VIPPLACEMENT = 25 * 10 ** 18;
 
@@ -331,7 +330,6 @@ contract RobomedIco is Ownable, ERC20 {
   enum IcoStates {
 
   /**
-   * 0
    * Состояние для которого выполняется заданная эмиссия на кошелёк владельца,
    * далее все выпущенные токены распределяются владельцем из своего кошелька на произвольные кошельки, распределение может происходить всегда.
    * Владелец не может распределить из своего кошелька, количество превышающее INITIAL_COINS_FOR_VIPPLACEMENT до прекращения ICO
@@ -340,7 +338,6 @@ contract RobomedIco is Ownable, ERC20 {
   VipPlacement,
 
   /**
-     * 1
      * Состояние для которого выполняется заданная эмиссия в свободный пул freeMoney.
      * далее все выпущенные свободные токены покупаются всеми желающими вплоть до endDateOfPreSale,
      * не выкупленные токены будут уничтожены
@@ -350,7 +347,6 @@ contract RobomedIco is Ownable, ERC20 {
   PreSale,
 
   /**
-   * 2
    * Состояние представляющее из себя подстадию продаж,
    * при наступлении данного состояния выпускается заданное количество токенов,
    * количество свободных токенов приравнивается к этой эмиссии
@@ -362,43 +358,36 @@ contract RobomedIco is Ownable, ERC20 {
   SaleStage1,
 
   /**
-   * 3
    * Аналогично SaleStage1
    */
   SaleStage2,
 
   /**
-   * 4
    * Аналогично SaleStage1
    */
   SaleStage3,
 
   /**
-   * 5
    * Аналогично SaleStage1
    */
   SaleStage4,
 
   /**
-   * 6
    * Аналогично SaleStage1
    */
   SaleStage5,
 
   /**
-   * 7
    * Аналогично SaleStage1
    */
   SaleStage6,
 
   /**
-   * 8
    * Аналогично SaleStage1
    */
   SaleStage7,
 
   /**
-   * 9
    * Состояние представляющее из себя последнюю подстадию продаж,
    * при наступлении данного состояния выпускается заданное количество токенов,
    * количество свободных токенов приравнивается к этой эмиссии,
@@ -408,7 +397,6 @@ contract RobomedIco is Ownable, ERC20 {
   SaleStageLast,
 
   /**
-   * 10
    * Состояние наступающее после завершения Ico,
    * при наступлении данного состояния свободные токены уничтожаются,
    * также происходит бонусное распределение дополнительных токенов Bounty и Team,
@@ -428,7 +416,7 @@ contract RobomedIco is Ownable, ERC20 {
   /**
   * Здесь храним начисленные премиальные токены, могут быть выведены на кошелёк начиная с даты startDateOfUseTeamTokens
   */
-  mapping (address => uint256) public teamBalances;
+  mapping (address => uint256) teamBalances;
 
   /**
   * Адрес на счёте которого находятся нераспределённые bounty токены

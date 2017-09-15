@@ -18,7 +18,6 @@ let all =
       "./src/contracts/zeppelin/Math.sol",
       "./src/contracts/zeppelin/SafeMath.sol",
       "./src/contracts/zeppelin/Ownable.sol",
-      "./src/contracts/zeppelin/Destructible.sol",
       "./src/contracts/zeppelin/ERC20Basic.sol",
       "./src/contracts/zeppelin/ERC20.sol",
       "./src/contracts/RobomedIco.sol"
