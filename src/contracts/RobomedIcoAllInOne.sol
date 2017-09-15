@@ -319,10 +319,6 @@ contract RobomedIco is Ownable, ERC20 {
   */
   uint256 public constant EMISSION_FOR_TEAM = 1 * 10 ** 18;
 
-  /**
-   * Размер премии для аккаунта, с которого успешно выполнили goto на очередную стадию
-  */
-  uint256 public constant PRIZE_SIZE_FORGOTO = 1 * 10 ** 18;
 
   /**
     * Перечисление состояний контракта
@@ -594,15 +590,11 @@ contract RobomedIco is Ownable, ERC20 {
 
   /**
    * Метод переводящий контракт в следующее доступное состояние,
-   * если переход состоялся, вызывающий метод получает приз в размере PRIZE_SIZE_FORGOTO
    * Для выяснения возможности перехода можно использовать метод canGotoState
   */
-  function gotoNextStateAndPrize() returns (bool) {
+  function gotoNextState() onlyOwner returns (bool)  {
 
     if (gotoPreSale() || gotoSaleStage1() || gotoSaleStageLast() || gotoPostIco()) {
-      //переход состоялся - награждаем вызвавшего функцию
-      balances[msg.sender] = balances[msg.sender].add(PRIZE_SIZE_FORGOTO);
-      totalSupply = totalSupply.add(PRIZE_SIZE_FORGOTO);
       return true;
     }
     return false;
