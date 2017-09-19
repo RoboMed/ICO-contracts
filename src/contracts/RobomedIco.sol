@@ -2,11 +2,10 @@ pragma solidity ^0.4.11;
 
 
 import "./zeppelin/SafeMath.sol";
-import "./zeppelin/Ownable.sol";
 import "./zeppelin/ERC20.sol";
 
 
-contract RobomedIco is Ownable, ERC20 {
+contract RobomedIco is  ERC20 {
 
     using SafeMath for uint256;
 

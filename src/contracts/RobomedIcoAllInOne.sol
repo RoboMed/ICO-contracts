@@ -100,7 +100,7 @@ contract ERC20 is ERC20Basic {
 
 
 
-contract RobomedIco is Ownable, ERC20 {
+contract RobomedIco is  ERC20 {
 
     using SafeMath for uint256;
 
