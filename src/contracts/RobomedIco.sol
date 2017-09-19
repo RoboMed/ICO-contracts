@@ -288,6 +288,11 @@ contract RobomedIco is Ownable, ERC20 {
   mapping (address => uint256) teamBalances;
 
   /**
+  * Совладелец контракта - только при его участии может быть выведены eth после наступления PostIco
+  */
+  address public coOwner;
+
+  /**
   * Адрес на счёте которого находятся нераспределённые bounty токены
   */
   address public bountyTokensAccount;
@@ -411,13 +416,30 @@ contract RobomedIco is Ownable, ERC20 {
 
   /**
   * @dev Конструктор
+  * _owner - владелец контракта - распределяет вип токены, начисляет баунти и team, осуществляет переход по стадиям, 
+  * совместно с _coOwner выполняет выведение eth после наступления PostIco
+  * _coOwner - совладелец контракта - только при его участии может быть выведены eth после наступления PostIco
   */
-  function RobomedIco(address _bountyTokensAccount, address _teamTokensAccount){
+  function RobomedIco(address _owner, address _coOwner, address _bountyTokensAccount, address _teamTokensAccount){
+
+    //проверяем, что все указанные адреса не равны 0, также они отличаются от создающего контракт
+    //по сути контракт создаёт некое 3-ее лицо не имеющее в дальнейшем ни каких особенных прав
+    //так же действует условие что все перичисленные адреса разные (нельзя быть одновременно владельцем и кошельком для токенов - например)
+    require(_owner != 0x0 && _owner != msg.sender);
+    require(_coOwner != 0x0 && _coOwner != msg.sender);
     require(_bountyTokensAccount != 0x0 && _bountyTokensAccount != msg.sender);
     require(_teamTokensAccount != 0x0 && _teamTokensAccount != msg.sender);
-    require(_bountyTokensAccount != _teamTokensAccount);
 
-    //выставляем адреса на которые выкладываем токены team и bounty
+    require(_bountyTokensAccount != _teamTokensAccount);
+    require(_owner != _teamTokensAccount);
+    require(_owner != _bountyTokensAccount);
+    require(_coOwner != _owner);
+    require(_coOwner != _bountyTokensAccount);
+    require(_coOwner != _teamTokensAccount);
+
+    //выставляем адреса 
+    owner = _owner;
+    coOwner = _coOwner;
     bountyTokensAccount = _bountyTokensAccount;
     teamTokensAccount = _teamTokensAccount;
 
@@ -473,13 +495,34 @@ contract RobomedIco is Ownable, ERC20 {
     return false;
   }
 
+
+  address public withdrawalTo;
+
+  address public withdrawalValue;
+
   /**
-  * Снятие эфира на кошелёк владельца
+  * Инициация снятия эфира на указанный кошелёк
   */
-  function ownerWithdrawal(uint256 _value) afterIco onlyOwner {
-    require(_value > 0);
+  function initWithdrawal(address _to, uint256 _value) afterIco onlyOwner {
+    withdrawalTo = _to;
+    withdrawalValue = _value;
     totalBalance = totalBalance.sub(_value);
     owner.transfer(_value);
+  }
+
+  /**
+  * Инициация снятия эфира на указанный кошелёк
+  */
+  function approveWithdrawal(address _to, uint256 _value) afterIco onlyOwner {
+    require(_to != 0x0 && _value > 0);
+
+    totalBalance = totalBalance.sub(_value);
+    owner.transfer(_value);
+  
+    withdrawalTo = 0x0;
+    withdrawalValue = 0;
+
+
   }
 
 
