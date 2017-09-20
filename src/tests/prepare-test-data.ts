@@ -15,10 +15,21 @@ import {Config} from "./config";
  * Интерфейс тестовых аккаунтов
  */
 export interface TestAccounts {
+
+	/**
+	 * Тот, кто разворачивает контракт
+	 */
+	deployer: string;
+
 	/**
 	 * Владелец контракта
 	 */
 	owner: string;
+
+	/**
+	 * Совладелец
+	 */
+	coOwner: string;
 
 	/**
 	 * Служебный аккаунт который будет дергать "ручку" и получать приз
@@ -60,7 +71,9 @@ export function prepare(config: Config = null): TestAccounts {
 	if (!isMining) throw "Должен выполняться майнинг в сети";
 
 	// Создаем несколько новых аккаунтов
+	let deployer = web3.personal.newAccount(config.accountPass);
 	let owner = web3.personal.newAccount(config.accountPass);
+	let coOwner = web3.personal.newAccount(config.accountPass);
 	let user1 = web3.personal.newAccount(config.accountPass);
 	let user2 = web3.personal.newAccount(config.accountPass);
 	let lucky = web3.personal.newAccount(config.accountPass);
@@ -70,19 +83,26 @@ export function prepare(config: Config = null): TestAccounts {
 	// Пополняем кошельки
 	let coinSourceAccount = web3.eth.coinbase;
 	web3.personal.unlockAccount(coinSourceAccount, config.accountPass);
-	let tx1 = web3.eth.sendTransaction({from: coinSourceAccount, to: owner, value: web3.toWei(5, "ether")});
-	let tx2 = web3.eth.sendTransaction({from: coinSourceAccount, to: user1, value: web3.toWei(50, "ether")});
-	let tx3 = web3.eth.sendTransaction({from: coinSourceAccount, to: user2, value: web3.toWei(1, "ether")});
-	let tx4 = web3.eth.sendTransaction({from: coinSourceAccount, to: lucky, value: web3.toWei(100, "ether")});
-	let tx5 = web3.eth.sendTransaction({from: coinSourceAccount, to: bounty, value: web3.toWei(1, "ether")});
-	let tx6 = web3.eth.sendTransaction({from: coinSourceAccount, to: team, value: web3.toWei(1, "ether")});
+
+	let txs = [
+		web3.eth.sendTransaction({from: coinSourceAccount, to: deployer, value: web3.toWei(1, "ether")}),
+		web3.eth.sendTransaction({from: coinSourceAccount, to: owner, value: web3.toWei(5, "ether")}),
+		web3.eth.sendTransaction({from: coinSourceAccount, to: coOwner, value: web3.toWei(1, "ether")}),
+		web3.eth.sendTransaction({from: coinSourceAccount, to: user1, value: web3.toWei(50, "ether")}),
+		web3.eth.sendTransaction({from: coinSourceAccount, to: user2, value: web3.toWei(1, "ether")}),
+		web3.eth.sendTransaction({from: coinSourceAccount, to: lucky, value: web3.toWei(100, "ether")}),
+		web3.eth.sendTransaction({from: coinSourceAccount, to: bounty, value: web3.toWei(1, "ether")}),
+		web3.eth.sendTransaction({from: coinSourceAccount, to: team, value: web3.toWei(1, "ether")}),
+	];
 
 	//ждем, пока все монеты дойдут
-	U.waitForTransactions(web3, [tx1, tx2, tx3, tx4, tx5, tx6]);
+	U.waitForTransactions(web3, txs);
 
 	//Возвращаем готовые тестовые данные
 	let data = {
+		deployer: deployer,
 		owner: owner,
+		coOwner: coOwner,
 		lucky: lucky,
 		user1: user1,
 		user2: user2,

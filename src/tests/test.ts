@@ -54,7 +54,7 @@ describe('Test Ico-contract', () => {
 	beforeEach('beforeEach', async () => {
 
 		accs = prepare(config);
-		let c = await deploy(config.rpcAddress, accs.owner, config.accountPass, accs.bounty, accs.team);
+		let c = await deploy(config.rpcAddress, accs.deployer, config.accountPass, accs.owner, accs.coOwner, accs.bounty, accs.team);
 
 		contract = web3.eth.contract(c.abi).at(c.address);
 		CONSTANTS = new ContractConstants(contract);
@@ -71,7 +71,7 @@ describe('Test Ico-contract', () => {
 		checkContract({
 			currentState: IcoStates.VipPlacement,
 			totalBalance: bnWr(new BigNumber(0)),
-			totalSupply: CONSTANTS.INITIAL_COINS_FOR_VIPPLACEMENT,
+			totalSupply: bnWr(CONSTANTS.INITIAL_COINS_FOR_VIPPLACEMENT.plus(CONSTANTS.EMISSION_FOR_BOUNTY).plus(CONSTANTS.EMISSION_FOR_TEAM)),
 			totalBought: bnWr(new BigNumber(0)),
 			rate: bnWr(new BigNumber(0)),
 		});

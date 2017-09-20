@@ -16,7 +16,14 @@ function compileSol() {
  * @param {string} param Параметры
  * @returns {Promise<any>} Контракт
  */
-function uploadContract(param: { rpcHost: string, owner: string, ownerPass: string, bountyAcc: string, teamAcc: string }): Promise<any> {
+function uploadContract(param: {
+	rpcHost: string,
+	deployer: string,
+	deployerPass: string,
+	owner: string,
+	coOwner: string,
+	bountyAcc: string,
+	teamAcc: string }): Promise<any> {
 
 	let web3 = new Web3(new Web3.providers.HttpProvider(param.rpcHost));
 
@@ -26,17 +33,19 @@ function uploadContract(param: { rpcHost: string, owner: string, ownerPass: stri
 	let gasLimit = web3.eth.getBlock(web3.eth.blockNumber).gasLimit;
 	console.log("gasLimit: " + gasLimit);
 
-	web3.personal.unlockAccount(param.owner, param.ownerPass);
+	web3.personal.unlockAccount(param.deployer, param.deployerPass);
 	//console.log("unlockAccount: " + from);
 
 	return new Promise((resolve, reject) => {
 
 		(<any>web3.eth.contract(abi)).new(
+			param.owner,
+			param.coOwner,
 			param.bountyAcc,
 			param.teamAcc,
 			{
 				data: compiled,
-				from: param.owner,
+				from: param.deployer,
 				gas: gasLimit
 			}, (err: any, contract: any) => {
 				if (err) {
@@ -59,7 +68,7 @@ function uploadContract(param: { rpcHost: string, owner: string, ownerPass: stri
  * @param teamAcc Адрес на счёте которого находятся нераспределённые team токены
  * @returns {Promise<any>} Контракт
  */
-export async function deploy(rpcHost: string, owner: string, ownerPass: string, bountyAcc: string, teamAcc: string): Promise<any> {
+export async function deploy(rpcHost: string, deployer: string, deployerPass: string, owner: string, coOwner: string, bountyAcc: string, teamAcc: string): Promise<any> {
 
 	// компилируем
 	compileSol();
@@ -67,15 +76,18 @@ export async function deploy(rpcHost: string, owner: string, ownerPass: string, 
 	// загружаем в сеть
 	let contract = await uploadContract({
 		rpcHost: rpcHost,
+		deployer: deployer,
+		deployerPass: deployerPass,
 		owner: owner,
-		ownerPass: ownerPass,
+		coOwner: coOwner,
 		bountyAcc: bountyAcc,
 		teamAcc: teamAcc
 	}); //Promise;
 
-	console.log("contract.owner: " + owner);
+	console.log("contract deployed");
+	console.log("contract.deployer: " + deployer);
 	console.log("contract.address: " + contract.address);
-	console.log("contract.abi: " + JSON.stringify(contract.abi));
+	//console.log("contract.abi: " + JSON.stringify(contract.abi));
 	console.log();
 
 	return contract;
