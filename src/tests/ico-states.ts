@@ -1,5 +1,5 @@
 import {bnWr, BnWr} from "./bn-wr";
-import * as BigNumber from 'bignumber.js';
+import {BigNumber} from 'bignumber.js';
 
 export const IcoStates = {
 

@@ -39,14 +39,8 @@ export module U {
 		}
 	}
 
-	export function execProcessSync(cmd: string) {
-		child_process.execSync(cmd, function (error: any, stdout: any, stderr: any) {
-			console.log(error);
-			console.log(stdout);
-			console.log(stderr);
-
-			if (error != null) throw error;
-		});
+	export function execProcessSync(cmd: string) :void{
+			child_process.execSync(cmd);
 	}
 
 	export function waitForTransactions(web3: any, txObj: string | string[]) {

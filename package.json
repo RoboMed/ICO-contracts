@@ -8,9 +8,9 @@
     "prepareNewNetRum": "set CONFIGFILE=./src/configs/config-rum.json&&node -e \"require('./dist/prepare-new-net').prepare()\" ",
     "prepareTestDataMur": "set CONFIGFILE=./src/configs/config-mur.json&& node -e \"require('./dist/prepare-test-data').prepare()\" ",
     "prepareTestDataRum": "set CONFIGFILE=./src/configs/config-rum.json&& node -e \"require('./dist/prepare-test-data').prepare()\" ",
-    "deploy": "node -e \"require('./dist/deploy-to-target').deploy('http://localhost:8546', '0x5e4f37B18c8F2e85Fa37ab46a5Deb4025ffc16eE', 'Qwerty123456', '0xE03853feB53A85c30971eb75487332b2716ae509', '0x5Fae5C7aA6F7C221Ad1B3acb6937e77081D3FFB7', '0x7F3455AeA3BCc9eF88dcf064a5Cc7Fc87dD621a9', '0x23c186d79179C624A03C3A455Aa33A94B550A448')\" ",
-    "deployMur": "node -e \"require('./dist/deploy-to-target').deploy('http://localhost:8545', '0x39ce8539d78364e6697c5a0e884559e2db397913', '12345', '0x8376786a8a9c684c76e94b6e136a47ec3d7536f0', '0x9f094e6e1a8f24bf417d7eaf6223f4926b86c6df', '', '')\" ",
-    "deployRum": "node -e \"require('./dist/deploy-to-target').deploy('http://localhost:8545', '', '12345', '', '', '', '')\" ",
+    "deploy": "tsc -p tsconfig.json&&node -e \"require('./dist/deploy-to-target').deploy('http://localhost:8546', '0x5e4f37B18c8F2e85Fa37ab46a5Deb4025ffc16eE', 'Qwerty123456', '0xE03853feB53A85c30971eb75487332b2716ae509', '0x5Fae5C7aA6F7C221Ad1B3acb6937e77081D3FFB7', '0x7F3455AeA3BCc9eF88dcf064a5Cc7Fc87dD621a9', '0x23c186d79179C624A03C3A455Aa33A94B550A448')\" ",
+    "deployMur": "tsc -p tsconfig.json&&node -e \"require('./dist/deploy-to-target').deploy('http://localhost:8545', '0xee07cc9d11ac726dcdf657ba57724a1e5421ee27', '12345', '0x1fe3531ea8ccfa8fbe687566a194f63942330ca1', '0x58e8c3531ca47e261a9737bfb6501252c7738b01', '0xa1eae553b05c65818df6d7071d7466f058d1d521', '0xc22d75cf9f5c996322f7087259ee55c3a5573405')\" ",
+    "deployRum": "tsc -p tsconfig.json&&node -e \"require('./dist/deploy-to-target').deploy('http://localhost:8545', '', '12345', '', '', '', '')\" ",
     "build": "build.bat"
   },
   "repository": {
@@ -24,14 +24,14 @@
   },
   "homepage": "https://github.com/RoboMed/ICO-contracts#readme",
   "dependencies": {
-    "typescript": "^2.4.2",
-    "@types/node": "^8.0.25",
-    "@types/mocha": "^2.2.42",
+    "typescript": "^2.5.2",
+    "@types/node": "^8.0.28",
+    "@types/mocha": "^2.2.43",
     "@types/bignumber.js": "^4.0.3",
-    "web3-typescript-typings": "^0.3.2",
+    "web3-typescript-typings": "^0.6.0",
     "ts-node": "^3.3.0",
     "web3": "^0.20.0",
-    "mocha": "^3.5.0",
-    "bignumber.js": "^4.0.2"
+    "mocha": "^3.5.3",
+    "bignumber.js": "^4.0.4"
   }
 }

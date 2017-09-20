@@ -6,7 +6,6 @@ import * as fs from "fs";
  * Функция для компилирования sol файлов
  */
 function compileSol() {
-
 	U.execProcessSync("build.bat");
 	console.log("contract compiled");
 }
@@ -34,7 +33,7 @@ function uploadContract(param: {
 	console.log("gasLimit: " + gasLimit);
 
 	web3.personal.unlockAccount(param.deployer, param.deployerPass);
-	//console.log("unlockAccount: " + from);
+	//console.log("unlockAccount: " + param.deployer);
 
 	return new Promise((resolve, reject) => {
 

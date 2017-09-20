@@ -1,6 +1,6 @@
 import "mocha";
 import * as assert from "assert";
-import * as BigNumber from "bignumber.js";
+import {BigNumber} from "bignumber.js";
 import * as Web3 from "web3";
 import {U} from "./u";
 import {Config} from "./config";
@@ -264,10 +264,10 @@ describe('Test Ico-contract', () => {
 
 	/**
 	 * Вспомагательный метод для тестирования распределения токенов между юзерами на стадии
-	 * @param {BigNumber.BigNumber} stage Стадия на которой тестируем
+	 * @param {BigNumber} stage Стадия на которой тестируем
 	 * @returns {Promise<void>}
 	 */
-	async function testTransferTokensDistributionOnStage(stage: BigNumber.BigNumber): Promise<void> {
+	async function testTransferTokensDistributionOnStage(stage: BigNumber): Promise<void> {
 
 		assert.ok(contract.currentState().equals(stage));
 
@@ -1446,11 +1446,11 @@ describe('Test Ico-contract', () => {
 
 	/**
 	 * Вспомагательный метод для перехода на стадию
-	 * @param {BigNumber.BigNumber} toStage Стадия для перехода
+	 * @param {BigNumber} toStage Стадия для перехода
 	 * @param isAllowGreater Признак, что можно перейти более чем на указанную стадию
 	 * @returns {Promise<void>}
 	 */
-	async function goToState(toStage: BigNumber.BigNumber, isAllowGreater: boolean = true): Promise<void> {
+	async function goToState(toStage: BigNumber, isAllowGreater: boolean = true): Promise<void> {
 
 		//Если текущая или уже была, выходим
 		let fromStage = bnWr(contract.currentState());
@@ -1537,19 +1537,19 @@ describe('Test Ico-contract', () => {
 
 	/**
 	 * Вспомагательный метод для проверки равенства значений BigNumber
-	 * @param {BigNumber.BigNumber} expected Ожидаемое значение
-	 * @param {BigNumber.BigNumber} value Текущее значение
+	 * @param {BigNumber} expected Ожидаемое значение
+	 * @param {BigNumber} value Текущее значение
 	 */
-	function assertEq(expected: BigNumber.BigNumber, value: BigNumber.BigNumber, message?: string): void {
+	function assertEq(expected: BigNumber, value: BigNumber, message?: string): void {
 		assert.ok(expected.equals(value), (message + " expected: " + expected + " value: " + value).trim());
 	}
 
 	/**
 	 * Вспомагательный метод переводит время контракта в Date
-	 * @param {BigNumber.BigNumber} sec Время контракта
+	 * @param {BigNumber} sec Время контракта
 	 * @returns {Date} Время в js
 	 */
-	function toDateTimeUtc(sec: BigNumber.BigNumber): Date {
+	function toDateTimeUtc(sec: BigNumber): Date {
 		let dt = new Date(1970, 0, 1);
 		dt.setSeconds(sec.toNumber());
 		return dt;
