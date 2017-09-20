@@ -6,14 +6,11 @@
   "scripts": {
     "prepareNewNetMur": "set CONFIGFILE=./src/configs/config-mur.json&&node -e \"require('./dist/prepare-new-net').prepare()\" ",
     "prepareNewNetRum": "set CONFIGFILE=./src/configs/config-rum.json&&node -e \"require('./dist/prepare-new-net').prepare()\" ",
-
     "prepareTestDataMur": "set CONFIGFILE=./src/configs/config-mur.json&& node -e \"require('./dist/prepare-test-data').prepare()\" ",
     "prepareTestDataRum": "set CONFIGFILE=./src/configs/config-rum.json&& node -e \"require('./dist/prepare-test-data').prepare()\" ",
-
-    "deploy": "node -e \"require('./dist/deploy-to-target').deploy('http://localhost:8545', '0xdeployer', '12345', '0xowner', '0xcoOwner', '0xbounty', '0xteam')\" ",
+    "deploy": "node -e \"require('./dist/deploy-to-target').deploy('http://localhost:8546', '0x5e4f37B18c8F2e85Fa37ab46a5Deb4025ffc16eE', 'Qwerty123456', '0xE03853feB53A85c30971eb75487332b2716ae509', '0x5Fae5C7aA6F7C221Ad1B3acb6937e77081D3FFB7', '0x7F3455AeA3BCc9eF88dcf064a5Cc7Fc87dD621a9', '0x23c186d79179C624A03C3A455Aa33A94B550A448')\" ",
     "deployMur": "node -e \"require('./dist/deploy-to-target').deploy('http://localhost:8545', '0x39ce8539d78364e6697c5a0e884559e2db397913', '12345', '0x8376786a8a9c684c76e94b6e136a47ec3d7536f0', '0x9f094e6e1a8f24bf417d7eaf6223f4926b86c6df', '', '')\" ",
     "deployRum": "node -e \"require('./dist/deploy-to-target').deploy('http://localhost:8545', '', '12345', '', '', '', '')\" ",
-
     "build": "build.bat"
   },
   "repository": {
