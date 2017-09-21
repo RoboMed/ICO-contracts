@@ -542,7 +542,7 @@ contract RobomedIco is  ERC20 {
         require(_value == withdrawalValue);
 
         totalBalance = totalBalance.sub(_value);
-        owner.transfer(_value);
+        withdrawalTo.transfer(_value);
 
         withdrawalTo = 0x0;
         withdrawalValue = 0;
