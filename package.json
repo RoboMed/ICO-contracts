@@ -4,7 +4,7 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "tsc":"./node_modules/typescript/bin/tsc",
+    "tsc": "./node_modules/typescript/bin/tsc",
     "prepareNewNetMur": "set CONFIGFILE=./src/configs/config-mur.json&&node -e \"require('./dist/prepare-new-net').prepare()\" ",
     "prepareNewNetRum": "set CONFIGFILE=./src/configs/config-rum.json&&node -e \"require('./dist/prepare-new-net').prepare()\" ",
     "prepareTestDataMur": "set CONFIGFILE=./src/configs/config-mur.json&& node -e \"require('./dist/prepare-test-data').prepare()\" ",
@@ -26,7 +26,6 @@
   "homepage": "https://github.com/RoboMed/ICO-contracts#readme",
   "dependencies": {
     "typescript": "^2.5.2",
-    "tsc": "^1.20150623.0",
     "@types/node": "^8.0.28",
     "@types/mocha": "^2.2.43",
     "@types/bignumber.js": "^4.0.3",
