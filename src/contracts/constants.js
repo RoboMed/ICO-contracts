@@ -27,7 +27,7 @@ string public constant name = "RobomedToken";
   /**
    * PreSale Stage Duration
   */
-  uint256 public constant DURATION_PRESALE = 1 seconds; // 10 days;
+  uint256 public constant DURATION_PRESALE = 6 days;
 
   /**
    *Presale Stage rate (RBM for 1 ETH) 
@@ -41,7 +41,7 @@ string public constant name = "RobomedToken";
   /**
    * ICO stage total Duration
   */
-  uint256 public constant DURATION_SALESTAGES = 1 hours//30 days;
+  uint256 public constant DURATION_SALESTAGES = 30 days;
 
   /**
    *Bonus 22% stage rate (actual RBM for 1 ETH) 
