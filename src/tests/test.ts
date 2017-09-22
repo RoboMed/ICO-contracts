@@ -1357,7 +1357,7 @@ describe('Test Ico-contract', () => {
 	/**
 	 * Тест снятия эфира на кошелек владельца
 	 */
-	it('test-ownerWithdrawal', async () => {
+	it('test-withdrawal', async () => {
 
 		await goToState(IcoStates.PreSale);
 		await goToState(IcoStates.SaleStage1);
@@ -1365,31 +1365,77 @@ describe('Test Ico-contract', () => {
 		await goToState(IcoStates.SaleStageLast);
 
 		// нельзя снимать до PostIco
-		let resErr = await execInEth(() => contract.ownerWithdrawal(web3.eth.getBalance((<any>contract).address), txParams(accs.owner)));
+		let resErr = await execInEth(() => contract.initWithdrawal(web3.eth.getBalance((<any>contract).address), new BigNumber(1),txParams(accs.owner)));
 		assert.ok(!resErr);
 
 		await goToState(IcoStates.PostIco);
 		// Снимать можно только на PostIco
 
-		// Не owner не может снимать
-		let resUserErr = await execInEth(() => contract.ownerWithdrawal(web3.eth.getBalance((<any>contract).address), txParams(accs.user1)));
+		// Не owner не может инициировать снятие
+		let resUserErr = await execInEth(() => contract.initWithdrawal(web3.eth.getBalance((<any>contract).address), new BigNumber(1), txParams(accs.user1)));
 		assert.ok(!resUserErr);
+		let resCoOwnerErr = await execInEth(() => contract.initWithdrawal(web3.eth.getBalance((<any>contract).address), new BigNumber(1), txParams(accs.coOwner)));
+		assert.ok(!resCoOwnerErr);
+
 
 		//-----------------------------------------------
-		// Снимать может только владелец
-		let before = {
+		// владелец может сбросить (по факту) инициацию вывода - выставив нулевые значения в адрес и количество для вывода
+
+		let beforeReset1={
+			withdrawalTo: contract.withdrawalTo(),
+			withdrawalValue: bnWr(contract.withdrawalValue()),
 			contractEth: bnWr(web3.eth.getBalance((<any>contract).address)),
-			ownerEth: bnWr(web3.eth.getBalance(accs.owner))
 		};
-		let res = await execInEth(() => contract.ownerWithdrawal(before.contractEth, txParams(accs.owner)));
-		let after = {
-			contractEth: bnWr(web3.eth.getBalance((<any>contract).address)),
-			ownerEth: bnWr(web3.eth.getBalance(accs.owner))
+		let resReset1 = await execInEth(() => contract.initWithdrawal(accs.user1, beforeReset1.contractEth, txParams(accs.owner)));
+		let afterReset1={
+			withdrawalTo: contract.withdrawalTo(),
+			withdrawalValue: bnWr(contract.withdrawalValue()),
+		};
+		let resReset2 = await execInEth(() => contract.initWithdrawal('', new BigNumber(0), txParams(accs.owner)));
+		let afterReset2={
+			withdrawalTo: contract.withdrawalTo(),
+			withdrawalValue: bnWr(contract.withdrawalValue()),
 		};
 
-		assert.ok(res);
+		assert.ok(resReset1);
+		assert.ok(afterReset1.withdrawalTo == accs.user1);
+		assert.ok(afterReset1.withdrawalValue.equals(beforeReset1.contractEth));
+		assert.ok(resReset2);
+		assert.ok(afterReset2.withdrawalTo == '0x0000000000000000000000000000000000000000');
+		assert.ok(afterReset2.withdrawalValue.equals(new BigNumber(0)));
+
+		//-----------------------------------------------
+		// Снимать могут только владелец совместно с совладельцем
+		let before = {
+			contractEth: bnWr(web3.eth.getBalance((<any>contract).address)),
+			ownerEth: bnWr(web3.eth.getBalance(accs.owner)),
+			user1Eth: bnWr(web3.eth.getBalance(accs.user1)),
+		};
+		let resInit = await execInEth(() => contract.initWithdrawal(accs.user1, before.contractEth, txParams(accs.owner)));
+
+		let wt = contract.withdrawalTo();
+		let wv = bnWr(contract.withdrawalValue());
+		assert.ok(wt == accs.user1);
+		assert.ok(wv.equals(before.contractEth));
+
+		let resApproveErr = await execInEth(()=>contract.approveWithdrawal(accs.user1, before.contractEth, txParams(accs.owner)));
+		assert.ok(!resApproveErr);
+		let resApprove = await execInEth(()=>contract.approveWithdrawal(accs.user1, before.contractEth, txParams(accs.coOwner)));
+
+		let after = {
+			contractEth: bnWr(web3.eth.getBalance((<any>contract).address)),
+			ownerEth: bnWr(web3.eth.getBalance(accs.owner)),
+			user1Eth: bnWr(web3.eth.getBalance(accs.user1)),
+			withdrawalTo: contract.withdrawalTo(),
+			withdrawalValue: bnWr(contract.withdrawalValue()),
+		};
+
+		assert.ok(resInit);
+		assert.ok(resApprove);
 		assertEq(bnWr(new BigNumber(0)), after.contractEth);
-		assertEq(bnWr(before.ownerEth.plus(before.contractEth)), after.ownerEth);
+		assertEq(bnWr(before.user1Eth.plus(before.contractEth)), after.user1Eth);
+		assert.ok(after.withdrawalTo == '0x0000000000000000000000000000000000000000');
+		assertEq(bnWr(new BigNumber(0)), after.withdrawalValue);
 
 	});
 
@@ -1560,14 +1606,8 @@ describe('Test Ico-contract', () => {
 	 */
 	function unlockAll() {
 		// Разлочиваем все счета
-		[accs.owner,
-			accs.lucky,
-			accs.user1,
-			accs.user2,
-			accs.bounty,
-			accs.team
-		].map(acc => {
-			web3.personal.unlockAccount(acc, config.accountPass)
+		Object.keys(accs).map(acc => {
+			web3.personal.unlockAccount((<any>accs)[acc], config.accountPass)
 		});
 	}
 

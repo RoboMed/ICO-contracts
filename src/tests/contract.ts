@@ -1,4 +1,4 @@
-import * as BigNumber from 'bignumber.js';
+import {BigNumber} from 'bignumber.js';
 
 /**
  * Интерфейс options вызова методов контракта
@@ -6,16 +6,16 @@ import * as BigNumber from 'bignumber.js';
 export interface TxParams {
 	from: string;
 	gas: number;
-	value?: BigNumber.BigNumber;
+	value?: BigNumber;
 }
 
 /**
  * Функция для получения options вызова методов контракта
  * @param {string} addr Адрес вызывающего
- * @param {BigNumber.BigNumber} value Value
+ * @param {BigNumber} value Value
  * @returns {TxParams}
  */
-export function txParams(addr: string, value?: BigNumber.BigNumber): TxParams {
+export function txParams(addr: string, value?: BigNumber): TxParams {
 	let res: TxParams = {from: addr, gas: 2000000};
 	if (value != null) {
 		res = {
@@ -32,12 +32,12 @@ export interface Contract {
 	/**
 	 * Количество токенов для стадии VipPlacement x
 	 */
-	INITIAL_COINS_FOR_VIPPLACEMENT(): BigNumber.BigNumber;
+	INITIAL_COINS_FOR_VIPPLACEMENT(): BigNumber;
 
 	/**
 	 * Длительность стадии VipPlacement
 	 */
-	DURATION_VIPPLACEMENT(): BigNumber.BigNumber;
+	DURATION_VIPPLACEMENT(): BigNumber;
 
 	//end VipPlacement constants
 
@@ -46,17 +46,17 @@ export interface Contract {
 	/**
 	 * Количество токенов для стадии PreSale
 	 */
-	EMISSION_FOR_PRESALE(): BigNumber.BigNumber;
+	EMISSION_FOR_PRESALE(): BigNumber;
 
 	/**
 	 * Длительность стадии PreSale
 	 */
-	DURATION_PRESALE(): BigNumber.BigNumber;
+	DURATION_PRESALE(): BigNumber;
 
 	/**
 	 * Курс стадии PreSale
 	 */
-	RATE_PRESALE(): BigNumber.BigNumber;
+	RATE_PRESALE(): BigNumber;
 
 	//end PreSale constants
 
@@ -65,17 +65,17 @@ export interface Contract {
 	/**
 	 * Общая длительность стадий Sale с SaleStage1 по SaleStage4 включительно
 	 */
-	DURATION_SALESTAGES (): BigNumber.BigNumber;
+	DURATION_SALESTAGES (): BigNumber;
 
 	/**
 	 * Курс стадии SaleStage1
 	 */
-	RATE_SALESTAGE1(): BigNumber.BigNumber;
+	RATE_SALESTAGE1(): BigNumber;
 
 	/**
 	 * Эмиссия токенов для стадии SaleStage1
 	 */
-	EMISSION_FOR_SALESTAGE1 (): BigNumber.BigNumber;
+	EMISSION_FOR_SALESTAGE1 (): BigNumber;
 
 	//end SaleStage1 constants
 
@@ -84,12 +84,12 @@ export interface Contract {
 	/**
 	 * Курс стадии SaleStage2
 	 */
-	RATE_SALESTAGE2 (): BigNumber.BigNumber;
+	RATE_SALESTAGE2 (): BigNumber;
 
 	/**
 	 * Эмиссия токенов для стадии SaleStage2
 	 */
-	EMISSION_FOR_SALESTAGE2 (): BigNumber.BigNumber;
+	EMISSION_FOR_SALESTAGE2 (): BigNumber;
 
 	//end SaleStage2 constants
 
@@ -98,12 +98,12 @@ export interface Contract {
 	/**
 	 * Курс стадии SaleStage3
 	 */
-	RATE_SALESTAGE3 (): BigNumber.BigNumber;
+	RATE_SALESTAGE3 (): BigNumber;
 
 	/**
 	 * Эмиссия токенов для стадии SaleStage3
 	 */
-	EMISSION_FOR_SALESTAGE3 (): BigNumber.BigNumber;
+	EMISSION_FOR_SALESTAGE3 (): BigNumber;
 
 	//end SaleStage3 constants
 
@@ -112,12 +112,12 @@ export interface Contract {
 	/**
 	 * Курс стадии SaleStage4
 	 */
-	RATE_SALESTAGE4 (): BigNumber.BigNumber;
+	RATE_SALESTAGE4 (): BigNumber;
 
 	/**
 	 * Эмиссия токенов для стадии SaleStage4
 	 */
-	EMISSION_FOR_SALESTAGE4 (): BigNumber.BigNumber;
+	EMISSION_FOR_SALESTAGE4 (): BigNumber;
 
 	//end SaleStage4 constants
 
@@ -126,17 +126,17 @@ export interface Contract {
 	/**
 	 * Длительность стадии SaleStage5
 	 */
-	DURATION_SALESTAGE5 (): BigNumber.BigNumber;
+	DURATION_SALESTAGE5 (): BigNumber;
 
 	/**
 	 * Курс стадии SaleStage5
 	 */
-	RATE_SALESTAGE5 (): BigNumber.BigNumber;
+	RATE_SALESTAGE5 (): BigNumber;
 
 	/**
 	 * Эмиссия токенов для стадии SaleStage5
 	 */
-	EMISSION_FOR_SALESTAGE5 (): BigNumber.BigNumber;
+	EMISSION_FOR_SALESTAGE5 (): BigNumber;
 
 	//end SaleStage5 constants
 
@@ -145,19 +145,30 @@ export interface Contract {
 	/**
 	 * Длительность периода на который нельзя использовать team токены, полученные при распределении
 	 */
-	DURATION_NONUSETEAM (): BigNumber.BigNumber;
+	DURATION_NONUSETEAM (): BigNumber;
 
 	//end PostIco constants
 
 	/**
 	 * Максимально доступное количество очков баунти
 	 */
-	BOUNTY_POINTS_SIZE(): BigNumber.BigNumber;
+	BOUNTY_POINTS_SIZE(): BigNumber;
 
 	/**
 	 * Размер премии для аккаунта, с которого успешно выполнили goto на очередную стадию
 	 */
-	PRIZE_SIZE_FORGOTO (): BigNumber.BigNumber;
+	PRIZE_SIZE_FORGOTO (): BigNumber;
+
+	/**
+	 * Владелец контракта - распределяет вип токены, начисляет баунти и team, осуществляет переход по стадиям,
+	 * совместно с _coOwner выполняет выведение eth после наступления PostIco
+	 */
+	owner(): string;
+
+	/**
+	 * Совладелец контракта - только при его участии может быть выведены eth после наступления PostIco
+	 */
+	coOwner(): string;
 
 	/**
 	 * Адрес на счёте которого находятся нераспределённые bounty токены
@@ -170,90 +181,100 @@ export interface Contract {
 	teamTokensAccount(): string;
 
 	/**
+	 *Адрес на который инициирован вывод eth (владельцем)
+	 */
+	withdrawalTo(): string;
+
+	/**
+	 * Количество eth который предполагается выводить на адрес withdrawalTo
+	 */
+	withdrawalValue(): BigNumber;
+
+	/**
 	 * Количество нераспределённых токенов bounty
 	 * */
-	bountyTokensNotDistributed(): BigNumber.BigNumber;
+	bountyTokensNotDistributed(): BigNumber;
 
 	/**
 	 * Количество нераспределённых токенов team
 	 */
-	teamTokensNotDistributed(): BigNumber.BigNumber;
+	teamTokensNotDistributed(): BigNumber;
 
 	/**
 	 * Текущее состояние
 	 */
-	currentState(): BigNumber.BigNumber;
+	currentState(): BigNumber;
 
 	/**
 	 * Количество собранного эфира
 	 */
-	totalBalance(): BigNumber.BigNumber;
+	totalBalance(): BigNumber;
 
 	/**
 	 * Количество свободных токенов (никто ими не владеет)
 	 */
-	freeMoney(): BigNumber.BigNumber;
+	freeMoney(): BigNumber;
 
 	/**
 	 * Общее количество выпущенных токенов
 	 * */
-	totalSupply(): BigNumber.BigNumber;
+	totalSupply(): BigNumber;
 
 	/**
 	 * Общее количество купленных токенов
 	 * */
-	totalBought(): BigNumber.BigNumber;
+	totalBought(): BigNumber;
 
 	/**
 	 * Количество нераспределённых баунти очков
 	 * */
-	bountyPointsNotDistributed(): BigNumber.BigNumber;
+	bountyPointsNotDistributed(): BigNumber;
 
 	/**
 	 * Количество не распределённых токенов от стадии VipPlacement
 	 */
-	vipPlacementNotDistributed(): BigNumber.BigNumber;
+	vipPlacementNotDistributed(): BigNumber;
 
 	/**
 	 * Дата окончания стадии VipPlacement
 	 */
-	endDateOfVipPlacement(): BigNumber.BigNumber;
+	endDateOfVipPlacement(): BigNumber;
 
 	/**
 	 * Дата окончания стадии PreSale
 	 */
-	endDateOfPreSale(): BigNumber.BigNumber;
+	endDateOfPreSale(): BigNumber;
 
 	/**
 	 * Дата начала стадии SaleStageLast
 	 */
-	startDateOfSaleStageLast(): BigNumber.BigNumber;
+	startDateOfSaleStageLast(): BigNumber;
 
 	/**
 	 * Дата окончания стадии SaleStageLast
 	 */
-	endDateOfSaleStageLast(): BigNumber.BigNumber;
+	endDateOfSaleStageLast(): BigNumber;
 
 
 	/**
 	 * Остаток нераспроданных токенов для состояний с SaleStage1 по SaleStage7, которые переходят в свободные на момент наступления SaleStageLast
 	 */
-	remForSalesBeforeStageLast(): BigNumber.BigNumber;
+	remForSalesBeforeStageLast(): BigNumber;
 
 	/**
 	 * Дата, начиная с которой можно получить team токены непосредственно на кошелёк
 	 */
-	startDateOfUseTeamTokens(): BigNumber.BigNumber;
+	startDateOfUseTeamTokens(): BigNumber;
 
 	/**
 	 * How many token units a buyer gets per wei
 	 */
-	rate(): BigNumber.BigNumber;
+	rate(): BigNumber;
 
 	/**
 	 * Метод получающий количество начисленных премиальных токенов
 	 */
-	teamBalanceOf(_owner: string): BigNumber.BigNumber;
+	teamBalanceOf(_owner: string): BigNumber;
 
 	/**
 	 * Метод зачисляющий предварительно распределённые team токены на кошелёк
@@ -267,14 +288,19 @@ export interface Contract {
 	gotoNextState(params: TxParams): string;
 
 	/**
-	 * Снятие эфира на кошелёк владельца
+	 * Инициация снятия эфира на указанный кошелёк
 	 */
-	ownerWithdrawal(value: BigNumber.BigNumber, params: TxParams): void;
+	initWithdrawal(_to: string, _value: BigNumber, params: TxParams): string;
+
+	/**
+	 * Подтверждение снятия эфира на указанный кошелёк
+	 */
+	approveWithdrawal(_to: string, _value: BigNumber, params: TxParams): string;
 
 	/**
 	 * Метод проверяющий возможность перехода в указанное состояние
 	 */
-	canGotoState(toState: BigNumber.BigNumber): boolean;
+	canGotoState(toState: BigNumber): boolean;
 
 	/**
 	 * Метод покупки токенов
@@ -284,19 +310,19 @@ export interface Contract {
 	/**
 	 * Метод выполняющий выдачу баунти-токенов на указанный адрес
 	 */
-	transferBounty(_to: string, _value: BigNumber.BigNumber, params: TxParams): string;
+	transferBounty(_to: string, _value: BigNumber, params: TxParams): string;
 
 	/**
 	 * Метод выполняющий выдачу баунти-токенов на указанный адрес
 	 */
-	transferTeam(_to: string, _value: BigNumber.BigNumber, params: TxParams): string;
+	transferTeam(_to: string, _value: BigNumber, params: TxParams): string;
 
 	/**
 	 * @dev transfer token for a specified address
 	 * @param _to The address to transfer to.
 	 * @param _value The amount to be transferred.
 	 */
-	transfer(_to: string, _value: BigNumber.BigNumber, params: TxParams): string;
+	transfer(_to: string, _value: BigNumber, params: TxParams): string;
 
 
 	/**
@@ -304,7 +330,7 @@ export interface Contract {
 	 * @param _owner The address to query the the balance of.
 	 * @return An uint256 representing the amount owned by the passed address.
 	 */
-	balanceOf(_owner: string): BigNumber.BigNumber;
+	balanceOf(_owner: string): BigNumber;
 
 	/**
 	 * @dev Transfer tokens from one address to another
@@ -312,14 +338,14 @@ export interface Contract {
 	 * @param _to address The address which you want to transfer to
 	 * @param _value uint256 the amout of tokens to be transfered
 	 */
-	transferFrom(_from: string, _to: string, _value: BigNumber.BigNumber, params: TxParams): boolean;
+	transferFrom(_from: string, _to: string, _value: BigNumber, params: TxParams): boolean;
 
 	/**
 	 * @dev Aprove the passed address to spend the specified amount of tokens on behalf of msg.sender.
 	 * @param _spender The address which will spend the funds.
 	 * @param _value The amount of tokens to be spent.
 	 */
-	approve(_spender: string, _value: BigNumber.BigNumber, params: TxParams): boolean;
+	approve(_spender: string, _value: BigNumber, params: TxParams): boolean;
 
 	/**
 	 * @dev Function to check the amount of tokens that an owner allowed to a spender.
@@ -327,5 +353,5 @@ export interface Contract {
 	 * @param _spender address The address which will spend the funds.
 	 * @return A uint256 specifing the amount of tokens still available for the spender.
 	 */
-	allowance(_owner: string, _spender: string): BigNumber.BigNumber;
+	allowance(_owner: string, _spender: string): BigNumber;
 }
