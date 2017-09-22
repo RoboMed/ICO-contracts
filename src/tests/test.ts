@@ -81,6 +81,30 @@ describe('Test Ico-contract', () => {
 		assertEq(CONSTANTS.INITIAL_COINS_FOR_VIPPLACEMENT, balance);
 	});
 
+	/**
+	 * Тест деплоя контракта
+	 */
+	it('test-deploy', async () => {
+
+		// Деплой контракта выполняется 3-м лицом - он не совпадает ни с одним адресом указанным в конструкторе - владелец, совладелец, адреса баунти и тим
+
+		// Проверяем, что нельзя задеплоить от: ownerm coOwner, team, bounty
+		for(let acc in [accs.owner, accs.coOwner, accs.bounty, accs.team]){
+			try {
+				let c = await deploy(config.rpcAddress, acc, config.accountPass, accs.owner, accs.coOwner, accs.bounty, accs.team);
+				assert.fail("Контракт не должен был быть задеплоен")
+			}
+			catch (e){
+				console.log(e.message);
+			}
+		}
+	});
+
+	//Деплой контракта выполняется 3-м лицом - он не совпадает ни с одним адресом указанным в конструкторе - владелец, совладелец, адреса баунти и тим
+
+	/**
+	 * Тест перехода на след. стадию
+	 */
 	it('test-gotoNextState', async () => {
 
 		// Достаточно дождаться и дернуть ручку
