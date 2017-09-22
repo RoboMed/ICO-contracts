@@ -66,7 +66,7 @@ describe('Test Ico-contract', () => {
 	/**
 	 * Тест для проверки начального состояния контракта
 	 */
-	it('test-contract-init', () => {
+	it('test-contract-init', async () => {
 
 		checkContract({
 			currentState: IcoStates.VipPlacement,
@@ -79,6 +79,34 @@ describe('Test Ico-contract', () => {
 		//Проверяем, что была выполнена эмиссия и монеты переданы на кошелек владельца
 		let balance = bnWr(contract.balanceOf(accs.owner));
 		assertEq(CONSTANTS.INITIAL_COINS_FOR_VIPPLACEMENT, balance);
+	});
+
+	it('test-gotoNextState', async () => {
+
+		// Достаточно дождаться и дернуть ручку
+		while (!contract.canGotoState(IcoStates.PreSale)) {
+			await U.delay(1000);
+		}
+
+		// Выполнять переход на след. стадию с помощью GoToNextStage может только owner
+
+		let allButNotOwner = Object.keys(accs)
+			.map(x=>(<any>accs)[x])
+			.filter(x=>x != accs.owner)
+
+		for(let acc in allButNotOwner){
+			let res = await execInEth(()=>contract.gotoNextState(txParams(acc)));
+			let state = bnWr(contract.currentState());
+
+			assert.ok(!res);
+			assertEq(IcoStates.VipPlacement, state);
+		}
+
+		// Owner может выполнить переход
+		let res = await execInEth(()=>contract.gotoNextState(txParams(accs.owner)));
+		let state = bnWr(contract.currentState());
+		assert.ok(res);
+		assertEq(IcoStates.PreSale, state);
 	});
 
 	/**
