@@ -19,6 +19,8 @@ let all =
       "./src/contracts/zeppelin/SafeMath.sol",
       "./src/contracts/zeppelin/ERC20Basic.sol",
       "./src/contracts/zeppelin/ERC20.sol",
+      "./src/contracts/zeppelin/ERC223.sol",
+      "./src/contracts/zeppelin/ContractReceiver.sol",
       "./src/contracts/RobomedIco.sol"
     ].map(p => getText(p))
   ).join("\r\n\r\n\r\n");
