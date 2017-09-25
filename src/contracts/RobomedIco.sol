@@ -7,7 +7,6 @@ import "./zeppelin/ERC223.sol";
 import "./zeppelin/ContractReceiver.sol";
 
 
-
 contract RobomedIco is ERC223, ERC20 {
 
   using SafeMath for uint256;
@@ -675,7 +674,7 @@ contract RobomedIco is ERC223, ERC20 {
 
     //нельзя покупать на токены bounty и team
     require(beneficiary != bountyTokensAccount && beneficiary != teamTokensAccount);
-    
+
     //выставляем остаток средств
     //в процессе покупки будем его уменьшать на каждой итерации - итерация - покупка токенов на определённой стадии
     //суть - если покупающий переводит количество эфира,
@@ -808,12 +807,9 @@ contract RobomedIco is ERC223, ERC20 {
   function transfer(address _to, uint _value, bytes _data, string _custom_fallback) checkForTransfer(msg.sender, _to, _value) returns (bool) {
 
     if (isContract(_to)) {
-      require(balances[msg.sender] >= _value);
-      balances[msg.sender] = balances[msg.sender].sub(_value);
-      balances[_to] = balances[_to].add(_value);
+      _transfer(msg.sender, _to, _value);
       ContractReceiver receiver = ContractReceiver(_to);
       receiver.call.value(0)(bytes4(sha3(_custom_fallback)), msg.sender, _value, _data);
-      changeVipPlacmentIfNeed(_value);
       Transfer(msg.sender, _to, _value, _data);
       return true;
     }
@@ -856,10 +852,6 @@ contract RobomedIco is ERC223, ERC20 {
     }
   }
 
-
-
-
-
   /**
   * assemble the given address bytecode. If bytecode exists then the _addr is a contract.
   */
@@ -876,10 +868,7 @@ contract RobomedIco is ERC223, ERC20 {
   * function that is called when transaction target is an address
   */
   function transferToAddress(address _to, uint _value, bytes _data) private returns (bool) {
-    require(balances[msg.sender] >= _value);
-    balances[msg.sender] = balances[msg.sender].sub(_value);
-    balances[_to] = balances[_to].add(_value);
-    changeVipPlacmentIfNeed(_value);
+    _transfer(msg.sender, _to, _value);
     Transfer(msg.sender, _to, _value, _data);
     return true;
   }
@@ -888,25 +877,24 @@ contract RobomedIco is ERC223, ERC20 {
   * function that is called when transaction target is a contract
   */
   function transferToContract(address _to, uint _value, bytes _data) private returns (bool success) {
-    require(balances[msg.sender] >= _value);
-    balances[msg.sender] = balances[msg.sender].sub(_value);
-    balances[_to] = balances[_to].add(_value);
+    _transfer(msg.sender, _to, _value);
     ContractReceiver receiver = ContractReceiver(_to);
     receiver.tokenFallback(msg.sender, _value, _data);
-    changeVipPlacmentIfNeed(_value);
     Transfer(msg.sender, _to, _value, _data);
     return true;
   }
 
-  /**
-  * Метод изменяющий количество нераспределённых вип токенов, если необходимо
-  */
-  function changeVipPlacmentIfNeed(uint256 _value) private {
+  function _transfer(address _from, address _to, uint _value) private {
+    require(balances[_from] >= _value);
+    balances[_from] = balances[_from].sub(_value);
+    balances[_to] = balances[_to].add(_value);
     if (currentState != IcoStates.PostIco) {
       //общая сумма переводов от владельца (до завершения) ico не может превышать InitialCoinsFor_VipPlacement
       vipPlacementNotDistributed = vipPlacementNotDistributed.sub(_value);
     }
   }
+
+
 
 
   /**
