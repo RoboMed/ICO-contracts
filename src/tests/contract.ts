@@ -318,12 +318,21 @@ export interface Contract {
 	transferTeam(_to: string, _value: BigNumber, params: TxParams): string;
 
 	/**
+	 * Function that is called when a user or another contract wants to transfer funds .
+	 */
+	transfer(_to: string, _value: BigNumber, _data: any, _custom_fallback: string): string;
+
+	/**
+	 * Function that is called when a user or another contract wants to transfer funds .
+	 */
+	transfer(_to: string, _value: BigNumber, _data: any): string;
+
+	/**
 	 * @dev transfer token for a specified address
 	 * @param _to The address to transfer to.
 	 * @param _value The amount to be transferred.
 	 */
 	transfer(_to: string, _value: BigNumber, params: TxParams): string;
-
 
 	/**
 	 * @dev Gets the balance of the specified address.

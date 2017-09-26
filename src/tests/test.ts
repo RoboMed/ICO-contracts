@@ -10,6 +10,7 @@ import {bnWr, BnWr} from "./bn-wr";
 import {TestAccounts, prepare} from "./prepare-test-data";
 import {deploy} from "./deploy-to-target";
 import {Contract, txParams} from "./contract";
+import {deploy as deployTest}  from "./delpoy-test-contracts";
 
 //add extra mocha options: --require ts-node/register --timeout 100000
 
@@ -18,6 +19,7 @@ let contract: Contract;
 let config: Config = null;
 let accs: TestAccounts;
 let CONSTANTS: ContractConstants;
+let emptyAddress: '0x0000000000000000000000000000000000000000';
 
 /**
  * Параметры для проверки свойств контракта
@@ -62,6 +64,86 @@ describe('Test Ico-contract', () => {
 		// Разлочиваем все счета
 		unlockAll();
 	});
+
+	/**
+	 * Тест для проверки отправки токенов контракту
+	 */
+	it('test-transfer-all-to-contract', async () => {
+
+		let contractReceiver = await getContractReceiver();
+
+		// Передаем токены контракту
+		let res = await execInEth(() => contract.transfer(contractReceiver.address, CONSTANTS.INITIAL_COINS_FOR_VIPPLACEMENT, txParams(accs.owner)));
+
+		let ownerRmTokens = bnWr(contract.balanceOf(accs.owner));
+		let contractReceiverRmTokens = bnWr(contract.balanceOf(contractReceiver.address));
+
+		let contractReceiverData = getContractReceiverData(contractReceiver);
+
+		assert.ok(res);
+		assert.ok(ownerRmTokens.equals(0));
+		assert.ok(contractReceiverRmTokens.equals(CONSTANTS.INITIAL_COINS_FOR_VIPPLACEMENT));
+
+		assert.ok(contractReceiverData.sender == accs.owner);
+		assertEq(CONSTANTS.INITIAL_COINS_FOR_VIPPLACEMENT, contractReceiverData.value);
+	});
+
+	/**
+	 * Тест для проверки отправки токенов контракту c ошибкой
+	 */
+	it('test-transfer-to-contract-fallbackError', async () => {
+
+		let contractReceiver = await getContractReceiverWithError();
+
+		let before = getContractReceiverData(contractReceiver);
+
+		// Передаем токены контракту
+		let res = await execInEth(() => contract.transfer(contractReceiver.address, CONSTANTS.INITIAL_COINS_FOR_VIPPLACEMENT, txParams(accs.owner)));
+
+		let ownerRmTokens = bnWr(contract.balanceOf(accs.owner));
+		let contractReceiverRmTokens = bnWr(contract.balanceOf(contractReceiver.address));
+
+		let after = getContractReceiverData(contractReceiver);
+
+		// Проверяем, что ничего не изменилось
+		assert.ok(!res);
+		assert.ok(ownerRmTokens.equals(CONSTANTS.INITIAL_COINS_FOR_VIPPLACEMENT));
+		assert.ok(contractReceiverRmTokens.equals(0));
+
+		assert.ok(before.sender == after.sender);
+		assertEq(before.value, after.value);
+		assert.ok(before.data == after.data);
+	});
+
+	/**
+	 * Тест для проверки отправки токенов контракту c данными
+	 */
+	it('test-transfer-all-with-data-to-contract', async () => {
+
+		let contractReceiver = await getContractReceiver();
+
+		// Передаем токены контракту
+		let data = ["0x00","0xaa", "0xff"];
+
+		let res = await execInEth(() =>(<any>contract).transact(txParams(accs.owner)).transfer(contractReceiver.address, CONSTANTS.INITIAL_COINS_FOR_VIPPLACEMENT, data));
+		//let res = await execInEth(() => contract.transfer(contractReceiver.address, CONSTANTS.INITIAL_COINS_FOR_VIPPLACEMENT, data, txParams(accs.owner)));
+
+		let ownerRmTokens = bnWr(contract.balanceOf(accs.owner));
+		let contractReceiverRmTokens = bnWr(contract.balanceOf(contractReceiver.address));
+
+		let after = getContractReceiverData(contractReceiver);
+
+		assert.ok(res);
+		assert.ok(ownerRmTokens.equals(0));
+		assert.ok(contractReceiverRmTokens.equals(CONSTANTS.INITIAL_COINS_FOR_VIPPLACEMENT));
+
+		assert.ok(after.sender == accs.owner);
+		assertEq(CONSTANTS.INITIAL_COINS_FOR_VIPPLACEMENT, after.value);
+		//assert.ok(after.data == data);
+	});
+
+
+
 
 	/**
 	 * Тест для проверки начального состояния контракта
@@ -1453,7 +1535,7 @@ describe('Test Ico-contract', () => {
 		assert.ok(afterReset1.withdrawalTo == accs.user1);
 		assert.ok(afterReset1.withdrawalValue.equals(beforeReset1.contractEth));
 		assert.ok(resReset2);
-		assert.ok(afterReset2.withdrawalTo == '0x0000000000000000000000000000000000000000');
+		assert.ok(afterReset2.withdrawalTo == emptyAddress);
 		assert.ok(afterReset2.withdrawalValue.equals(new BigNumber(0)));
 
 		//-----------------------------------------------
@@ -1486,7 +1568,7 @@ describe('Test Ico-contract', () => {
 		assert.ok(resApprove);
 		assertEq(bnWr(new BigNumber(0)), after.contractEth);
 		assertEq(bnWr(before.user1Eth.plus(before.contractEth)), after.user1Eth);
-		assert.ok(after.withdrawalTo == '0x0000000000000000000000000000000000000000');
+		assert.ok(after.withdrawalTo == emptyAddress);
 		assertEq(bnWr(new BigNumber(0)), after.withdrawalValue);
 
 	});
@@ -1661,6 +1743,26 @@ describe('Test Ico-contract', () => {
 		Object.keys(accs).map(acc => {
 			web3.personal.unlockAccount((<any>accs)[acc], config.accountPass)
 		});
+	}
+
+	async function getContractReceiver(): Promise<{address: string}>{
+		let c = await deployTest("ContractReceiver", config.rpcAddress, accs.deployer, config.accountPass);
+		let contractReceiver = web3.eth.contract(c.abi).at(c.address);
+		return contractReceiver;
+	}
+
+	function getContractReceiverData(contract: any): {sender: string, value: BnWr, data: string}{
+		return {
+			sender:(<any>contract).sender(),
+			value: bnWr((<any>contract).value()),
+			data: (<any>contract).data()
+		}
+	}
+
+	async function getContractReceiverWithError(): Promise<{address: string}>{
+		let c = await deployTest("ContractReceiverForTestWithError", config.rpcAddress, accs.deployer, config.accountPass);
+		let contractReceiver = web3.eth.contract(c.abi).at(c.address);
+		return contractReceiver;
 	}
 
 });
