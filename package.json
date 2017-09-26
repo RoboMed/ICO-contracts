@@ -4,7 +4,7 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "tsc": "./node_modules/typescript/bin/tsc",
+    "tsc": "tsc",
     "prepareNewNetMur": "set CONFIGFILE=./src/configs/config-mur.json&&node -e \"require('./dist/prepare-new-net').prepare()\" ",
     "prepareNewNetRum": "set CONFIGFILE=./src/configs/config-rum.json&&node -e \"require('./dist/prepare-new-net').prepare()\" ",
     "prepareTestDataMur": "set CONFIGFILE=./src/configs/config-mur.json&& node -e \"require('./dist/prepare-test-data').prepare()\" ",

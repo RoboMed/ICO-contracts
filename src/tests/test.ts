@@ -116,7 +116,7 @@ describe('Test Ico-contract', () => {
 
 		let allButNotOwner = Object.keys(accs)
 			.map(x=>(<any>accs)[x])
-			.filter(x=>x != accs.owner)
+			.filter(x=>x != accs.owner);
 
 		for(let acc in allButNotOwner){
 			let res = await execInEth(()=>contract.gotoNextState(txParams(acc)));
@@ -142,8 +142,8 @@ describe('Test Ico-contract', () => {
 		let res = await execInEth(() => contract.transfer(accs.user1, CONSTANTS.INITIAL_COINS_FOR_VIPPLACEMENT, txParams(accs.owner)));
 		assert.ok(res);
 
-		let contractRmTokens = contract.balanceOf(accs.owner);
-		let user1RmTokens = contract.balanceOf(accs.user1);
+		let contractRmTokens = bnWr(contract.balanceOf(accs.owner));
+		let user1RmTokens = bnWr(contract.balanceOf(accs.user1));
 
 		assert.ok(contractRmTokens.equals(0));
 		assert.ok(user1RmTokens.equals(CONSTANTS.INITIAL_COINS_FOR_VIPPLACEMENT));
@@ -151,7 +151,7 @@ describe('Test Ico-contract', () => {
 		checkContract({
 			currentState: IcoStates.VipPlacement,
 			totalBalance: bnWr(new BigNumber(0)),
-			totalSupply: CONSTANTS.INITIAL_COINS_FOR_VIPPLACEMENT,
+			totalSupply: bnWr(CONSTANTS.INITIAL_COINS_FOR_VIPPLACEMENT.plus(CONSTANTS.EMISSION_FOR_BOUNTY).plus(CONSTANTS.EMISSION_FOR_TEAM)),
 			totalBought: bnWr(new BigNumber(0)),
 			rate: bnWr(new BigNumber(0)),
 		});

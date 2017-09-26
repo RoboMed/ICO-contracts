@@ -86,7 +86,6 @@ export async function deploy(rpcHost: string, deployer: string, deployerPass: st
 	console.log("contract deployed");
 	console.log("contract.deployer: " + deployer);
 	console.log("contract.address: " + contract.address);
-	//console.log("contract.abi: " + JSON.stringify(contract.abi));
 	console.log();
 
 	return contract;
