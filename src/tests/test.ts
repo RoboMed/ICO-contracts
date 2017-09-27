@@ -116,7 +116,7 @@ describe('Test Ico-contract', () => {
 	});
 
 	/**
-	 * Тест для проверки отправки токенов контракту c данными
+	 * Тест для проверки отправки токенов c данными контракту
 	 */
 	it('test-transfer-all-with-data-to-contract', async () => {
 
@@ -141,7 +141,7 @@ describe('Test Ico-contract', () => {
 	});
 
 	/**
-	 * Тест для проверки отправки токенов контракту c данными c ошибкой
+	 * Тест для проверки отправки токенов c данными контракту c ошибкой
 	 */
 	it('test-transfer-all-with-data-to-contract-fallbackError', async () => {
 
@@ -168,6 +168,60 @@ describe('Test Ico-contract', () => {
 		assert.ok(before.data == after.data);
 	});
 
+	/**
+	 * Тест для проверки отправки токенов c данными и калбеком контракту
+	 */
+	it('test-transfer-all-with-data-and-customFallback-to-contract', async () => {
+
+		let contractReceiver = await getContractReceiver();
+
+		// Передаем токены контракту
+		let data = "0x010203";
+		let customFallback = "customFallback";
+		let res = await execInEth(() => (<any>contract).test_transferWithDataAndCustomFallback(contractReceiver.address, CONSTANTS.INITIAL_COINS_FOR_VIPPLACEMENT, data, customFallback, txParams(accs.owner)));
+
+		let ownerRmTokens = bnWr(contract.balanceOf(accs.owner));
+		let contractReceiverRmTokens = bnWr(contract.balanceOf(contractReceiver.address));
+
+		let after = getContractReceiverData(contractReceiver);
+
+		assert.ok(res);
+		assert.ok(ownerRmTokens.equals(0));
+		assert.ok(contractReceiverRmTokens.equals(CONSTANTS.INITIAL_COINS_FOR_VIPPLACEMENT));
+
+		assert.ok(after.sender == accs.owner);
+		assertEq(after.value, CONSTANTS.INITIAL_COINS_FOR_VIPPLACEMENT);
+		assert.ok(after.data == data);
+	});
+
+	/**
+	 * Тест для проверки отправки токенов c данными и калбеком контракту c ошибкой
+	 */
+	it('test-transfer-all-with-data-and-customFallback-to-contract-fallbackError', async () => {
+
+		let contractReceiver = await getContractReceiverWithError();
+
+		let before = getContractReceiverData(contractReceiver);
+
+		// Передаем токены контракту
+		let data = "0x010203";
+		let customFallback = "customFallback";
+		let res = await execInEth(() => (<any>contract).test_transferWithDataAndCustomFallback(contractReceiver.address, CONSTANTS.INITIAL_COINS_FOR_VIPPLACEMENT, data, customFallback, txParams(accs.owner)));
+
+		let ownerRmTokens = bnWr(contract.balanceOf(accs.owner));
+		let contractReceiverRmTokens = bnWr(contract.balanceOf(contractReceiver.address));
+
+		let after = getContractReceiverData(contractReceiver);
+
+		// Проверяем, что ничего не изменилось
+		assert.ok(!res);
+		assert.ok(ownerRmTokens.equals(CONSTANTS.INITIAL_COINS_FOR_VIPPLACEMENT));
+		assert.ok(contractReceiverRmTokens.equals(0));
+
+		assert.ok(before.sender == after.sender);
+		assertEq(before.value, after.value);
+		assert.ok(before.data == after.data);
+	});
 
 
 	/**
