@@ -123,10 +123,8 @@ describe('Test Ico-contract', () => {
 		let contractReceiver = await getContractReceiver();
 
 		// Передаем токены контракту
-		let data = ["0x00","0xaa", "0xff"];
-
-		let res = await execInEth(() =>(<any>contract).transact(txParams(accs.owner)).transfer(contractReceiver.address, CONSTANTS.INITIAL_COINS_FOR_VIPPLACEMENT, data));
-		//let res = await execInEth(() => contract.transfer(contractReceiver.address, CONSTANTS.INITIAL_COINS_FOR_VIPPLACEMENT, data, txParams(accs.owner)));
+		let data = "0x010203";
+		let res = await execInEth(() => (<any>contract).test_transferWithData(contractReceiver.address, CONSTANTS.INITIAL_COINS_FOR_VIPPLACEMENT, data, txParams(accs.owner)));
 
 		let ownerRmTokens = bnWr(contract.balanceOf(accs.owner));
 		let contractReceiverRmTokens = bnWr(contract.balanceOf(contractReceiver.address));
@@ -138,10 +136,37 @@ describe('Test Ico-contract', () => {
 		assert.ok(contractReceiverRmTokens.equals(CONSTANTS.INITIAL_COINS_FOR_VIPPLACEMENT));
 
 		assert.ok(after.sender == accs.owner);
-		assertEq(CONSTANTS.INITIAL_COINS_FOR_VIPPLACEMENT, after.value);
-		//assert.ok(after.data == data);
+		assertEq(after.value, CONSTANTS.INITIAL_COINS_FOR_VIPPLACEMENT);
+		assert.ok(after.data == data);
 	});
 
+	/**
+	 * Тест для проверки отправки токенов контракту c данными c ошибкой
+	 */
+	it('test-transfer-all-with-data-to-contract-fallbackError', async () => {
+
+		let contractReceiver = await getContractReceiverWithError();
+
+		let before = getContractReceiverData(contractReceiver);
+
+		// Передаем токены контракту
+		let data = "0x010203";
+		let res = await execInEth(() => (<any>contract).test_transferWithData(contractReceiver.address, CONSTANTS.INITIAL_COINS_FOR_VIPPLACEMENT, data, txParams(accs.owner)));
+
+		let ownerRmTokens = bnWr(contract.balanceOf(accs.owner));
+		let contractReceiverRmTokens = bnWr(contract.balanceOf(contractReceiver.address));
+
+		let after = getContractReceiverData(contractReceiver);
+
+		// Проверяем, что ничего не изменилось
+		assert.ok(!res);
+		assert.ok(ownerRmTokens.equals(CONSTANTS.INITIAL_COINS_FOR_VIPPLACEMENT));
+		assert.ok(contractReceiverRmTokens.equals(0));
+
+		assert.ok(before.sender == after.sender);
+		assertEq(before.value, after.value);
+		assert.ok(before.data == after.data);
+	});
 
 
 
@@ -1751,11 +1776,12 @@ describe('Test Ico-contract', () => {
 		return contractReceiver;
 	}
 
-	function getContractReceiverData(contract: any): {sender: string, value: BnWr, data: string}{
+	function getContractReceiverData(contract: any): {sender: string, value: BnWr, data: string, functionName: string}{
 		return {
 			sender:(<any>contract).sender(),
 			value: bnWr((<any>contract).value()),
-			data: (<any>contract).data()
+			data: (<any>contract).data(),
+			functionName: (<any>contract).functionName(),
 		}
 	}
 

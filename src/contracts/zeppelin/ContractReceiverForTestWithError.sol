@@ -7,6 +7,7 @@ pragma solidity ^0.4.11;
 
 contract ContractReceiverForTestWithError {
 
+  string public functionName;
   address public sender;
   uint public value;
   bytes public data;
@@ -16,5 +17,7 @@ contract ContractReceiverForTestWithError {
     sender = _from;
     value = _value;
     data = _data;
+    functionName = "tokenFallback";
+
   }
 }
