@@ -489,6 +489,7 @@ contract RobomedIco is ERC223, ERC20 {
     require(_coOwner != _teamTokensAccount);
 
     //выставляем адреса
+    //test
     owner = _owner;
     coOwner = _coOwner;
     bountyTokensAccount = _bountyTokensAccount;
