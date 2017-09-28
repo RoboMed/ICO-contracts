@@ -14,10 +14,10 @@ contract ContractReceiverForTestWithError {
 
   function tokenFallback(address _from, uint _value, bytes _data){
     require(false);
+
     sender = _from;
     value = _value;
     data = _data;
     functionName = "tokenFallback";
-
   }
 }

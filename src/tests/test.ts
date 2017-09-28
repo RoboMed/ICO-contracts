@@ -89,6 +89,25 @@ describe('Test Ico-contract', () => {
 	});
 
 	/**
+	 * Тест для проверки отправки токенов контракту который не поддерживает erc223
+	 */
+	it('test-transfer-all-to-not-erc223-contract', async () => {
+
+		let contractReceiver = await getContractReceiverNotForErc223();
+
+		// Передаем токены контракту
+		let res = await execInEth(() => contract.transfer(contractReceiver.address, CONSTANTS.INITIAL_COINS_FOR_VIPPLACEMENT, txParams(accs.owner)));
+
+		let ownerRmTokens = bnWr(contract.balanceOf(accs.owner));
+		let contractReceiverRmTokens = bnWr(contract.balanceOf(contractReceiver.address));
+
+		//Контракт ничего не должен получить
+		assert.ok(!res);
+		assert.ok(ownerRmTokens.equals(CONSTANTS.INITIAL_COINS_FOR_VIPPLACEMENT));
+		assert.ok(contractReceiverRmTokens.equals(0));
+	});
+
+	/**
 	 * Тест для проверки отправки токенов контракту c ошибкой
 	 */
 	it('test-transfer-to-contract-fallbackError', async () => {
@@ -177,13 +196,15 @@ describe('Test Ico-contract', () => {
 
 		// Передаем токены контракту
 		let data = "0x010203";
-		let customFallback = "customFallback";
+		let customFallback = "customFallback(address,uint256,bytes)";
 		let res = await execInEth(() => (<any>contract).test_transferWithDataAndCustomFallback(contractReceiver.address, CONSTANTS.INITIAL_COINS_FOR_VIPPLACEMENT, data, customFallback, txParams(accs.owner)));
 
 		let ownerRmTokens = bnWr(contract.balanceOf(accs.owner));
 		let contractReceiverRmTokens = bnWr(contract.balanceOf(contractReceiver.address));
 
 		let after = getContractReceiverData(contractReceiver);
+
+		//let test = (<any>contract).test();
 
 		assert.ok(res);
 		assert.ok(ownerRmTokens.equals(0));
@@ -205,7 +226,7 @@ describe('Test Ico-contract', () => {
 
 		// Передаем токены контракту
 		let data = "0x010203";
-		let customFallback = "customFallback";
+		let customFallback = "customFallback(address,uint256,bytes)";
 		let res = await execInEth(() => (<any>contract).test_transferWithDataAndCustomFallback(contractReceiver.address, CONSTANTS.INITIAL_COINS_FOR_VIPPLACEMENT, data, customFallback, txParams(accs.owner)));
 
 		let ownerRmTokens = bnWr(contract.balanceOf(accs.owner));
@@ -1841,6 +1862,13 @@ describe('Test Ico-contract', () => {
 
 	async function getContractReceiverWithError(): Promise<{address: string}>{
 		let c = await deployTest("ContractReceiverForTestWithError", config.rpcAddress, accs.deployer, config.accountPass);
+		let contractReceiver = web3.eth.contract(c.abi).at(c.address);
+		return contractReceiver;
+	}
+
+
+	async function getContractReceiverNotForErc223(): Promise<{address: string}>{
+		let c = await deployTest("ContractReceiverNotForErc223", config.rpcAddress, accs.deployer, config.accountPass);
 		let contractReceiver = web3.eth.contract(c.abi).at(c.address);
 		return contractReceiver;
 	}
