@@ -109,7 +109,6 @@ contract ERC223 {
 
   function transfer(address to, uint value) returns (bool ok);
   function transfer(address to, uint value, bytes data) returns (bool ok);
-  function transfer(address to, uint value, bytes data, string custom_fallback) returns (bool ok);
   event Transfer(address indexed from, address indexed to, uint value, bytes indexed data);
 }
 
@@ -123,21 +122,19 @@ contract ERC223 {
 
 contract ContractReceiver {
 
-  struct TKN {
-  address sender;
-  uint value;
-  bytes data;
-  bytes4 sig;
-  }
-
+  string public functionName;
+  address public sender;
+  uint public value;
+  bytes public data;
 
   function tokenFallback(address _from, uint _value, bytes _data){
-    TKN memory tkn;
-    tkn.sender = _from;
-    tkn.value = _value;
-    tkn.data = _data;
-    uint32 u = uint32(_data[3]) + (uint32(_data[2]) << 8) + (uint32(_data[1]) << 16) + (uint32(_data[0]) << 24);
-    tkn.sig = bytes4(u);
+
+    sender = _from;
+    value = _value;
+    data = _data;
+    functionName = "tokenFallback";
+    //uint32 u = uint32(_data[3]) + (uint32(_data[2]) << 8) + (uint32(_data[1]) << 16) + (uint32(_data[0]) << 24);
+    //tkn.sig = bytes4(u);
 
     /* tkn variable is analogue of msg variable of Ether transaction
     *  tkn.sender is person who initiated this token transaction   (analogue of msg.sender)
@@ -146,6 +143,11 @@ contract ContractReceiver {
     *  tkn.sig is 4 bytes signature of function
     *  if data of token transaction is a function execution
     */
+  }
+
+  function customFallback(address _from, uint _value, bytes _data){
+    tokenFallback(_from, _value, _data);
+    functionName = "customFallback";
   }
 }
 
@@ -947,25 +949,6 @@ contract RobomedIco is ERC223, ERC20 {
     totalSupply = totalSupply.sub(_value);
   }
 
-
-
-  /**
-  * Function that is called when a user or another contract wants to transfer funds .
-  */
-  function transfer(address _to, uint _value, bytes _data, string _custom_fallback) checkForTransfer(msg.sender, _to, _value) returns (bool) {
-
-    if (isContract(_to)) {
-      _transfer(msg.sender, _to, _value);
-      ContractReceiver receiver = ContractReceiver(_to);
-      receiver.call.value(0)(bytes4(sha3(_custom_fallback)), msg.sender, _value, _data);
-      Transfer(msg.sender, _to, _value, _data);
-      return true;
-    }
-    else {
-      return transferToAddress(_to, _value, _data);
-    }
-  }
-
   /**
   * Function that is called when a user or another contract wants to transfer funds .
   */
@@ -978,7 +961,6 @@ contract RobomedIco is ERC223, ERC20 {
       return transferToAddress(_to, _value, _data);
     }
   }
-
 
   /**
   * @dev transfer token for a specified address
