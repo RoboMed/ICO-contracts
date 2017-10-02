@@ -11,16 +11,8 @@ contract TestRobomedIco is RobomedIco {
   /**
   * Function that is called when a user or another contract wants to transfer funds .
   */
-  function test_transferWithDataAndCustomFallback(address _to, uint _value, bytes _data, string _custom_fallback) returns (bool) {
-    return transfer(_to, _value, _data, _custom_fallback);
-  }
-
-  /**
-  * Function that is called when a user or another contract wants to transfer funds .
-  */
   function test_transferWithData(address _to, uint _value, bytes _data) returns (bool) {
     return transfer(_to, _value, _data);
   }
-
 
 }

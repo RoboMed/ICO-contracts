@@ -489,7 +489,6 @@ contract RobomedIco is ERC223, ERC20 {
     require(_coOwner != _teamTokensAccount);
 
     //выставляем адреса
-    //test
     owner = _owner;
     coOwner = _coOwner;
     bountyTokensAccount = _bountyTokensAccount;
@@ -800,25 +799,6 @@ contract RobomedIco is ERC223, ERC20 {
     totalSupply = totalSupply.sub(_value);
   }
 
-
-
-  /**
-  * Function that is called when a user or another contract wants to transfer funds .
-  */
-  function transfer(address _to, uint _value, bytes _data, string _custom_fallback) checkForTransfer(msg.sender, _to, _value) returns (bool) {
-
-    if (isContract(_to)) {
-      _transfer(msg.sender, _to, _value);
-      ContractReceiver receiver = ContractReceiver(_to);
-      receiver.call.value(0)(bytes4(sha3(_custom_fallback)), msg.sender, _value, _data);
-      Transfer(msg.sender, _to, _value, _data);
-      return true;
-    }
-    else {
-      return transferToAddress(_to, _value, _data);
-    }
-  }
-
   /**
   * Function that is called when a user or another contract wants to transfer funds .
   */
@@ -831,7 +811,6 @@ contract RobomedIco is ERC223, ERC20 {
       return transferToAddress(_to, _value, _data);
     }
   }
-
 
   /**
   * @dev transfer token for a specified address
