@@ -12,7 +12,7 @@ contract ContractReceiverForTestWithError {
   uint public value;
   bytes public data;
 
-  function tokenFallback(address _from, uint _value, bytes _data){
+  function tokenFallback(address _from, uint _value, bytes _data) public {
     require(false);
 
     sender = _from;

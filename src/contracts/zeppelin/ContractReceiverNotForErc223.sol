@@ -7,7 +7,7 @@ pragma solidity ^0.4.11;
 
 contract ContractReceiverNotForErc223 {
 
-  function foo() returns (bool) {
+  function foo() public returns (bool) {
     return true;
   }
 }

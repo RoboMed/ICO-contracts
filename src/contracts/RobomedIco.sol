@@ -480,7 +480,7 @@ contract RobomedIco is ERC223, ERC20 {
     * совместно с _coOwner выполняет выведение eth после наступления PostIco
     * _coOwner - совладелец контракта - только при его участии может быть выведены eth после наступления PostIco
     */
-    function RobomedIco(address _owner, address _coOwner, address _bountyTokensAccount, address _teamTokensAccount){
+    function RobomedIco(address _owner, address _coOwner, address _bountyTokensAccount, address _teamTokensAccount) public {
 
         //проверяем, что все указанные адреса не равны 0, также они отличаются от создающего контракт
         //по сути контракт создаёт некое 3-ее лицо не имеющее в дальнейшем ни каких особенных прав
@@ -524,21 +524,21 @@ contract RobomedIco is ERC223, ERC20 {
     /**
     * Function to access name of token .
     */
-    function name() constant returns (string) {
+    function name() public constant returns (string) {
         return name;
     }
 
     /**
     * Function to access symbol of token .
     */
-    function symbol() constant returns (string) {
+    function symbol() public constant returns (string) {
         return symbol;
     }
 
     /**
     * Function to access decimals of token .
     */
-    function decimals() constant returns (uint8) {
+    function decimals() public constant returns (uint8) {
         return decimals;
     }
 
@@ -546,21 +546,21 @@ contract RobomedIco is ERC223, ERC20 {
     /**
     * Function to access total supply of tokens .
     */
-    function totalSupply() constant returns (uint256) {
+    function totalSupply() public constant returns (uint256) {
         return totalSupply;
     }
 
     /**
     * Метод получающий количество начисленных премиальных токенов
     */
-    function teamBalanceOf(address _owner) constant returns (uint256){
+    function teamBalanceOf(address _owner) public constant returns (uint256){
         return teamBalances[_owner];
     }
 
     /**
     * Метод зачисляющий предварительно распределённые team токены на кошелёк
     */
-    function accrueTeamTokens() afterIco {
+    function accrueTeamTokens() public afterIco {
         //зачисление возможно только после определённой даты
         require(startDateOfUseTeamTokens <= now);
 
@@ -575,7 +575,7 @@ contract RobomedIco is ERC223, ERC20 {
     /**
     * Метод проверяющий возможность восстановления нераспроданных токенов
     */
-    function canRestoreUnsoldTokens() constant returns (bool) {
+    function canRestoreUnsoldTokens() public constant returns (bool) {
         //восстановление возможно только после ico
         if (currentState != IcoStates.PostIco) return false;
 
@@ -591,7 +591,7 @@ contract RobomedIco is ERC223, ERC20 {
     /**
     * Метод выполняющий восстановление нераспроданных токенов
     */
-    function restoreUnsoldTokens(address _to) onlyOwner {
+    function restoreUnsoldTokens(address _to) public onlyOwner {
         require(_to != 0x0);
         require(canRestoreUnsoldTokens());
 
@@ -604,7 +604,7 @@ contract RobomedIco is ERC223, ERC20 {
      * Метод переводящий контракт в следующее доступное состояние,
      * Для выяснения возможности перехода можно использовать метод canGotoState
     */
-    function gotoNextState() onlyOwner returns (bool)  {
+    function gotoNextState() public onlyOwner returns (bool)  {
 
         if (gotoPreSale() || gotoSaleStage1() || gotoSaleStageLast() || gotoPostIco()) {
             return true;
@@ -616,7 +616,7 @@ contract RobomedIco is ERC223, ERC20 {
     /**
     * Инициация снятия эфира на указанный кошелёк
     */
-    function initWithdrawal(address _to, uint256 _value) afterIco onlyOwner {
+    function initWithdrawal(address _to, uint256 _value) public afterIco onlyOwner {
         withdrawalTo = _to;
         withdrawalValue = _value;
     }
@@ -624,7 +624,7 @@ contract RobomedIco is ERC223, ERC20 {
     /**
     * Подтверждение снятия эфира на указанный кошелёк
     */
-    function approveWithdrawal(address _to, uint256 _value) afterIco onlyCoOwner {
+    function approveWithdrawal(address _to, uint256 _value) public afterIco onlyCoOwner {
         require(_to != 0x0 && _value > 0);
         require(_to == withdrawalTo);
         require(_value == withdrawalValue);
@@ -641,7 +641,7 @@ contract RobomedIco is ERC223, ERC20 {
     /**
      * Метод проверяющий возможность перехода в указанное состояние
      */
-    function canGotoState(IcoStates toState) constant returns (bool){
+    function canGotoState(IcoStates toState) public constant returns (bool){
         if (toState == IcoStates.PreSale) {
             return (currentState == IcoStates.VipPlacement && endDateOfVipPlacement <= now);
         }
@@ -699,14 +699,14 @@ contract RobomedIco is ERC223, ERC20 {
     /**
     * Fallback функция - из неё по сути просто происходит вызов покупки токенов для отправителя
     */
-    function() payable {
+    function() public payable {
         buyTokens(msg.sender);
     }
 
     /**
      * Метод покупки токенов
      */
-    function buyTokens(address beneficiary) payable {
+    function buyTokens(address beneficiary) public payable {
         require(beneficiary != 0x0);
         require(msg.value != 0);
 
@@ -781,7 +781,7 @@ contract RobomedIco is ERC223, ERC20 {
     /**
     * Метод выполняющий выдачу баунти-токенов на указанный адрес
     */
-    function transferBounty(address _to, uint256 _value) onlyOwner {
+    function transferBounty(address _to, uint256 _value) public onlyOwner {
         //проверяем кошелёк назначения
         require(_to != 0x0 && _to != msg.sender);
 
@@ -798,7 +798,7 @@ contract RobomedIco is ERC223, ERC20 {
     /**
     * Метод выполняющий выдачу баунти-токенов на указанный адрес
     */
-    function transferTeam(address _to, uint256 _value) onlyOwner {
+    function transferTeam(address _to, uint256 _value) public onlyOwner {
         //проверяем кошелёк назначения
         require(_to != 0x0 && _to != msg.sender);
 
@@ -813,29 +813,10 @@ contract RobomedIco is ERC223, ERC20 {
         totalSupply = totalSupply.sub(_value);
     }
 
-
-
     /**
     * Function that is called when a user or another contract wants to transfer funds .
     */
-    function transfer(address _to, uint _value, bytes _data, string _custom_fallback) checkForTransfer(msg.sender, _to, _value) returns (bool) {
-
-        if (isContract(_to)) {
-            _transfer(msg.sender, _to, _value);
-            ContractReceiver receiver = ContractReceiver(_to);
-            receiver.call.value(0)(bytes4(keccak256(_custom_fallback)), msg.sender, _value, _data);
-            Transfer(msg.sender, _to, _value, _data);
-            return true;
-        }
-        else {
-            return transferToAddress(_to, _value, _data);
-        }
-    }
-
-    /**
-    * Function that is called when a user or another contract wants to transfer funds .
-    */
-    function transfer(address _to, uint _value, bytes _data) checkForTransfer(msg.sender, _to, _value) returns (bool) {
+    function transfer(address _to, uint _value, bytes _data) checkForTransfer(msg.sender, _to, _value) public returns (bool) {
 
         if (isContract(_to)) {
             return transferToContract(_to, _value, _data);
@@ -853,7 +834,7 @@ contract RobomedIco is ERC223, ERC20 {
     * @param _to The address to transfer to.
     * @param _value The amount to be transferred.
     */
-    function transfer(address _to, uint _value) checkForTransfer(msg.sender, _to, _value) returns (bool) {
+    function transfer(address _to, uint _value) checkForTransfer(msg.sender, _to, _value) public returns (bool) {
 
         //standard function transfer similar to ERC20 transfer with no _data
         //added due to backwards compatibility reasons
@@ -869,7 +850,7 @@ contract RobomedIco is ERC223, ERC20 {
     /**
     * assemble the given address bytecode. If bytecode exists then the _addr is a contract.
     */
-    function isContract(address _addr) private returns (bool) {
+    function isContract(address _addr) private view returns (bool) {
         uint length;
         assembly {
         //retrieve the size of the code on target address, this needs assembly
@@ -916,7 +897,7 @@ contract RobomedIco is ERC223, ERC20 {
     * @param _owner The address to query the the balance of.
     * @return An uint256 representing the amount owned by the passed address.
     */
-    function balanceOf(address _owner) constant returns (uint256 balance) {
+    function balanceOf(address _owner) public constant returns (uint256 balance) {
         return balances[_owner];
     }
 
@@ -926,7 +907,7 @@ contract RobomedIco is ERC223, ERC20 {
      * @param _to address The address which you want to transfer to
      * @param _value uint256 the amout of tokens to be transfered
      */
-    function transferFrom(address _from, address _to, uint256 _value) afterIco returns (bool) {
+    function transferFrom(address _from, address _to, uint256 _value) public afterIco returns (bool) {
 
         var _allowance = allowed[_from][msg.sender];
 
@@ -945,7 +926,7 @@ contract RobomedIco is ERC223, ERC20 {
      * @param _spender The address which will spend the funds.
      * @param _value The amount of tokens to be spent.
      */
-    function approve(address _spender, uint256 _value) afterIco returns (bool) {
+    function approve(address _spender, uint256 _value) public afterIco returns (bool) {
         // To change the approve amount you first have to reduce the addresses`
         //  allowance to zero by calling `approve(_spender, 0)` if it is not
         //  already 0 to mitigate the race condition described here:
@@ -963,7 +944,7 @@ contract RobomedIco is ERC223, ERC20 {
      * @param _spender address The address which will spend the funds.
      * @return A uint256 specifing the amount of tokens still available for the spender.
      */
-    function allowance(address _owner, address _spender) constant returns (uint256 remaining) {
+    function allowance(address _owner, address _spender) public constant returns (uint256 remaining) {
         return allowed[_owner][_spender];
     }
 

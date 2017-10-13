@@ -12,7 +12,7 @@ contract ContractReceiver {
   uint public value;
   bytes public data;
 
-  function tokenFallback(address _from, uint _value, bytes _data){
+  function tokenFallback(address _from, uint _value, bytes _data) public {
 
     sender = _from;
     value = _value;
@@ -30,7 +30,7 @@ contract ContractReceiver {
     */
   }
 
-  function customFallback(address _from, uint _value, bytes _data){
+  function customFallback(address _from, uint _value, bytes _data) public {
     tokenFallback(_from, _value, _data);
     functionName = "customFallback";
   }
