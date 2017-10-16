@@ -267,6 +267,16 @@ export interface Contract {
 	startDateOfUseTeamTokens(): BigNumber;
 
 	/**
+	 * Дата, начиная с которой можно восстановить-перевести нераспроданные токены unsoldTokens
+	 */
+	startDateOfRestoreUnsoldTokens(): BigNumber;
+
+	/**
+	 * Количество нераспроданных токенов на момент наступления PostIco
+	 */
+	unsoldTokens(): BigNumber;
+
+	/**
 	 * How many token units a buyer gets per wei
 	 */
 	rate(): BigNumber;

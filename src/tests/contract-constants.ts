@@ -161,6 +161,12 @@ export class ContractConstants {
 	 */
 	public DURATION_NONUSETEAM: BnWr;
 
+	/**
+	 * Длительность периода на который нельзя восстановить нераспроданные unsoldTokens токены,
+	 * отсчитывается после наступления PostIco
+	 */
+	public DURATION_BEFORE_RESTORE_UNSOLD: BnWr;
+
 	//</editor-fold>
 
 	/**
@@ -219,6 +225,7 @@ export class ContractConstants {
 		this.EMISSION_FOR_SALESTAGELAST = bnWr(contract.EMISSION_FOR_SALESTAGELAST());
 
 		this.DURATION_NONUSETEAM = bnWr(contract.DURATION_NONUSETEAM());
+		this.DURATION_BEFORE_RESTORE_UNSOLD = bnWr(contract.DURATION_BEFORE_RESTORE_UNSOLD());
 		this.EMISSION_FOR_BOUNTY = bnWr(contract.EMISSION_FOR_BOUNTY());
 		this.EMISSION_FOR_TEAM = bnWr(contract.EMISSION_FOR_TEAM());
 	}

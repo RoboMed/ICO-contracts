@@ -32,6 +32,7 @@ interface CheckContractParams {
 	totalBought?: BnWr;
 	vipPlacementNotDistributed?: BnWr;
 	rate?: BnWr;
+	unsoldTokens?: BnWr;
 }
 
 describe('Test Ico-contract', () => {
@@ -225,6 +226,58 @@ describe('Test Ico-contract', () => {
 	});
 
 	//Деплой контракта выполняется 3-м лицом - он не совпадает ни с одним адресом указанным в конструкторе - владелец, совладелец, адреса баунти и тим
+
+	/**
+	 * Тест проверяющий значения enum IcoStates
+	 */
+	it('test-checkIcoStates', async () => {
+
+		//Проверяем значения enum
+		assertEq(new BigNumber(0), IcoStates.VipPlacement);
+		assertEq(new BigNumber(1), IcoStates.PreSale);
+		assertEq(new BigNumber(2), IcoStates.SaleStage1);
+		assertEq(new BigNumber(3), IcoStates.SaleStage2);
+		assertEq(new BigNumber(4), IcoStates.SaleStage3);
+		assertEq(new BigNumber(5), IcoStates.SaleStage4);
+		assertEq(new BigNumber(6), IcoStates.SaleStage5);
+		assertEq(new BigNumber(7), IcoStates.SaleStage6);
+		assertEq(new BigNumber(8), IcoStates.SaleStage7);
+		assertEq(new BigNumber(9), IcoStates.SaleStageLast);
+		assertEq(new BigNumber(10), IcoStates.PostIco);
+
+		// Проходим по стадиям и проверяем currentState
+		assertEq(IcoStates.VipPlacement, contract.currentState());
+
+		await goToState(IcoStates.PreSale, false);
+		assertEq(IcoStates.PreSale, contract.currentState());
+
+		await goToState(IcoStates.SaleStage1, false);
+		assertEq(IcoStates.SaleStage1, contract.currentState());
+
+		await goToState(IcoStates.SaleStage2, false);
+		assertEq(IcoStates.SaleStage2, contract.currentState());
+
+		await goToState(IcoStates.SaleStage3, false);
+		assertEq(IcoStates.SaleStage3, contract.currentState());
+
+		await goToState(IcoStates.SaleStage4, false);
+		assertEq(IcoStates.SaleStage4, contract.currentState());
+
+		await goToState(IcoStates.SaleStage5, false);
+		assertEq(IcoStates.SaleStage5, contract.currentState());
+
+		await goToState(IcoStates.SaleStage6, false);
+		assertEq(IcoStates.SaleStage6, contract.currentState());
+
+		await goToState(IcoStates.SaleStage7, false);
+		assertEq(IcoStates.SaleStage7, contract.currentState());
+
+		await goToState(IcoStates.SaleStageLast, false);
+		assertEq(IcoStates.SaleStageLast, contract.currentState());
+
+		await goToState(IcoStates.PostIco, false);
+		assertEq(IcoStates.PostIco, contract.currentState());
+	});
 
 	/**
 	 * Тест перехода на след. стадию
@@ -1729,10 +1782,9 @@ describe('Test Ico-contract', () => {
 				ethCountWei = bnWr(ethCountWei.plus(CONSTANTS.EMISSION_FOR_SALESTAGE7.divToInt(CONSTANTS.RATE_SALESTAGE7)));
 			}
 
-
-			//Чтобы попасть на SaleStageLast надо дождаться завершения SaleStageLast
+			//Чтобы попасть на SaleStageLast дожидаемся наступления SaleStageLast после выполняем покупку
 			if (toStage.equals(IcoStates.SaleStageLast)) {
-				while (!contract.canGotoState(toStage)) {
+				while (!contract.canGotoState(IcoStates.SaleStageLast)) {
 					await U.delay(1000);
 				}
 			}
