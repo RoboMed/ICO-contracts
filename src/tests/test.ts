@@ -10,7 +10,7 @@ import {bnWr, BnWr} from "./bn-wr";
 import {TestAccounts, prepare} from "./prepare-test-data";
 import {deploy} from "./deploy-to-target";
 import {Contract, txParams} from "./contract";
-import {deploy as deployTest}  from "./delpoy-test-contracts";
+import {deploy as deployTest} from "./delpoy-test-contracts";
 
 //add extra mocha options: --require ts-node/register --timeout 100000
 
@@ -214,12 +214,12 @@ describe('Test Ico-contract', () => {
 		// Деплой контракта выполняется 3-м лицом - он не совпадает ни с одним адресом указанным в конструкторе - владелец, совладелец, адреса баунти и тим
 
 		// Проверяем, что нельзя задеплоить от: ownerm coOwner, team, bounty
-		for(let acc in [accs.owner, accs.coOwner, accs.bounty, accs.team]){
+		for (let acc in [accs.owner, accs.coOwner, accs.bounty, accs.team]) {
 			try {
 				let c = await deploy(config.rpcAddress, acc, config.accountPass, accs.owner, accs.coOwner, accs.bounty, accs.team);
 				assert.fail("Контракт не должен был быть задеплоен")
 			}
-			catch (e){
+			catch (e) {
 				console.log(e.message);
 			}
 		}
@@ -292,11 +292,11 @@ describe('Test Ico-contract', () => {
 		// Выполнять переход на след. стадию с помощью GoToNextStage может только owner
 
 		let allButNotOwner = Object.keys(accs)
-			.map(x=>(<any>accs)[x])
-			.filter(x=>x != accs.owner);
+			.map(x => (<any>accs)[x])
+			.filter(x => x != accs.owner);
 
-		for(let acc in allButNotOwner){
-			let res = await execInEth(()=>contract.gotoNextState(txParams(acc)));
+		for (let acc in allButNotOwner) {
+			let res = await execInEth(() => contract.gotoNextState(txParams(acc)));
 			let state = bnWr(contract.currentState());
 
 			assert.ok(!res);
@@ -304,7 +304,7 @@ describe('Test Ico-contract', () => {
 		}
 
 		// Owner может выполнить переход
-		let res = await execInEth(()=>contract.gotoNextState(txParams(accs.owner)));
+		let res = await execInEth(() => contract.gotoNextState(txParams(accs.owner)));
 		let state = bnWr(contract.currentState());
 		assert.ok(res);
 		assertEq(IcoStates.PreSale, state);
@@ -967,16 +967,29 @@ describe('Test Ico-contract', () => {
 			await U.delay(1000);
 		}
 
+		let before = {
+			freeMoney: bnWr(contract.freeMoney()),
+			startDateOfRestoreUnsoldTokens: toDateTimeUtc(contract.startDateOfRestoreUnsoldTokens())
+		};
+
 		// Дергаем ручку
 		let res = await execInEth(() => contract.gotoNextState(txParams(accs.owner)));
 		assert.ok(res);
+
+		let after = {
+			freeMoney: bnWr(contract.freeMoney()),
+			startDateOfRestoreUnsoldTokens: toDateTimeUtc(contract.startDateOfRestoreUnsoldTokens())
+		};
 
 		// Проверяем, что произошел переход на PostIco
 		checkContract({
 			currentState: IcoStates.PostIco,
 			freeMoney: bnWr(new BigNumber(0)),
-			rate: bnWr(new BigNumber(0))
+			rate: bnWr(new BigNumber(0)),
+			unsoldTokens: before.freeMoney
 		});
+
+		assert.ok(U.getUtcNow() < after.startDateOfRestoreUnsoldTokens);
 	});
 
 	/**
@@ -1169,7 +1182,7 @@ describe('Test Ico-contract', () => {
 		assert.ok(!accrueErr);
 
 		// Дожидаемся, когда можно зачислить team токены
-		while (U.getUtcNow().getMilliseconds() < toDateTimeUtc(contract.startDateOfUseTeamTokens()).getMilliseconds()) {
+		while (U.getUtcNow() < toDateTimeUtc(contract.startDateOfUseTeamTokens())) {
 			await U.delay(1000);
 		}
 
@@ -1594,7 +1607,7 @@ describe('Test Ico-contract', () => {
 		await goToState(IcoStates.SaleStageLast);
 
 		// нельзя снимать до PostIco
-		let resErr = await execInEth(() => contract.initWithdrawal(web3.eth.getBalance((<any>contract).address), new BigNumber(1),txParams(accs.owner)));
+		let resErr = await execInEth(() => contract.initWithdrawal(web3.eth.getBalance((<any>contract).address), new BigNumber(1), txParams(accs.owner)));
 		assert.ok(!resErr);
 
 		await goToState(IcoStates.PostIco);
@@ -1610,18 +1623,18 @@ describe('Test Ico-contract', () => {
 		//-----------------------------------------------
 		// владелец может сбросить (по факту) инициацию вывода - выставив нулевые значения в адрес и количество для вывода
 
-		let beforeReset1={
+		let beforeReset1 = {
 			withdrawalTo: contract.withdrawalTo(),
 			withdrawalValue: bnWr(contract.withdrawalValue()),
 			contractEth: bnWr(web3.eth.getBalance((<any>contract).address)),
 		};
 		let resReset1 = await execInEth(() => contract.initWithdrawal(accs.user1, beforeReset1.contractEth, txParams(accs.owner)));
-		let afterReset1={
+		let afterReset1 = {
 			withdrawalTo: contract.withdrawalTo(),
 			withdrawalValue: bnWr(contract.withdrawalValue()),
 		};
 		let resReset2 = await execInEth(() => contract.initWithdrawal('', new BigNumber(0), txParams(accs.owner)));
-		let afterReset2={
+		let afterReset2 = {
 			withdrawalTo: contract.withdrawalTo(),
 			withdrawalValue: bnWr(contract.withdrawalValue()),
 		};
@@ -1647,9 +1660,9 @@ describe('Test Ico-contract', () => {
 		assert.ok(wt == accs.user1);
 		assert.ok(wv.equals(before.contractEth));
 
-		let resApproveErr = await execInEth(()=>contract.approveWithdrawal(accs.user1, before.contractEth, txParams(accs.owner)));
+		let resApproveErr = await execInEth(() => contract.approveWithdrawal(accs.user1, before.contractEth, txParams(accs.owner)));
 		assert.ok(!resApproveErr);
-		let resApprove = await execInEth(()=>contract.approveWithdrawal(accs.user1, before.contractEth, txParams(accs.coOwner)));
+		let resApprove = await execInEth(() => contract.approveWithdrawal(accs.user1, before.contractEth, txParams(accs.coOwner)));
 
 		let after = {
 			contractEth: bnWr(web3.eth.getBalance((<any>contract).address)),
@@ -1751,8 +1764,7 @@ describe('Test Ico-contract', () => {
 			toStage.equals(IcoStates.SaleStage4) ||
 			toStage.equals(IcoStates.SaleStage5) ||
 			toStage.equals(IcoStates.SaleStage6) ||
-			toStage.equals(IcoStates.SaleStage7) ||
-			toStage.equals(IcoStates.SaleStageLast)) {
+			toStage.equals(IcoStates.SaleStage7)) {
 
 			let freeMoney0 = bnWr(contract.freeMoney());
 			let currentState0 = bnWr(contract.currentState());
@@ -1782,19 +1794,22 @@ describe('Test Ico-contract', () => {
 				ethCountWei = bnWr(ethCountWei.plus(CONSTANTS.EMISSION_FOR_SALESTAGE7.divToInt(CONSTANTS.RATE_SALESTAGE7)));
 			}
 
-			//Чтобы попасть на SaleStageLast дожидаемся наступления SaleStageLast после выполняем покупку
-			if (toStage.equals(IcoStates.SaleStageLast)) {
-				while (!contract.canGotoState(IcoStates.SaleStageLast)) {
-					await U.delay(1000);
-				}
-			}
-
 			// Выполняем покупку
 			let res = await execInEth(() => contract.buyTokens(accs.lucky, txParams(accs.lucky, ethCountWei)));
 			assert.ok(res);
 
 			let freeMoney = bnWr(contract.freeMoney());
 			let currentState = bnWr(contract.currentState());
+		}
+		else if (toStage.equals(IcoStates.SaleStageLast)) {
+			//Чтобы попасть на SaleStageLast дожидаемся наступления SaleStageLast после выполняем покупку
+			//Именно дожидаемся, т.к. по умолчанию нужен случай, что остались нерапроданные токены
+			while (!contract.canGotoState(IcoStates.SaleStageLast)) {
+				await U.delay(1000);
+			}
+			// Выполняем покупку
+			let res = await execInEth(() => contract.buyTokens(accs.lucky, txParams(accs.lucky, contract.rate())));
+			assert.ok(res);
 		}
 
 
@@ -1839,29 +1854,29 @@ describe('Test Ico-contract', () => {
 		});
 	}
 
-	async function getContractReceiver(): Promise<{address: string}>{
+	async function getContractReceiver(): Promise<{ address: string }> {
 		let c = await deployTest("ContractReceiver", config.rpcAddress, accs.deployer, config.accountPass);
 		let contractReceiver = web3.eth.contract(c.abi).at(c.address);
 		return contractReceiver;
 	}
 
-	function getContractReceiverData(contract: any): {sender: string, value: BnWr, data: string, functionName: string}{
+	function getContractReceiverData(contract: any): { sender: string, value: BnWr, data: string, functionName: string } {
 		return {
-			sender:(<any>contract).sender(),
+			sender: (<any>contract).sender(),
 			value: bnWr((<any>contract).value()),
 			data: (<any>contract).data(),
 			functionName: (<any>contract).functionName(),
 		}
 	}
 
-	async function getContractReceiverWithError(): Promise<{address: string}>{
+	async function getContractReceiverWithError(): Promise<{ address: string }> {
 		let c = await deployTest("ContractReceiverForTestWithError", config.rpcAddress, accs.deployer, config.accountPass);
 		let contractReceiver = web3.eth.contract(c.abi).at(c.address);
 		return contractReceiver;
 	}
 
 
-	async function getContractReceiverNotForErc223(): Promise<{address: string}>{
+	async function getContractReceiverNotForErc223(): Promise<{ address: string }> {
 		let c = await deployTest("ContractReceiverNotForErc223", config.rpcAddress, accs.deployer, config.accountPass);
 		let contractReceiver = web3.eth.contract(c.abi).at(c.address);
 		return contractReceiver;
