@@ -1681,6 +1681,80 @@ describe('Test Ico-contract', () => {
 
 	});
 
+	/**
+	 * Тест для проверки восстановления нераспроданных токенов
+	 */
+	it('test-restoreUnsoldTokens', async () => {
+
+		assert.ok(contract.canRestoreUnsoldTokens() == false);
+		await goToState(IcoStates.PreSale);
+		assert.ok(contract.canRestoreUnsoldTokens() == false);
+		await goToState(IcoStates.SaleStage1);
+		assert.ok(contract.canRestoreUnsoldTokens() == false);
+		//...
+		await goToState(IcoStates.SaleStageLast);
+		assert.ok(contract.canRestoreUnsoldTokens() == false);
+		await goToState(IcoStates.PostIco);
+		assert.ok(contract.canRestoreUnsoldTokens() == false);
+
+		//-----------------------------------------------
+		//Восстанавливать можно только на postIco
+		// при наличии нераспределенных токенов
+		// и не ранее даты распределения
+
+		// Проверяем, что есть нераспроданные токены
+		let unsoldTokens = bnWr(contract.unsoldTokens());
+		assert.ok(unsoldTokens.greaterThan(0));
+
+		// ждем когда наступит дата возможности восстановления
+		while (U.getUtcNow() < toDateTimeUtc(contract.startDateOfRestoreUnsoldTokens())) {
+			await U.delay(1000);
+		}
+
+		// Восстановление должно быть возможно
+		assert.ok(contract.canRestoreUnsoldTokens());
+		//-----------------------------------------------
+
+		//-----------------------------------------------
+		//Восстановление возможно только владельцем контракта
+		let resDeployerErr = await execInEth(() => contract.restoreUnsoldTokens(accs.lucky, txParams(accs.deployer)));
+		let resCoOwnerErr = await execInEth(() => contract.restoreUnsoldTokens(accs.lucky, txParams(accs.coOwner)));
+
+		assert.ok(!resDeployerErr);
+		assert.ok(!resCoOwnerErr);
+
+		let before = {
+			unsoldTokens :	bnWr(contract.unsoldTokens()),
+			totalSupply: bnWr(contract.totalSupply()),
+			canRestoreUnsoldTokens: contract.canRestoreUnsoldTokens(),
+			luckyBalance: bnWr(contract.balanceOf(accs.lucky))
+		};
+
+		let res = await execInEth(() => contract.restoreUnsoldTokens(accs.lucky, txParams(accs.owner)));
+
+		let after = {
+			unsoldTokens :	bnWr(contract.unsoldTokens()),
+			totalSupply: bnWr(contract.totalSupply()),
+			canRestoreUnsoldTokens: contract.canRestoreUnsoldTokens(),
+			luckyBalance: bnWr(contract.balanceOf(accs.lucky))
+		};
+
+		assert.ok(res);
+
+		assert.ok(after.unsoldTokens.equals(0));
+		assert.ok(after.totalSupply.equals(before.totalSupply.plus(before.unsoldTokens)));
+		assert.ok(!after.canRestoreUnsoldTokens);
+		assert.ok(after.luckyBalance.equals(before.luckyBalance.plus(before.unsoldTokens)));
+
+		//-----------------------------------------------
+
+
+		//Повторное восстановление не возможно
+		assert.ok(!contract.canRestoreUnsoldTokens());
+		let resErr = await execInEth(() => contract.restoreUnsoldTokens(accs.lucky, txParams(accs.owner)));
+		assert.ok(!resErr);
+
+	});
 
 	/**
 	 * Вспомагательная функция проверяет значения полей контракта
@@ -1808,7 +1882,7 @@ describe('Test Ico-contract', () => {
 				await U.delay(1000);
 			}
 			// Выполняем покупку
-			let res = await execInEth(() => contract.buyTokens(accs.lucky, txParams(accs.lucky, contract.rate())));
+			let res = await execInEth(() => contract.buyTokens(accs.lucky, txParams(accs.lucky, new BigNumber(1))));
 			assert.ok(res);
 		}
 

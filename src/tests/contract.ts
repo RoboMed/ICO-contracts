@@ -292,6 +292,16 @@ export interface Contract {
 	accrueTeamTokens(params: TxParams): void;
 
 	/**
+	 * Метод проверяющий возможность восстановления нераспроданных токенов
+	 */
+	canRestoreUnsoldTokens(): boolean;
+
+	/**
+	 * Метод выполняющий восстановление нераспроданных токенов
+	 */
+	restoreUnsoldTokens(_to: string, params: TxParams): string;
+
+	/**
 	 * Метод переводящий контракт в следующее доступное состояние,
 	 * Для выяснения возможности перехода можно использовать метод canGotoState
 	 */
