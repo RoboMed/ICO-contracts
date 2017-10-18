@@ -29,7 +29,7 @@
     "@types/node": "^8.0.28",
     "@types/mocha": "^2.2.43",
     "@types/bignumber.js": "^4.0.3",
-    "web3-typescript-typings": "^0.6.0",
+    "web3-typescript-typings": "^0.6.2",
     "ts-node": "^3.3.0",
     "web3": "^0.20.0",
     "mocha": "^3.5.3",

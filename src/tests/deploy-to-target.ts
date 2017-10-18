@@ -3,6 +3,28 @@ import * as Web3 from "web3";
 import * as fs from "fs";
 
 /**
+ * Функция для подготовки контракта
+ */
+function prepareSol(param: {
+											rpcHost: string,
+											owner: string,
+											withdrawal1: string,
+											withdrawal2: string,
+											bountyAcc: string,
+											teamAcc: string }){
+	let path = ".\\src\\contracts\\RobomedIco.sol";
+	let text = fs.readFileSync(path).toString();
+
+	text = text.replace(new RegExp('address public constant ADDR_OWNER = (.*);'), "address public constant ADDR_OWNER = " + param.owner + ";");
+	text = text.replace(new RegExp('address public constant ADDR_WITHDRAWAL1 = (.*);'), "address public constant ADDR_WITHDRAWAL1 = " + param.withdrawal1 + ";");
+	text = text.replace(new RegExp('address public constant ADDR_WITHDRAWAL2 = (.*);'), "address public constant ADDR_WITHDRAWAL2 = " + param.withdrawal2 + ";");
+	text = text.replace(new RegExp('address public constant ADDR_BOUNTY_TOKENS_ACCOUNT = (.*);'), "address public constant ADDR_BOUNTY_TOKENS_ACCOUNT = " + param.bountyAcc + ";");
+	text = text.replace(new RegExp('address public constant ADDR_TEAM_TOKENS_ACCOUNT = (.*);'), "address public constant ADDR_TEAM_TOKENS_ACCOUNT = " + param.teamAcc + ";");
+
+	fs.writeFileSync(path, text);
+}
+
+/**
  * Функция для компилирования sol файлов
  */
 function compileSol() {
@@ -18,11 +40,7 @@ function compileSol() {
 function uploadContract(param: {
 	rpcHost: string,
 	deployer: string,
-	deployerPass: string,
-	owner: string,
-	coOwner: string,
-	bountyAcc: string,
-	teamAcc: string }): Promise<any> {
+	deployerPass: string }): Promise<any> {
 
 	let web3 = new Web3(new Web3.providers.HttpProvider(param.rpcHost));
 
@@ -38,10 +56,6 @@ function uploadContract(param: {
 	return new Promise((resolve, reject) => {
 
 		(<any>web3.eth.contract(abi)).new(
-			param.owner,
-			param.coOwner,
-			param.bountyAcc,
-			param.teamAcc,
 			{
 				data: compiled,
 				from: param.deployer,
@@ -67,7 +81,26 @@ function uploadContract(param: {
  * @param teamAcc Адрес на счёте которого находятся нераспределённые team токены
  * @returns {Promise<any>} Контракт
  */
-export async function deploy(rpcHost: string, deployer: string, deployerPass: string, owner: string, coOwner: string, bountyAcc: string, teamAcc: string): Promise<any> {
+export async function deploy(rpcHost: string, deployer: string, deployerPass: string, owner: string, withdrawal1: string, withdrawal2: string, bountyAcc: string, teamAcc: string): Promise<any> {
+
+	let web3 = new Web3(new Web3.providers.HttpProvider(rpcHost));
+
+	deployer = (<any>web3).toChecksumAddress(deployer);
+	owner = (<any>web3).toChecksumAddress(owner);
+	withdrawal1 = (<any>web3).toChecksumAddress(withdrawal1);
+	withdrawal2 = (<any>web3).toChecksumAddress(withdrawal2);
+	bountyAcc = (<any>web3).toChecksumAddress(bountyAcc);
+	teamAcc = (<any>web3).toChecksumAddress(teamAcc);
+
+	// Подготавливаем контракт - заменяем константы
+	prepareSol({
+		rpcHost: rpcHost,
+		owner: owner,
+		withdrawal1: withdrawal1,
+		withdrawal2: withdrawal2,
+		bountyAcc: bountyAcc,
+		teamAcc: teamAcc
+	});
 
 	// компилируем
 	compileSol();
@@ -77,10 +110,6 @@ export async function deploy(rpcHost: string, deployer: string, deployerPass: st
 		rpcHost: rpcHost,
 		deployer: deployer,
 		deployerPass: deployerPass,
-		owner: owner,
-		coOwner: coOwner,
-		bountyAcc: bountyAcc,
-		teamAcc: teamAcc
 	}); //Promise;
 
 	console.log("contract deployed");

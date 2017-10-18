@@ -57,7 +57,7 @@ describe('Test Ico-contract', () => {
 	beforeEach('beforeEach', async () => {
 
 		accs = prepare(config);
-		let c = await deploy(config.rpcAddress, accs.deployer, config.accountPass, accs.owner, accs.coOwner, accs.bounty, accs.team);
+		let c = await deploy(config.rpcAddress, accs.deployer, config.accountPass, accs.owner, accs.withdrawal1, accs.withdrawal2, accs.bounty, accs.team);
 
 		contract = web3.eth.contract(c.abi).at(c.address);
 		CONSTANTS = new ContractConstants(contract);
@@ -193,17 +193,39 @@ describe('Test Ico-contract', () => {
 	 */
 	it('test-contract-init', async () => {
 
+		//Проверяем, что была выполнена эмиссия и монеты переданы на кошелек владельца
+		let balance = bnWr(contract.balanceOf(accs.owner));
+		assertEq(CONSTANTS.INITIAL_COINS_FOR_VIPPLACEMENT, balance);
+
+		//Проверяем, что владелец и все прочие выставлены верно
+		assert.ok(contract.owner() == accs.owner);
+		assert.ok(contract.withdrawal1() == accs.withdrawal1);
+		assert.ok(contract.withdrawal2() == accs.withdrawal2);
+		assert.ok(contract.teamTokensAccount() == accs.team);
+		assert.ok(contract.bountyTokensAccount() == accs.bounty);
+
+		let totalSupply = bnWr(CONSTANTS.INITIAL_COINS_FOR_VIPPLACEMENT
+				.plus(CONSTANTS.EMISSION_FOR_BOUNTY)
+				.plus(CONSTANTS.EMISSION_FOR_TEAM)
+				.minus(CONSTANTS.TEAM_MEMBER_VAL.mul(1)));
+
 		checkContract({
 			currentState: IcoStates.VipPlacement,
 			totalBalance: bnWr(new BigNumber(0)),
-			totalSupply: bnWr(CONSTANTS.INITIAL_COINS_FOR_VIPPLACEMENT.plus(CONSTANTS.EMISSION_FOR_BOUNTY).plus(CONSTANTS.EMISSION_FOR_TEAM)),
+			totalSupply: totalSupply,
 			totalBought: bnWr(new BigNumber(0)),
 			rate: bnWr(new BigNumber(0)),
 		});
 
-		//Проверяем, что была выполнена эмиссия и монеты переданы на кошелек владельца
-		let balance = bnWr(contract.balanceOf(accs.owner));
-		assertEq(CONSTANTS.INITIAL_COINS_FOR_VIPPLACEMENT, balance);
+		// Проверяем что участники команды получили тим токены
+		let balance1 = bnWr(contract.teamBalanceOf("0xd133703d659262c8641b2477a268be83264616ca"));
+		//...
+		//...
+		//...
+		//...
+		assertEq(CONSTANTS.TEAM_MEMBER_VAL, balance1);
+
+
 	});
 
 	/**
@@ -214,9 +236,9 @@ describe('Test Ico-contract', () => {
 		// Деплой контракта выполняется 3-м лицом - он не совпадает ни с одним адресом указанным в конструкторе - владелец, совладелец, адреса баунти и тим
 
 		// Проверяем, что нельзя задеплоить от: ownerm coOwner, team, bounty
-		for (let acc in [accs.owner, accs.coOwner, accs.bounty, accs.team]) {
+		for (let acc in [accs.owner, accs.withdrawal1, accs.withdrawal2, accs.bounty, accs.team]) {
 			try {
-				let c = await deploy(config.rpcAddress, acc, config.accountPass, accs.owner, accs.coOwner, accs.bounty, accs.team);
+				let c = await deploy(config.rpcAddress, acc, config.accountPass, accs.owner, accs.withdrawal1, accs.withdrawal2, accs.bounty, accs.team);
 				assert.fail("Контракт не должен был быть задеплоен")
 			}
 			catch (e) {
@@ -224,8 +246,6 @@ describe('Test Ico-contract', () => {
 			}
 		}
 	});
-
-	//Деплой контракта выполняется 3-м лицом - он не совпадает ни с одним адресом указанным в конструкторе - владелец, совладелец, адреса баунти и тим
 
 	/**
 	 * Тест проверяющий значения enum IcoStates
@@ -1616,8 +1636,8 @@ describe('Test Ico-contract', () => {
 		// Не owner не может инициировать снятие
 		let resUserErr = await execInEth(() => contract.initWithdrawal(web3.eth.getBalance((<any>contract).address), new BigNumber(1), txParams(accs.user1)));
 		assert.ok(!resUserErr);
-		let resCoOwnerErr = await execInEth(() => contract.initWithdrawal(web3.eth.getBalance((<any>contract).address), new BigNumber(1), txParams(accs.coOwner)));
-		assert.ok(!resCoOwnerErr);
+		//let resCoOwnerErr = await execInEth(() => contract.initWithdrawal(web3.eth.getBalance((<any>contract).address), new BigNumber(1), txParams(accs.coOwner)));
+		//assert.ok(!resCoOwnerErr);
 
 
 		//-----------------------------------------------
@@ -1662,7 +1682,7 @@ describe('Test Ico-contract', () => {
 
 		let resApproveErr = await execInEth(() => contract.approveWithdrawal(accs.user1, before.contractEth, txParams(accs.owner)));
 		assert.ok(!resApproveErr);
-		let resApprove = await execInEth(() => contract.approveWithdrawal(accs.user1, before.contractEth, txParams(accs.coOwner)));
+	///	let resApprove = await execInEth(() => contract.approveWithdrawal(accs.user1, before.contractEth, txParams(accs.coOwner)));
 
 		let after = {
 			contractEth: bnWr(web3.eth.getBalance((<any>contract).address)),
@@ -1673,7 +1693,7 @@ describe('Test Ico-contract', () => {
 		};
 
 		assert.ok(resInit);
-		assert.ok(resApprove);
+		//assert.ok(resApprove);
 		assertEq(bnWr(new BigNumber(0)), after.contractEth);
 		assertEq(bnWr(before.user1Eth.plus(before.contractEth)), after.user1Eth);
 		assert.ok(after.withdrawalTo == emptyAddress);
@@ -1718,10 +1738,10 @@ describe('Test Ico-contract', () => {
 		//-----------------------------------------------
 		//Восстановление возможно только владельцем контракта
 		let resDeployerErr = await execInEth(() => contract.restoreUnsoldTokens(accs.lucky, txParams(accs.deployer)));
-		let resCoOwnerErr = await execInEth(() => contract.restoreUnsoldTokens(accs.lucky, txParams(accs.coOwner)));
+		//let resCoOwnerErr = await execInEth(() => contract.restoreUnsoldTokens(accs.lucky, txParams(accs.coOwner)));
 
 		assert.ok(!resDeployerErr);
-		assert.ok(!resCoOwnerErr);
+		//assert.ok(!resCoOwnerErr);
 
 		let before = {
 			unsoldTokens :	bnWr(contract.unsoldTokens()),

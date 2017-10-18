@@ -27,9 +27,14 @@ export interface TestAccounts {
 	owner: string;
 
 	/**
-	 * Совладелец
+	 * Участник контракта 1
 	 */
-	coOwner: string;
+	withdrawal1: string;
+
+	/**
+	 * Участник контракта 2
+	 */
+	withdrawal2: string;
 
 	/**
 	 * Служебный аккаунт который будет дергать "ручку" и получать приз
@@ -73,7 +78,8 @@ export function prepare(config: Config = null): TestAccounts {
 	// Создаем несколько новых аккаунтов
 	let deployer = web3.personal.newAccount(config.accountPass);
 	let owner = web3.personal.newAccount(config.accountPass);
-	let coOwner = web3.personal.newAccount(config.accountPass);
+	let withdrawal1 = web3.personal.newAccount(config.accountPass);
+	let withdrawal2 = web3.personal.newAccount(config.accountPass);
 	let user1 = web3.personal.newAccount(config.accountPass);
 	let user2 = web3.personal.newAccount(config.accountPass);
 	let lucky = web3.personal.newAccount(config.accountPass);
@@ -87,7 +93,8 @@ export function prepare(config: Config = null): TestAccounts {
 	let txs = [
 		web3.eth.sendTransaction({from: coinSourceAccount, to: deployer, value: web3.toWei(1, "ether")}),
 		web3.eth.sendTransaction({from: coinSourceAccount, to: owner, value: web3.toWei(5, "ether")}),
-		web3.eth.sendTransaction({from: coinSourceAccount, to: coOwner, value: web3.toWei(1, "ether")}),
+		web3.eth.sendTransaction({from: coinSourceAccount, to: withdrawal1, value: web3.toWei(1, "ether")}),
+		web3.eth.sendTransaction({from: coinSourceAccount, to: withdrawal2, value: web3.toWei(1, "ether")}),
 		web3.eth.sendTransaction({from: coinSourceAccount, to: user1, value: web3.toWei(50, "ether")}),
 		web3.eth.sendTransaction({from: coinSourceAccount, to: user2, value: web3.toWei(1, "ether")}),
 		web3.eth.sendTransaction({from: coinSourceAccount, to: lucky, value: web3.toWei(100, "ether")}),
@@ -102,7 +109,8 @@ export function prepare(config: Config = null): TestAccounts {
 	let data = {
 		deployer: deployer,
 		owner: owner,
-		coOwner: coOwner,
+		withdrawal1: withdrawal1,
+		withdrawal2: withdrawal2,
 		lucky: lucky,
 		user1: user1,
 		user2: user2,

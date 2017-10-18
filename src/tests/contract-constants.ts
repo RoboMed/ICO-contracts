@@ -179,6 +179,11 @@ export class ContractConstants {
 	 */
 	public EMISSION_FOR_TEAM: BnWr;
 
+	/**
+	 * Кол-во токенов, которое будет начислено каждому участнику команды
+	 */
+	public TEAM_MEMBER_VAL: BnWr;
+
 	constructor(contract: any) {
 
 		//VIPPLACEMENT
@@ -228,6 +233,8 @@ export class ContractConstants {
 		this.DURATION_BEFORE_RESTORE_UNSOLD = bnWr(contract.DURATION_BEFORE_RESTORE_UNSOLD());
 		this.EMISSION_FOR_BOUNTY = bnWr(contract.EMISSION_FOR_BOUNTY());
 		this.EMISSION_FOR_TEAM = bnWr(contract.EMISSION_FOR_TEAM());
+		this.TEAM_MEMBER_VAL = bnWr(contract.TEAM_MEMBER_VAL());
+
 	}
 }
 
