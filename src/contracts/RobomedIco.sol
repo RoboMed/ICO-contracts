@@ -577,7 +577,16 @@ contract RobomedIco is ERC223, ERC20 {
 
         //set team for members
         owner = msg.sender;
-        transferTeam(0x5e4f37B18c8F2e85Fa37ab46a5Deb4025ffc16eE, TEAM_MEMBER_VAL);
+        //ildar
+        transferTeam(0xa19DC4c158169bC45b17594d3F15e4dCb36CC3A3, TEAM_MEMBER_VAL);
+        //vova
+        transferTeam(0xdf66490Fe9F2ada51967F71d6B5e26A9D77065ED, TEAM_MEMBER_VAL);
+        //kiril
+        transferTeam(0x0, TEAM_MEMBER_VAL);
+        //evg
+        transferTeam(0x0, TEAM_MEMBER_VAL);
+        //igor
+        transferTeam(0x0, TEAM_MEMBER_VAL);
         owner = ADDR_OWNER;
     }
 
