@@ -56,7 +56,7 @@ contract RobomedIco is ERC223, ERC20 {
     /**
      * Общая длительность стадий Sale с SaleStage1 по SaleStage7 включительно
     */
-    uint256 public constant DURATION_SALESTAGES = 1 hours;//2 minutes;//30 days;
+    uint256 public constant DURATION_SALESTAGES = 2 minutes; //2 minutes;//30 days;
 
     /**
      * Курс стадии SaleStage1
@@ -163,7 +163,7 @@ contract RobomedIco is ERC223, ERC20 {
     /**
      * Длительность стадии SaleStageLast
     */
-    uint256 public constant DURATION_SALESTAGELAST = 20 minutes;//10 days;
+    uint256 public constant DURATION_SALESTAGELAST = 1 minutes;// 20 minutes;//10 days;
 
     /**
      * Курс стадии SaleStageLast
@@ -187,7 +187,7 @@ contract RobomedIco is ERC223, ERC20 {
      * Длительность периода на который нельзя восстановить нераспроданные unsoldTokens токены,
      * отсчитывается после наступления PostIco
     */
-    uint256 public constant DURATION_BEFORE_RESTORE_UNSOLD = 21 minutes;
+    uint256 public constant DURATION_BEFORE_RESTORE_UNSOLD = 1 minutes;
 
     //end PostIco constants
 
@@ -201,7 +201,10 @@ contract RobomedIco is ERC223, ERC20 {
     */
     uint256 public constant EMISSION_FOR_TEAM = 5 * 10 ** 18;
 
-    uint public constant TEAM_MEMBER_VAL = 1 * 10 ** 18;
+    /**
+    * Кол-во токенов, которое будет начислено каждому участнику команды
+    */
+    uint256 public constant TEAM_MEMBER_VAL = 1 * 10 ** 18;
 
     /**
       * Перечисление состояний контракта
