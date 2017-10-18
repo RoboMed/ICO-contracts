@@ -29,32 +29,6 @@ contract TestSecondRobomedIco {
     address public owner;
 
 
-    function TestSecondRobomedIco(address _originalIco, address _owner) public {
-        originalIco = _originalIco;
-        owner = _owner;
-    }
-
-    function getOriginal() private view returns (RobomedIco){
-        RobomedIco robomedIco = RobomedIco(originalIco);
-        return robomedIco;
-    }
-
-
-
-    /**
-    * Здесь храним балансы токенов
-    */
-    mapping (address => uint256)  balances;
-
-    mapping (address => mapping (address => uint256))  allowed;
-
-    /**
-    * Здесь храним начисленные премиальные токены, могут быть выведены на кошелёк начиная с даты startDateOfUseTeamTokens
-    */
-    mapping (address => uint256) teamBalances;
-
-
-
     /**
      * Общее количество купленных токенов
      * */
@@ -91,7 +65,15 @@ contract TestSecondRobomedIco {
         _;
     }
 
+    function TestSecondRobomedIco(address _originalIco, address _owner) public {
+        originalIco = _originalIco;
+        owner = _owner;
+    }
 
+    function getOriginal() private view returns (RobomedIco){
+        RobomedIco robomedIco = RobomedIco(originalIco);
+        return robomedIco;
+    }
 
 
     /**

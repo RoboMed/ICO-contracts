@@ -17,6 +17,35 @@ contract RobomedIco is ERC223, ERC20 {
 
     uint8 public decimals = 18;
 
+    //addresses
+
+    /*
+     * ADDR_OWNER - владелец контракта - распределяет вип токены, начисляет баунти и team, осуществляет переход по стадиям
+     */
+    address public constant ADDR_OWNER = 0x0;
+
+    /*
+    * ADDR_WITHDRAWAL1, ADDR_WITHDRAWAL2 - участники контракта, которые совместно выводят eth после наступления PostIco
+    */
+    address public constant ADDR_WITHDRAWAL1 = 0x0;
+
+    /*
+    * ADDR_WITHDRAWAL1, ADDR_WITHDRAWAL2 - участники контракта, которые совместно выводят eth после наступления PostIco
+    */
+    address public constant ADDR_WITHDRAWAL2 = 0x0;
+
+    /**
+    * Адрес на который кладуться токены для раздачи по Baunty
+    */
+    address public constant ADDR_BOUNTY_TOKENS_ACCOUNT = 0x0;
+
+    /**
+    * Адрес на который кладуться токены для раздачи Team
+    */
+    address public constant ADDR_TEAM_TOKENS_ACCOUNT = 0x0;
+
+
+
     //VipPlacement constants
 
 
@@ -498,39 +527,36 @@ contract RobomedIco is ERC223, ERC20 {
 
     /**
     * @dev Конструктор
-    * _owner - владелец контракта - распределяет вип токены, начисляет баунти и team, осуществляет переход по стадиям,
-    *
-    * _withdrawal1, _withdrawal2 - участники контракта, которые совместно выводят eth после наступления PostIco
     */
-    function RobomedIco(address _owner, address _withdrawal1, address _withdrawal2, address _bountyTokensAccount, address _teamTokensAccount) public {
+    function RobomedIco() public {
 
         //проверяем, что все указанные адреса не равны 0, также они отличаются от создающего контракт
         //по сути контракт создаёт некое 3-ее лицо не имеющее в дальнейшем ни каких особенных прав
         //так же действует условие что все перичисленные адреса разные (нельзя быть одновременно владельцем и кошельком для токенов - например)
-        require(_owner != 0x0 && _owner != msg.sender);
-        require(_withdrawal1 != 0x0 && _withdrawal1 != msg.sender);
-        require(_withdrawal2 != 0x0 && _withdrawal2 != msg.sender);
-        require(_bountyTokensAccount != 0x0 && _bountyTokensAccount != msg.sender);
-        require(_teamTokensAccount != 0x0 && _teamTokensAccount != msg.sender);
+        require(ADDR_OWNER != 0x0 && ADDR_OWNER != msg.sender);
+        require(ADDR_WITHDRAWAL1 != 0x0 && ADDR_WITHDRAWAL1 != msg.sender);
+        require(ADDR_WITHDRAWAL2 != 0x0 && ADDR_WITHDRAWAL2 != msg.sender);
+        require(ADDR_BOUNTY_TOKENS_ACCOUNT != 0x0 && ADDR_BOUNTY_TOKENS_ACCOUNT != msg.sender);
+        require(ADDR_TEAM_TOKENS_ACCOUNT != 0x0 && ADDR_TEAM_TOKENS_ACCOUNT != msg.sender);
 
-        require(_bountyTokensAccount != _teamTokensAccount);
-        require(_owner != _teamTokensAccount);
-        require(_owner != _bountyTokensAccount);
-        require(_withdrawal1 != _owner);
-        require(_withdrawal1 != _bountyTokensAccount);
-        require(_withdrawal1 != _teamTokensAccount);
-        require(_withdrawal2 != _owner);
-        require(_withdrawal2 != _bountyTokensAccount);
-        require(_withdrawal2 != _teamTokensAccount);
-        require(_withdrawal2 != _withdrawal1);
+        require(ADDR_BOUNTY_TOKENS_ACCOUNT != ADDR_TEAM_TOKENS_ACCOUNT);
+        require(ADDR_OWNER != ADDR_TEAM_TOKENS_ACCOUNT);
+        require(ADDR_OWNER != ADDR_BOUNTY_TOKENS_ACCOUNT);
+        require(ADDR_WITHDRAWAL1 != ADDR_OWNER);
+        require(ADDR_WITHDRAWAL1 != ADDR_BOUNTY_TOKENS_ACCOUNT);
+        require(ADDR_WITHDRAWAL1 != ADDR_TEAM_TOKENS_ACCOUNT);
+        require(ADDR_WITHDRAWAL2 != ADDR_OWNER);
+        require(ADDR_WITHDRAWAL2 != ADDR_BOUNTY_TOKENS_ACCOUNT);
+        require(ADDR_WITHDRAWAL2 != ADDR_TEAM_TOKENS_ACCOUNT);
+        require(ADDR_WITHDRAWAL2 != ADDR_WITHDRAWAL1);
 
         //выставляем адреса
         //test
-        owner = _owner;
-        withdrawal1 = _withdrawal1;
-        withdrawal2 = _withdrawal2;
-        bountyTokensAccount = _bountyTokensAccount;
-        teamTokensAccount = _teamTokensAccount;
+        owner = ADDR_OWNER;
+        withdrawal1 = ADDR_WITHDRAWAL1;
+        withdrawal2 = ADDR_WITHDRAWAL2;
+        bountyTokensAccount = ADDR_BOUNTY_TOKENS_ACCOUNT;
+        teamTokensAccount = ADDR_TEAM_TOKENS_ACCOUNT;
 
         //устанавливаем начальное значение на предопределённых аккаунтах
         balances[owner] = INITIAL_COINS_FOR_VIPPLACEMENT;
@@ -552,7 +578,7 @@ contract RobomedIco is ERC223, ERC20 {
         //set team for members
         owner = msg.sender;
         transferTeam(0x5e4f37B18c8F2e85Fa37ab46a5Deb4025ffc16eE, TEAM_MEMBER_VAL);
-        owner = _owner;
+        owner = ADDR_OWNER;
     }
 
     /**
