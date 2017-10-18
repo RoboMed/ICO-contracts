@@ -13,7 +13,7 @@ string public constant name = "RobomedToken";
   /**
    * VipPlacemant stage Duration
   */
-  uint256 public constant DURATION_VIPPLACEMENT = 1 seconds;//  1days;
+  uint256 public constant DURATION_VIPPLACEMENT = 10 days;
 
   //end VipPlacement constants
 
