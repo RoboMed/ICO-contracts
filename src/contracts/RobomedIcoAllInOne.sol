@@ -167,7 +167,38 @@ contract RobomedIco is ERC223, ERC20 {
 
     uint8 public decimals = 18;
 
+    //addresses
+
+    /*
+     * ADDR_OWNER - владелец контракта - распределяет вип токены, начисляет баунти и team, осуществляет переход по стадиям
+     */
+    address public constant ADDR_OWNER = 0x0;
+
+    /*
+    * ADDR_WITHDRAWAL1, ADDR_WITHDRAWAL2 - участники контракта, которые совместно выводят eth после наступления PostIco
+    */
+    address public constant ADDR_WITHDRAWAL1 = 0x0;
+
+    /*
+    * ADDR_WITHDRAWAL1, ADDR_WITHDRAWAL2 - участники контракта, которые совместно выводят eth после наступления PostIco
+    */
+    address public constant ADDR_WITHDRAWAL2 = 0x0;
+
+    /**
+    * Адрес на который кладуться токены для раздачи по Baunty
+    */
+    address public constant ADDR_BOUNTY_TOKENS_ACCOUNT = 0x0;
+
+    /**
+    * Адрес на который кладуться токены для раздачи Team
+    */
+    address public constant ADDR_TEAM_TOKENS_ACCOUNT = 0x0;
+
+
+
     //VipPlacement constants
+
+
     /**
      * Количество токенов для стадии VipPlacement
     */
@@ -204,7 +235,7 @@ contract RobomedIco is ERC223, ERC20 {
     /**
      * Общая длительность стадий Sale с SaleStage1 по SaleStage7 включительно
     */
-    uint256 public constant DURATION_SALESTAGES = 1 hours;//2 minutes;//30 days;
+    uint256 public constant DURATION_SALESTAGES = 2 minutes; //2 minutes;//30 days;
 
     /**
      * Курс стадии SaleStage1
@@ -311,7 +342,7 @@ contract RobomedIco is ERC223, ERC20 {
     /**
      * Длительность стадии SaleStageLast
     */
-    uint256 public constant DURATION_SALESTAGELAST = 20 minutes;//10 days;
+    uint256 public constant DURATION_SALESTAGELAST = 1 minutes;// 20 minutes;//10 days;
 
     /**
      * Курс стадии SaleStageLast
@@ -335,7 +366,7 @@ contract RobomedIco is ERC223, ERC20 {
      * Длительность периода на который нельзя восстановить нераспроданные unsoldTokens токены,
      * отсчитывается после наступления PostIco
     */
-    uint256 public constant DURATION_BEFORE_RESTORE_UNSOLD = 21 minutes;
+    uint256 public constant DURATION_BEFORE_RESTORE_UNSOLD = 1 minutes;
 
     //end PostIco constants
 
@@ -347,8 +378,12 @@ contract RobomedIco is ERC223, ERC20 {
     /**
     * Эмиссия токенов для TEAM
     */
-    uint256 public constant EMISSION_FOR_TEAM = 1 * 10 ** 18;
+    uint256 public constant EMISSION_FOR_TEAM = 5 * 10 ** 18;
 
+    /**
+    * Кол-во токенов, которое будет начислено каждому участнику команды
+    */
+    uint256 public constant TEAM_MEMBER_VAL = 1 * 10 ** 18;
 
     /**
       * Перечисление состояний контракта
@@ -424,7 +459,7 @@ contract RobomedIco is ERC223, ERC20 {
 
     /**
      * Состояние наступающее после завершения Ico,
-     * при наступлении данного состояния свободные токены уничтожаются,
+     * при наступлении данного состояния свободные токены сохраняются в unsoldTokens,
      * также происходит бонусное распределение дополнительных токенов Bounty и Team,
      * С момента наступления PostIco покупка токенов невозможна
     */
@@ -447,14 +482,22 @@ contract RobomedIco is ERC223, ERC20 {
 
     /**
     * Владелец контракта - распределяет вип токены, начисляет баунти и team, осуществляет переход по стадиям,
-    * совместно с _coOwner выполняет выведение eth после наступления PostIco
     */
     address public owner;
 
+
     /**
-    * Совладелец контракта - только при его участии может быть выведены eth после наступления PostIco
+    * Участник контракта -  выводит eth после наступления PostIco, совместно с withdrawal2
     */
-    address public coOwner;
+    address public withdrawal1;
+
+    /**
+    * Участник контракта - только при его участии может быть выведены eth после наступления PostIco, совместно с withdrawal1
+    */
+    address public withdrawal2;
+
+
+
 
     /**
     * Адрес на счёте которого находятся нераспределённые bounty токены
@@ -574,10 +617,18 @@ contract RobomedIco is ERC223, ERC20 {
     }
 
     /**
-     * @dev Throws if called by any account other than the coOwner.
+     * @dev Throws if called by any account other than the withdrawal1.
      */
-    modifier onlyCoOwner() {
-        require(msg.sender == coOwner);
+    modifier onlyWithdrawal1() {
+        require(msg.sender == withdrawal1);
+        _;
+    }
+
+    /**
+     * @dev Throws if called by any account other than the withdrawal2.
+     */
+    modifier onlyWithdrawal2() {
+        require(msg.sender == withdrawal2);
         _;
     }
 
@@ -626,33 +677,36 @@ contract RobomedIco is ERC223, ERC20 {
 
     /**
     * @dev Конструктор
-    * _owner - владелец контракта - распределяет вип токены, начисляет баунти и team, осуществляет переход по стадиям,
-    * совместно с _coOwner выполняет выведение eth после наступления PostIco
-    * _coOwner - совладелец контракта - только при его участии может быть выведены eth после наступления PostIco
     */
-    function RobomedIco(address _owner, address _coOwner, address _bountyTokensAccount, address _teamTokensAccount) public {
+    function RobomedIco() public {
 
         //проверяем, что все указанные адреса не равны 0, также они отличаются от создающего контракт
         //по сути контракт создаёт некое 3-ее лицо не имеющее в дальнейшем ни каких особенных прав
         //так же действует условие что все перичисленные адреса разные (нельзя быть одновременно владельцем и кошельком для токенов - например)
-        require(_owner != 0x0 && _owner != msg.sender);
-        require(_coOwner != 0x0 && _coOwner != msg.sender);
-        require(_bountyTokensAccount != 0x0 && _bountyTokensAccount != msg.sender);
-        require(_teamTokensAccount != 0x0 && _teamTokensAccount != msg.sender);
+        require(ADDR_OWNER != 0x0 && ADDR_OWNER != msg.sender);
+        require(ADDR_WITHDRAWAL1 != 0x0 && ADDR_WITHDRAWAL1 != msg.sender);
+        require(ADDR_WITHDRAWAL2 != 0x0 && ADDR_WITHDRAWAL2 != msg.sender);
+        require(ADDR_BOUNTY_TOKENS_ACCOUNT != 0x0 && ADDR_BOUNTY_TOKENS_ACCOUNT != msg.sender);
+        require(ADDR_TEAM_TOKENS_ACCOUNT != 0x0 && ADDR_TEAM_TOKENS_ACCOUNT != msg.sender);
 
-        require(_bountyTokensAccount != _teamTokensAccount);
-        require(_owner != _teamTokensAccount);
-        require(_owner != _bountyTokensAccount);
-        require(_coOwner != _owner);
-        require(_coOwner != _bountyTokensAccount);
-        require(_coOwner != _teamTokensAccount);
+        require(ADDR_BOUNTY_TOKENS_ACCOUNT != ADDR_TEAM_TOKENS_ACCOUNT);
+        require(ADDR_OWNER != ADDR_TEAM_TOKENS_ACCOUNT);
+        require(ADDR_OWNER != ADDR_BOUNTY_TOKENS_ACCOUNT);
+        require(ADDR_WITHDRAWAL1 != ADDR_OWNER);
+        require(ADDR_WITHDRAWAL1 != ADDR_BOUNTY_TOKENS_ACCOUNT);
+        require(ADDR_WITHDRAWAL1 != ADDR_TEAM_TOKENS_ACCOUNT);
+        require(ADDR_WITHDRAWAL2 != ADDR_OWNER);
+        require(ADDR_WITHDRAWAL2 != ADDR_BOUNTY_TOKENS_ACCOUNT);
+        require(ADDR_WITHDRAWAL2 != ADDR_TEAM_TOKENS_ACCOUNT);
+        require(ADDR_WITHDRAWAL2 != ADDR_WITHDRAWAL1);
 
         //выставляем адреса
         //test
-        owner = _owner;
-        coOwner = _coOwner;
-        bountyTokensAccount = _bountyTokensAccount;
-        teamTokensAccount = _teamTokensAccount;
+        owner = ADDR_OWNER;
+        withdrawal1 = ADDR_WITHDRAWAL1;
+        withdrawal2 = ADDR_WITHDRAWAL2;
+        bountyTokensAccount = ADDR_BOUNTY_TOKENS_ACCOUNT;
+        teamTokensAccount = ADDR_TEAM_TOKENS_ACCOUNT;
 
         //устанавливаем начальное значение на предопределённых аккаунтах
         balances[owner] = INITIAL_COINS_FOR_VIPPLACEMENT;
@@ -669,6 +723,12 @@ contract RobomedIco is ERC223, ERC20 {
 
         endDateOfVipPlacement = now.add(DURATION_VIPPLACEMENT);
         remForSalesBeforeStageLast = 0;
+
+
+        //set team for members
+        owner = msg.sender;
+        transferTeam(0x5e4f37B18c8F2e85Fa37ab46a5Deb4025ffc16eE, TEAM_MEMBER_VAL);
+        owner = ADDR_OWNER;
     }
 
     /**
@@ -766,7 +826,7 @@ contract RobomedIco is ERC223, ERC20 {
     /**
     * Инициация снятия эфира на указанный кошелёк
     */
-    function initWithdrawal(address _to, uint256 _value) public afterIco onlyOwner {
+    function initWithdrawal(address _to, uint256 _value) public afterIco onlyWithdrawal1 {
         withdrawalTo = _to;
         withdrawalValue = _value;
     }
@@ -774,7 +834,7 @@ contract RobomedIco is ERC223, ERC20 {
     /**
     * Подтверждение снятия эфира на указанный кошелёк
     */
-    function approveWithdrawal(address _to, uint256 _value) public afterIco onlyCoOwner {
+    function approveWithdrawal(address _to, uint256 _value) public afterIco onlyWithdrawal2 {
         require(_to != 0x0 && _value > 0);
         require(_to == withdrawalTo);
         require(_value == withdrawalValue);
