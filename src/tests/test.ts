@@ -19,7 +19,7 @@ let contract: Contract;
 let config: Config = null;
 let accs: TestAccounts;
 let CONSTANTS: ContractConstants;
-let emptyAddress: '0x0000000000000000000000000000000000000000';
+let emptyAddress: string = '0x0000000000000000000000000000000000000000';
 
 /**
  * Параметры для проверки свойств контракта
@@ -207,7 +207,7 @@ describe('Test Ico-contract', () => {
 		let totalSupply = bnWr(CONSTANTS.INITIAL_COINS_FOR_VIPPLACEMENT
 				.plus(CONSTANTS.EMISSION_FOR_BOUNTY)
 				.plus(CONSTANTS.EMISSION_FOR_TEAM)
-				.minus(CONSTANTS.TEAM_MEMBER_VAL.mul(1)));
+				.minus(CONSTANTS.TEAM_MEMBER_VAL.mul(5)));
 
 		checkContract({
 			currentState: IcoStates.VipPlacement,
@@ -218,12 +218,18 @@ describe('Test Ico-contract', () => {
 		});
 
 		// Проверяем что участники команды получили тим токены
-		let balance1 = bnWr(contract.teamBalanceOf("0xd133703d659262c8641b2477a268be83264616ca"));
-		//...
-		//...
-		//...
-		//...
+		let balance1 = bnWr(contract.teamBalanceOf("0xa19DC4c158169bC45b17594d3F15e4dCb36CC3A3"));
+		let balance2 = bnWr(contract.teamBalanceOf("0xdf66490Fe9F2ada51967F71d6B5e26A9D77065ED"));
+		let balance3 = bnWr(contract.teamBalanceOf("0xf0215C6A553AD8E155Da69B2657BeaBC51d187c5"));
+		let balance4 = bnWr(contract.teamBalanceOf("0x6c1666d388302385AE5c62993824967a097F14bC"));
+		let balance5 = bnWr(contract.teamBalanceOf("0x82D550dC74f8B70B202aB5b63DAbe75E6F00fb36"));
+
+
 		assertEq(CONSTANTS.TEAM_MEMBER_VAL, balance1);
+		assertEq(CONSTANTS.TEAM_MEMBER_VAL, balance2);
+		assertEq(CONSTANTS.TEAM_MEMBER_VAL, balance3);
+		assertEq(CONSTANTS.TEAM_MEMBER_VAL, balance4);
+		assertEq(CONSTANTS.TEAM_MEMBER_VAL, balance5);
 
 
 	});
@@ -1620,40 +1626,38 @@ describe('Test Ico-contract', () => {
 	 * Тест снятия эфира на кошелек владельца
 	 */
 	it('test-withdrawal', async () => {
-
 		await goToState(IcoStates.PreSale);
 		await goToState(IcoStates.SaleStage1);
 		//...
 		await goToState(IcoStates.SaleStageLast);
 
 		// нельзя снимать до PostIco
-		let resErr = await execInEth(() => contract.initWithdrawal(web3.eth.getBalance((<any>contract).address), new BigNumber(1), txParams(accs.owner)));
+		let resErr = await execInEth(() => contract.initWithdrawal(accs.lucky, new BigNumber(1), txParams(accs.withdrawal1)));
 		assert.ok(!resErr);
 
 		await goToState(IcoStates.PostIco);
 		// Снимать можно только на PostIco
 
-		// Не owner не может инициировать снятие
-		let resUserErr = await execInEth(() => contract.initWithdrawal(web3.eth.getBalance((<any>contract).address), new BigNumber(1), txParams(accs.user1)));
-		assert.ok(!resUserErr);
-		//let resCoOwnerErr = await execInEth(() => contract.initWithdrawal(web3.eth.getBalance((<any>contract).address), new BigNumber(1), txParams(accs.coOwner)));
-		//assert.ok(!resCoOwnerErr);
+		// Не withdrawal1 не может инициировать снятие
+		let resUserErr = await execInEth(() => contract.initWithdrawal(accs.lucky, new BigNumber(1), txParams(accs.user1)));
+		let resOwnerErr = await execInEth(() => contract.initWithdrawal(accs.lucky, new BigNumber(1), txParams(accs.owner)));
 
+		assert.ok(!resUserErr);
+		assert.ok(!resOwnerErr);
 
 		//-----------------------------------------------
-		// владелец может сбросить (по факту) инициацию вывода - выставив нулевые значения в адрес и количество для вывода
-
+		// участник1 может сбросить (по факту) инициацию вывода - выставив нулевые значения в адрес и количество для вывода
 		let beforeReset1 = {
 			withdrawalTo: contract.withdrawalTo(),
 			withdrawalValue: bnWr(contract.withdrawalValue()),
 			contractEth: bnWr(web3.eth.getBalance((<any>contract).address)),
 		};
-		let resReset1 = await execInEth(() => contract.initWithdrawal(accs.user1, beforeReset1.contractEth, txParams(accs.owner)));
+		let resReset1 = await execInEth(() => contract.initWithdrawal(accs.user1, beforeReset1.contractEth, txParams(accs.withdrawal1)));
 		let afterReset1 = {
 			withdrawalTo: contract.withdrawalTo(),
 			withdrawalValue: bnWr(contract.withdrawalValue()),
 		};
-		let resReset2 = await execInEth(() => contract.initWithdrawal('', new BigNumber(0), txParams(accs.owner)));
+		let resReset2 = await execInEth(() => contract.initWithdrawal('', new BigNumber(0), txParams(accs.withdrawal1)));
 		let afterReset2 = {
 			withdrawalTo: contract.withdrawalTo(),
 			withdrawalValue: bnWr(contract.withdrawalValue()),
@@ -1667,38 +1671,37 @@ describe('Test Ico-contract', () => {
 		assert.ok(afterReset2.withdrawalValue.equals(new BigNumber(0)));
 
 		//-----------------------------------------------
-		// Снимать могут только владелец совместно с совладельцем
+		// Снимать могут только участник1 совместно с участником2
 		let before = {
 			contractEth: bnWr(web3.eth.getBalance((<any>contract).address)),
-			ownerEth: bnWr(web3.eth.getBalance(accs.owner)),
+			withdrawal1Eth: bnWr(web3.eth.getBalance(accs.withdrawal1)),
 			user1Eth: bnWr(web3.eth.getBalance(accs.user1)),
 		};
-		let resInit = await execInEth(() => contract.initWithdrawal(accs.user1, before.contractEth, txParams(accs.owner)));
+		let resInit = await execInEth(() => contract.initWithdrawal(accs.user1, before.contractEth, txParams(accs.withdrawal1)));
 
 		let wt = contract.withdrawalTo();
 		let wv = bnWr(contract.withdrawalValue());
 		assert.ok(wt == accs.user1);
 		assert.ok(wv.equals(before.contractEth));
 
-		let resApproveErr = await execInEth(() => contract.approveWithdrawal(accs.user1, before.contractEth, txParams(accs.owner)));
+		let resApproveErr = await execInEth(() => contract.approveWithdrawal(accs.user1, before.contractEth, txParams(accs.withdrawal1)));
 		assert.ok(!resApproveErr);
-	///	let resApprove = await execInEth(() => contract.approveWithdrawal(accs.user1, before.contractEth, txParams(accs.coOwner)));
+		let resApprove = await execInEth(() => contract.approveWithdrawal(accs.user1, before.contractEth, txParams(accs.withdrawal2)));
 
 		let after = {
 			contractEth: bnWr(web3.eth.getBalance((<any>contract).address)),
-			ownerEth: bnWr(web3.eth.getBalance(accs.owner)),
+			withdrawal1Eth: bnWr(web3.eth.getBalance(accs.withdrawal1)),
 			user1Eth: bnWr(web3.eth.getBalance(accs.user1)),
 			withdrawalTo: contract.withdrawalTo(),
 			withdrawalValue: bnWr(contract.withdrawalValue()),
 		};
 
-		assert.ok(resInit);
-		//assert.ok(resApprove);
-		assertEq(bnWr(new BigNumber(0)), after.contractEth);
-		assertEq(bnWr(before.user1Eth.plus(before.contractEth)), after.user1Eth);
-		assert.ok(after.withdrawalTo == emptyAddress);
-		assertEq(bnWr(new BigNumber(0)), after.withdrawalValue);
-
+		 assert.ok(resInit);
+		 assert.ok(resApprove);
+		 assertEq(bnWr(new BigNumber(0)), after.contractEth);
+		 assertEq(bnWr(before.user1Eth.plus(before.contractEth)), after.user1Eth);
+		 assert.ok(after.withdrawalTo == emptyAddress);
+		 assertEq(bnWr(new BigNumber(0)), after.withdrawalValue);
 	});
 
 	/**
@@ -1816,12 +1819,13 @@ describe('Test Ico-contract', () => {
 		}
 
 		if (tx.gas > txRec.gasUsed) {
-			console.log("tx.gas: " + tx.gas + " > txRec.gasUsed: " + txRec.gasUsed);
+			console.log("tx.gas: " + tx.gas + " > txRec.gasUsed: " + txRec.gasUsed + " txHash: "+ txHash);
 		} else {
 			console.log("tx.gas: " + tx.gas + " == txRec.gasUsed: " + txRec.gasUsed);
 		}
 
-		return tx.gas > txRec.gasUsed;
+		return txRec.status == "0x1";
+		//return tx.gas > txRec.gasUsed;
 	}
 
 	//<editor-fold desc="goToStage">
