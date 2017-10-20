@@ -202,7 +202,7 @@ contract RobomedIco is ERC223, ERC20 {
     /**
      * Количество токенов для стадии VipPlacement
     */
-    uint256 public constant INITIAL_COINS_FOR_VIPPLACEMENT =87937500 * 10 ** 18;
+    uint256 public constant INITIAL_COINS_FOR_VIPPLACEMENT =507937500 * 10 ** 18;
 
     /**
      * Длительность стадии VipPlacement
@@ -245,7 +245,7 @@ contract RobomedIco is ERC223, ERC20 {
     /**
      * Эмиссия токенов для стадии SaleStage1
     */
-    uint256 public constant EMISSION_FOR_SALESTAGE1 = 100835000 * 10 ** 18;
+    uint256 public constant EMISSION_FOR_SALESTAGE1 = 40835000 * 10 ** 18;
 
     //end SaleStage1 constants
 
@@ -259,7 +259,7 @@ contract RobomedIco is ERC223, ERC20 {
     /**
     * Эмиссия токенов для стадии SaleStage2
     */
-    uint256 public constant EMISSION_FOR_SALESTAGE2 = 100835000 * 10 ** 18;
+    uint256 public constant EMISSION_FOR_SALESTAGE2 = 40835000 * 10 ** 18;
 
     //end SaleStage2 constants
 
@@ -273,7 +273,7 @@ contract RobomedIco is ERC223, ERC20 {
     /**
     * Эмиссия токенов для стадии SaleStage3
     */
-    uint256 public constant EMISSION_FOR_SALESTAGE3 = 100835000 * 10 ** 18;
+    uint256 public constant EMISSION_FOR_SALESTAGE3 = 40835000 * 10 ** 18;
     //end SaleStage3 constants
 
     //SaleStage4 constants
@@ -286,7 +286,7 @@ contract RobomedIco is ERC223, ERC20 {
     /**
     * Эмиссия токенов для стадии SaleStage4
     */
-    uint256 public constant EMISSION_FOR_SALESTAGE4 = 100835000 * 10 ** 18;
+    uint256 public constant EMISSION_FOR_SALESTAGE4 = 40835000 * 10 ** 18;
 
     //end SaleStage4 constants
 
@@ -301,7 +301,7 @@ contract RobomedIco is ERC223, ERC20 {
     /**
     * Эмиссия токенов для стадии SaleStage5
     */
-    uint256 public constant EMISSION_FOR_SALESTAGE5 = 100835000 * 10 ** 18;
+    uint256 public constant EMISSION_FOR_SALESTAGE5 = 40835000 * 10 ** 18;
 
     //end SaleStage5 constants
 
@@ -317,7 +317,7 @@ contract RobomedIco is ERC223, ERC20 {
     /**
     * Эмиссия токенов для стадии SaleStage6
     */
-    uint256 public constant EMISSION_FOR_SALESTAGE6 = 100835000 * 10 ** 18;
+    uint256 public constant EMISSION_FOR_SALESTAGE6 = 40835000 * 10 ** 18;
 
     //end SaleStage6 constants
 
@@ -332,7 +332,7 @@ contract RobomedIco is ERC223, ERC20 {
     /**
     * Эмиссия токенов для стадии SaleStage7
     */
-    uint256 public constant EMISSION_FOR_SALESTAGE7 = 100835000 * 10 ** 18;
+    uint256 public constant EMISSION_FOR_SALESTAGE7 = 40835000 * 10 ** 18;
 
     //end SaleStage7 constants
 
