@@ -172,27 +172,27 @@ contract RobomedIco is ERC223, ERC20 {
     /*
      * ADDR_OWNER - владелец контракта - распределяет вип токены, начисляет баунти и team, осуществляет переход по стадиям
      */
-    address public constant ADDR_OWNER = 0x0;
+    address public constant ADDR_OWNER = 0x21F6C4D926B705aD244Ec33271559dA8c562400F;
 
     /*
     * ADDR_WITHDRAWAL1, ADDR_WITHDRAWAL2 - участники контракта, которые совместно выводят eth после наступления PostIco
     */
-    address public constant ADDR_WITHDRAWAL1 = 0x0;
+    address public constant ADDR_WITHDRAWAL1 = 0x0dD97e6259a7de196461B36B028456a97e3268bE;
 
     /*
     * ADDR_WITHDRAWAL1, ADDR_WITHDRAWAL2 - участники контракта, которые совместно выводят eth после наступления PostIco
     */
-    address public constant ADDR_WITHDRAWAL2 = 0x0;
+    address public constant ADDR_WITHDRAWAL2 = 0x8c5B02144F7664D37FDfd4a2f90148d08A04838D;
 
     /**
     * Адрес на который кладуться токены для раздачи по Baunty
     */
-    address public constant ADDR_BOUNTY_TOKENS_ACCOUNT = 0x0;
+    address public constant ADDR_BOUNTY_TOKENS_ACCOUNT = 0x6542393623Db0D7F27fDEd83e6feDBD767BfF9b4;
 
     /**
     * Адрес на который кладуться токены для раздачи Team
     */
-    address public constant ADDR_TEAM_TOKENS_ACCOUNT = 0x0;
+    address public constant ADDR_TEAM_TOKENS_ACCOUNT = 0x28c6bCAB2204CEd29677fEE6607E872E3c40d783;
 
 
 
@@ -202,7 +202,7 @@ contract RobomedIco is ERC223, ERC20 {
     /**
      * Количество токенов для стадии VipPlacement
     */
-    uint256 public constant INITIAL_COINS_FOR_VIPPLACEMENT = 25 * 10 ** 18;
+    uint256 public constant INITIAL_COINS_FOR_VIPPLACEMENT =87937500 * 10 ** 18;
 
     /**
      * Длительность стадии VipPlacement
@@ -216,17 +216,17 @@ contract RobomedIco is ERC223, ERC20 {
     /**
      * Количество токенов для стадии PreSale
     */
-    uint256 public constant EMISSION_FOR_PRESALE = 54 * 10 ** 18;
+    uint256 public constant EMISSION_FOR_PRESALE = 76212500 * 10 ** 18;
 
     /**
      * Длительность стадии PreSale
     */
-    uint256 public constant DURATION_PRESALE = 1 seconds;//2 minutes;//1 days;
+    uint256 public constant DURATION_PRESALE = 1 days;//2 minutes;//1 days;
 
     /**
      * Курс стадии PreSale
     */
-    uint256 public constant RATE_PRESALE = 36;
+    uint256 public constant RATE_PRESALE = 2702;
 
     //end PreSale constants
 
@@ -235,17 +235,17 @@ contract RobomedIco is ERC223, ERC20 {
     /**
      * Общая длительность стадий Sale с SaleStage1 по SaleStage7 включительно
     */
-    uint256 public constant DURATION_SALESTAGES = 2 minutes; //2 minutes;//30 days;
+    uint256 public constant DURATION_SALESTAGES = 10 days; //2 minutes;//30 days;
 
     /**
      * Курс стадии SaleStage1
     */
-    uint256 public constant RATE_SALESTAGE1 = 30;
+    uint256 public constant RATE_SALESTAGE1 = 2536;
 
     /**
      * Эмиссия токенов для стадии SaleStage1
     */
-    uint256 public constant EMISSION_FOR_SALESTAGE1 = 100;
+    uint256 public constant EMISSION_FOR_SALESTAGE1 = 100835000 * 10 ** 18;
 
     //end SaleStage1 constants
 
@@ -254,12 +254,12 @@ contract RobomedIco is ERC223, ERC20 {
     /**
      * Курс стадии SaleStage2
     */
-    uint256 public constant RATE_SALESTAGE2 = 27;
+    uint256 public constant RATE_SALESTAGE2 = 2473;
 
     /**
     * Эмиссия токенов для стадии SaleStage2
     */
-    uint256 public constant EMISSION_FOR_SALESTAGE2 = 200;
+    uint256 public constant EMISSION_FOR_SALESTAGE2 = 100835000 * 10 ** 18;
 
     //end SaleStage2 constants
 
@@ -268,12 +268,12 @@ contract RobomedIco is ERC223, ERC20 {
     /**
      * Курс стадии SaleStage3
     */
-    uint256 public constant RATE_SALESTAGE3 = 23;
+    uint256 public constant RATE_SALESTAGE3 = 2390;
 
     /**
     * Эмиссия токенов для стадии SaleStage3
     */
-    uint256 public constant EMISSION_FOR_SALESTAGE3 = 300;
+    uint256 public constant EMISSION_FOR_SALESTAGE3 = 100835000 * 10 ** 18;
     //end SaleStage3 constants
 
     //SaleStage4 constants
@@ -281,12 +281,12 @@ contract RobomedIco is ERC223, ERC20 {
     /**
      * Курс стадии SaleStage4
     */
-    uint256 public constant RATE_SALESTAGE4 = 21;
+    uint256 public constant RATE_SALESTAGE4 = 2349;
 
     /**
     * Эмиссия токенов для стадии SaleStage4
     */
-    uint256 public constant EMISSION_FOR_SALESTAGE4 = 400;
+    uint256 public constant EMISSION_FOR_SALESTAGE4 = 100835000 * 10 ** 18;
 
     //end SaleStage4 constants
 
@@ -296,12 +296,12 @@ contract RobomedIco is ERC223, ERC20 {
     /**
      * Курс стадии SaleStage5
     */
-    uint256 public constant RATE_SALESTAGE5 = 21;
+    uint256 public constant RATE_SALESTAGE5 = 2286;
 
     /**
     * Эмиссия токенов для стадии SaleStage5
     */
-    uint256 public constant EMISSION_FOR_SALESTAGE5 = 500;
+    uint256 public constant EMISSION_FOR_SALESTAGE5 = 100835000 * 10 ** 18;
 
     //end SaleStage5 constants
 
@@ -312,12 +312,12 @@ contract RobomedIco is ERC223, ERC20 {
     /**
      * Курс стадии SaleStage6
     */
-    uint256 public constant RATE_SALESTAGE6 = 21;
+    uint256 public constant RATE_SALESTAGE6 = 2224;
 
     /**
     * Эмиссия токенов для стадии SaleStage6
     */
-    uint256 public constant EMISSION_FOR_SALESTAGE6 = 600;
+    uint256 public constant EMISSION_FOR_SALESTAGE6 = 100835000 * 10 ** 18;
 
     //end SaleStage6 constants
 
@@ -327,12 +327,12 @@ contract RobomedIco is ERC223, ERC20 {
     /**
      * Курс стадии SaleStage7
     */
-    uint256 public constant RATE_SALESTAGE7 = 21;
+    uint256 public constant RATE_SALESTAGE7 = 2182;
 
     /**
     * Эмиссия токенов для стадии SaleStage7
     */
-    uint256 public constant EMISSION_FOR_SALESTAGE7 = 700;
+    uint256 public constant EMISSION_FOR_SALESTAGE7 = 100835000 * 10 ** 18;
 
     //end SaleStage7 constants
 
@@ -342,17 +342,17 @@ contract RobomedIco is ERC223, ERC20 {
     /**
      * Длительность стадии SaleStageLast
     */
-    uint256 public constant DURATION_SALESTAGELAST = 1 minutes;// 20 minutes;//10 days;
+    uint256 public constant DURATION_SALESTAGELAST = 1 days;// 20 minutes;//10 days;
 
     /**
      * Курс стадии SaleStageLast
     */
-    uint256 public constant RATE_SALESTAGELAST = 20;
+    uint256 public constant RATE_SALESTAGELAST = 2078;
 
     /**
     * Эмиссия токенов для стадии SaleStageLast
     */
-    uint256 public constant EMISSION_FOR_SALESTAGELAST = 800;
+    uint256 public constant EMISSION_FOR_SALESTAGELAST = 302505000 * 10 ** 18;
     //end SaleStageLast constants
 
     //PostIco constants
@@ -360,30 +360,30 @@ contract RobomedIco is ERC223, ERC20 {
     /**
      * Длительность периода на который нельзя использовать team токены, полученные при распределении
     */
-    uint256 public constant DURATION_NONUSETEAM = 20 minutes;//10 days;
+    uint256 public constant DURATION_NONUSETEAM = 180 days;//10 days;
 
     /**
      * Длительность периода на который нельзя восстановить нераспроданные unsoldTokens токены,
      * отсчитывается после наступления PostIco
     */
-    uint256 public constant DURATION_BEFORE_RESTORE_UNSOLD = 1 minutes;
+    uint256 public constant DURATION_BEFORE_RESTORE_UNSOLD = 270 days;
 
     //end PostIco constants
 
     /**
     * Эмиссия токенов для BOUNTY
     */
-    uint256 public constant EMISSION_FOR_BOUNTY = 1 * 10 ** 18;
+    uint256 public constant EMISSION_FOR_BOUNTY = 83750000 * 10 ** 18;
 
     /**
     * Эмиссия токенов для TEAM
     */
-    uint256 public constant EMISSION_FOR_TEAM = 5 * 10 ** 18;
+    uint256 public constant EMISSION_FOR_TEAM = 418750000 * 10 ** 18;
 
     /**
     * Кол-во токенов, которое будет начислено каждому участнику команды
     */
-    uint256 public constant TEAM_MEMBER_VAL = 1 * 10 ** 18;
+    uint256 public constant TEAM_MEMBER_VAL = 2000000 * 10 ** 18;
 
     /**
       * Перечисление состояний контракта
