@@ -11,6 +11,7 @@ import {TestAccounts, prepare} from "./prepare-test-data";
 import {deploy} from "./deploy-to-target";
 import {Contract, txParams} from "./contract";
 import {deploy as deployTest} from "./delpoy-test-contracts";
+import {deploy as deploySecondIco} from "./deploy-second-robomed-ico";
 
 //add extra mocha options: --require ts-node/register --timeout 100000
 
@@ -64,6 +65,84 @@ describe('Test Ico-contract', () => {
 
 		// Разлочиваем все счета
 		unlockAll();
+	});
+
+
+	it('test-second-ico', async()=>{
+
+		let secondContract: any = await getContractTestSecondRobomedIco((<any>contract).address);
+
+		await goToState(IcoStates.PreSale);
+		await goToState(IcoStates.SaleStage1);
+		//...
+		await goToState(IcoStates.SaleStageLast);
+		await goToState(IcoStates.PostIco);
+
+		//Дожидаемся момента когда можно восстанавливать средства на контракт
+		// ждем когда наступит дата возможности восстановления
+		while (!contract.canRestoreUnsoldTokens()) {
+			await U.delay(1000);
+		}
+
+		//-----------------------------------------------
+		let beforeRestore = {
+			unsoldTokens: bnWr(contract.unsoldTokens()),
+			canRestore: contract.canRestoreUnsoldTokens(),
+			secondIcoBalance: bnWr(contract.balanceOf(secondContract.address))
+		};
+
+		// Восстанавливаем средства на TestSecondRobomedIco
+		let res = await execInEth(() => contract.restoreUnsoldTokens(secondContract.address, txParams(accs.owner)));
+
+		let afterRestore = {
+			unsoldTokens: bnWr(contract.unsoldTokens()),
+			canRestore: contract.canRestoreUnsoldTokens(),
+			secondIcoBalance: bnWr(contract.balanceOf(secondContract.address))
+		};
+		assert.ok(res);
+
+		//Проверка getRemains()
+		let remains = bnWr(secondContract.getRemains());
+
+		assertEq(remains, beforeRestore.unsoldTokens);
+
+		//-----------------------------------------------
+		//Проверка buyTokens
+		let beforeBuyTokens = {
+			user1Tokens: bnWr(contract.balanceOf(accs.user1)),
+			user1Eth:bnWr( web3.eth.getBalance(accs.user1)),
+			//totalBought: bnWr( secondContract.totalBought())
+		};
+		let rate = bnWr(secondContract.rate());
+		let resBuyTokens = await execInEth(() => secondContract.buyTokens(accs.user1, txParams(accs.user1, new BigNumber(1))));
+
+		let afterBuyTokens = {
+			user1Tokens: bnWr(contract.balanceOf(accs.user1)),
+			user1Eth:bnWr(web3.eth.getBalance(accs.user1)),
+			//totalBought: bnWr( secondContract.totalBought())
+		};
+
+		 assert.ok(resBuyTokens);
+		 assertEq(rate, afterBuyTokens.user1Tokens);
+		 // assertEq(new BigNumber(0), afterBuyTokens.totalBought);
+
+		//-----------------------------------------------
+		// Проверка вывода собранного эфира
+		let beforeWithdrawal = {
+			ethCount: bnWr( web3.eth.getBalance(secondContract.address)),
+			user2EthCount: bnWr( web3.eth.getBalance(accs.user2))
+		};
+
+		let resWithdrawal = await execInEth(() => secondContract.withdrawal(accs.user2, new BigNumber(1), txParams(accs.owner)));
+
+		let afterWithdrawal = {
+			ethCount: bnWr( web3.eth.getBalance(secondContract.address)),
+			user2EthCount: bnWr( web3.eth.getBalance(accs.user2))
+		};
+
+		 assert.ok(resWithdrawal);
+		 assertEq(beforeWithdrawal.ethCount, afterWithdrawal.ethCount.plus(1));
+		 assertEq(beforeWithdrawal.user2EthCount.plus(1), afterWithdrawal.user2EthCount);
 	});
 
 	/**
@@ -1954,8 +2033,8 @@ describe('Test Ico-contract', () => {
 
 	async function getContractReceiver(): Promise<{ address: string }> {
 		let c = await deployTest("ContractReceiver", config.rpcAddress, accs.deployer, config.accountPass);
-		let contractReceiver = web3.eth.contract(c.abi).at(c.address);
-		return contractReceiver;
+		let res = web3.eth.contract(c.abi).at(c.address);
+		return res;
 	}
 
 	function getContractReceiverData(contract: any): { sender: string, value: BnWr, data: string, functionName: string } {
@@ -1969,15 +2048,20 @@ describe('Test Ico-contract', () => {
 
 	async function getContractReceiverWithError(): Promise<{ address: string }> {
 		let c = await deployTest("ContractReceiverForTestWithError", config.rpcAddress, accs.deployer, config.accountPass);
-		let contractReceiver = web3.eth.contract(c.abi).at(c.address);
-		return contractReceiver;
+		let res = web3.eth.contract(c.abi).at(c.address);
+		return res;
 	}
 
 
 	async function getContractReceiverNotForErc223(): Promise<{ address: string }> {
 		let c = await deployTest("ContractReceiverNotForErc223", config.rpcAddress, accs.deployer, config.accountPass);
-		let contractReceiver = web3.eth.contract(c.abi).at(c.address);
-		return contractReceiver;
+		let res = web3.eth.contract(c.abi).at(c.address);
+		return res;
 	}
 
+	async function getContractTestSecondRobomedIco(originalIco: string): Promise<{ address: string }> {
+		let c = await deploySecondIco(config.rpcAddress, accs.deployer, config.accountPass, originalIco, accs.owner);
+		let res = web3.eth.contract(c.abi).at(c.address);
+		return res;
+	}
 });
