@@ -170,27 +170,27 @@ contract RobomedIco is ERC223, ERC20 {
     //addresses
 
     /*
-     * ADDR_OWNER - владелец контракта - распределяет вип токены, начисляет баунти и team, осуществляет переход по стадиям
+     * ADDR_OWNER - RBM transition manager
      */
     address public constant ADDR_OWNER = 0x21F6C4D926B705aD244Ec33271559dA8c562400F;
 
     /*
-    * ADDR_WITHDRAWAL1, ADDR_WITHDRAWAL2 - участники контракта, которые совместно выводят eth после наступления PostIco
+    * ADDR_WITHDRAWAL1, ADDR_WITHDRAWAL2 - addresses for multisig ETH WITHDRWAWAL
     */
     address public constant ADDR_WITHDRAWAL1 = 0x0dD97e6259a7de196461B36B028456a97e3268bE;
 
     /*
-    * ADDR_WITHDRAWAL1, ADDR_WITHDRAWAL2 - участники контракта, которые совместно выводят eth после наступления PostIco
+    * ADDR_WITHDRAWAL1, ADDR_WITHDRAWAL2 -addresses for multisig ETH WITHDRWAWALo
     */
     address public constant ADDR_WITHDRAWAL2 = 0x8c5B02144F7664D37FDfd4a2f90148d08A04838D;
 
     /**
-    * Адрес на который кладуться токены для раздачи по Baunty
+    *address for Bounty tokens
     */
     address public constant ADDR_BOUNTY_TOKENS_ACCOUNT = 0x6542393623Db0D7F27fDEd83e6feDBD767BfF9b4;
 
     /**
-    * Адрес на который кладуться токены для раздачи Team
+    *Adress for Team Tokens
     */
     address public constant ADDR_TEAM_TOKENS_ACCOUNT = 0x28c6bCAB2204CEd29677fEE6607E872E3c40d783;
 
@@ -200,12 +200,12 @@ contract RobomedIco is ERC223, ERC20 {
 
 
     /**
-     * Количество токенов для стадии VipPlacement
+     * VipPlacementToken Num
     */
     uint256 public constant INITIAL_COINS_FOR_VIPPLACEMENT =507937500 * 10 ** 18;
 
     /**
-     * Длительность стадии VipPlacement
+     * VipPlaceMent Only Stage Duration
     */
     uint256 public constant DURATION_VIPPLACEMENT = 1 seconds;// 1 minutes;//  1 days;
 
@@ -214,17 +214,17 @@ contract RobomedIco is ERC223, ERC20 {
     //PreSale constants
 
     /**
-     * Количество токенов для стадии PreSale
+     * Presale Tokens Num
     */
     uint256 public constant EMISSION_FOR_PRESALE = 76212500 * 10 ** 18;
 
     /**
-     * Длительность стадии PreSale
+     * PreSale Stage Duration
     */
     uint256 public constant DURATION_PRESALE = 1 days;//2 minutes;//1 days;
 
     /**
-     * Курс стадии PreSale
+     * Presale Stage Rate RBMs for 1 ETH
     */
     uint256 public constant RATE_PRESALE = 2702;
 
@@ -233,17 +233,17 @@ contract RobomedIco is ERC223, ERC20 {
     //SaleStage1 constants
 
     /**
-     * Общая длительность стадий Sale с SaleStage1 по SaleStage7 включительно
+     *All Bonus Stages duration  (before ability to nextStage)
     */
     uint256 public constant DURATION_SALESTAGES = 10 days; //2 minutes;//30 days;
 
     /**
-     * Курс стадии SaleStage1
+     * 22% Bonus Stage Rate RBMs for 1 ETH
     */
     uint256 public constant RATE_SALESTAGE1 = 2536;
 
     /**
-     * Эмиссия токенов для стадии SaleStage1
+     * 22% Bonus Stage token num
     */
     uint256 public constant EMISSION_FOR_SALESTAGE1 = 40835000 * 10 ** 18;
 
@@ -252,12 +252,12 @@ contract RobomedIco is ERC223, ERC20 {
     //SaleStage2 constants
 
     /**
-     * Курс стадии SaleStage2
+     * 19% Bonus Stage Rate RBMs for 1 ETH
     */
     uint256 public constant RATE_SALESTAGE2 = 2473;
 
     /**
-    * Эмиссия токенов для стадии SaleStage2
+    * 19% Bonus Stage num
     */
     uint256 public constant EMISSION_FOR_SALESTAGE2 = 40835000 * 10 ** 18;
 
@@ -266,12 +266,12 @@ contract RobomedIco is ERC223, ERC20 {
     //SaleStage3 constants
 
     /**
-     * Курс стадии SaleStage3
-    */
+     *15% bonus stage rate RBMs for 1 ETH
+    */ 
     uint256 public constant RATE_SALESTAGE3 = 2390;
 
     /**
-    * Эмиссия токенов для стадии SaleStage3
+    * 15% bonus stage tokens num
     */
     uint256 public constant EMISSION_FOR_SALESTAGE3 = 40835000 * 10 ** 18;
     //end SaleStage3 constants
@@ -279,12 +279,12 @@ contract RobomedIco is ERC223, ERC20 {
     //SaleStage4 constants
 
     /**
-     * Курс стадии SaleStage4
+     *13% Bonus stage rate RBMs for 1 ETH
     */
     uint256 public constant RATE_SALESTAGE4 = 2349;
 
     /**
-    * Эмиссия токенов для стадии SaleStage4
+    * 13% bonus stage tokens num
     */
     uint256 public constant EMISSION_FOR_SALESTAGE4 = 40835000 * 10 ** 18;
 
@@ -294,12 +294,12 @@ contract RobomedIco is ERC223, ERC20 {
     //SaleStage5 constants
 
     /**
-     * Курс стадии SaleStage5
+     * 10% bonus stage rate RBMs for 1 ETH
     */
     uint256 public constant RATE_SALESTAGE5 = 2286;
 
     /**
-    * Эмиссия токенов для стадии SaleStage5
+    * 10% bonus tokens num
     */
     uint256 public constant EMISSION_FOR_SALESTAGE5 = 40835000 * 10 ** 18;
 
@@ -310,12 +310,12 @@ contract RobomedIco is ERC223, ERC20 {
     //SaleStage6 constants
 
     /**
-     * Курс стадии SaleStage6
+     * 7% bonus stage rate RBMs for 1 ETH
     */
     uint256 public constant RATE_SALESTAGE6 = 2224;
 
     /**
-    * Эмиссия токенов для стадии SaleStage6
+    * 7% bonus state token
     */
     uint256 public constant EMISSION_FOR_SALESTAGE6 = 40835000 * 10 ** 18;
 
@@ -325,12 +325,12 @@ contract RobomedIco is ERC223, ERC20 {
     //SaleStage7 constants
 
     /**
-     * Курс стадии SaleStage7
+     * 5% bonus stage rate RBMs for 1 ETH
     */
     uint256 public constant RATE_SALESTAGE7 = 2182;
 
     /**
-    * Эмиссия токенов для стадии SaleStage7
+    * 5% bonus stage Tokens num
     */
     uint256 public constant EMISSION_FOR_SALESTAGE7 = 40835000 * 10 ** 18;
 
@@ -340,17 +340,17 @@ contract RobomedIco is ERC223, ERC20 {
     //SaleStageLast constants
 
     /**
-     * Длительность стадии SaleStageLast
+     * NoBonus ICO Duration (before manual activiation)
     */
     uint256 public constant DURATION_SALESTAGELAST = 1 days;// 20 minutes;//10 days;
 
     /**
-     * Курс стадии SaleStageLast
+     * ICO Stage Rate RBMs for 1 ETH
     */
     uint256 public constant RATE_SALESTAGELAST = 2078;
 
     /**
-    * Эмиссия токенов для стадии SaleStageLast
+    * ICO Stage Tokens num
     */
     uint256 public constant EMISSION_FOR_SALESTAGELAST = 302505000 * 10 ** 18;
     //end SaleStageLast constants
@@ -358,110 +358,92 @@ contract RobomedIco is ERC223, ERC20 {
     //PostIco constants
 
     /**
-     * Длительность периода на который нельзя использовать team токены, полученные при распределении
+     * Team Tokens moratory duration
     */
     uint256 public constant DURATION_NONUSETEAM = 180 days;//10 days;
 
     /**
-     * Длительность периода на который нельзя восстановить нераспроданные unsoldTokens токены,
-     * отсчитывается после наступления PostIco
+     * Unsold tokens restore moratory Duration after PostIco
     */
     uint256 public constant DURATION_BEFORE_RESTORE_UNSOLD = 270 days;
 
     //end PostIco constants
 
     /**
-    * Эмиссия токенов для BOUNTY
+    * Bounty Tokens Num
     */
     uint256 public constant EMISSION_FOR_BOUNTY = 83750000 * 10 ** 18;
 
     /**
-    * Эмиссия токенов для TEAM
+    * Team Tokens Num
     */
     uint256 public constant EMISSION_FOR_TEAM = 418750000 * 10 ** 18;
 
     /**
-    * Кол-во токенов, которое будет начислено каждому участнику команды
+    * Member Team bonus in smart
     */
     uint256 public constant TEAM_MEMBER_VAL = 2000000 * 10 ** 18;
 
     /**
-      * Перечисление состояний контракта
+      * contract stages
       */
     enum IcoStates {
 
     /**
-     * Состояние для которого выполняется заданная эмиссия на кошелёк владельца,
-     * далее все выпущенные токены распределяются владельцем из своего кошелька на произвольные кошельки, распределение может происходить всегда.
-     * Владелец не может распределить из своего кошелька, количество превышающее INITIAL_COINS_FOR_VIPPLACEMENT до прекращения ICO
-     * Состояние завершается по наступлению времени endDateOfVipPlacement
+     *Stage with distribution tokens to  owner address
+     owner is able to send this tokens to anybody by  num of  not more then Vipplacement Emission 
+     recivers  can't transfer tokens before PostIco Stage
+     
      */
     VipPlacement,
 
     /**
-       * Состояние для которого выполняется заданная эмиссия в свободный пул freeMoney.
-       * далее все выпущенные свободные токены покупаются всеми желающими вплоть до endDateOfPreSale,
-       * не выкупленные токены будут уничтожены
-       * Состояние завершается по наступлению времени endDateOfPreSale.
-       * С момента наступления PreSale покупка токенов становиться разрешена
+       * Stage during one contract is able to recieve ETH and is sendind RBM to Eth sender according to curreent Raye
        */
     PreSale,
 
     /**
-     * Состояние представляющее из себя подстадию продаж,
-     * при наступлении данного состояния выпускается заданное количество токенов,
-     * количество свободных токенов приравнивается к этой эмиссии
-     * Состояние завершается при выкупе всех свободных токенов или по наступлению времени startDateOfSaleStageLast.
-     * Если выкупаются все свободные токены - переход осуществляется на следующую стадию -
-     * например [с SaleStage1 на SaleStage2] или [с SaleStage2 на SaleStage3]
-     * Если наступает время startDateOfSaleStageLast, то независимо от выкупленных токенов переходим на стостояние SaleStageLast
+     * Bonus SubStage of Stages of Bonus ICO Ledger
     */
     SaleStage1,
 
     /**
-     * Аналогично SaleStage1
+     * is like to   SaleStage1
      */
     SaleStage2,
 
     /**
-     * Аналогично SaleStage1
+     * is like to   SaleStage1
      */
     SaleStage3,
 
     /**
-     * Аналогично SaleStage1
+     * is like to   SaleStage1
      */
     SaleStage4,
 
     /**
-     * Аналогично SaleStage1
+     * is like to   SaleStage1
      */
     SaleStage5,
 
     /**
-     * Аналогично SaleStage1
+     * is like to   SaleStage1
      */
     SaleStage6,
 
     /**
-     * Аналогично SaleStage1
+     * is like to   SaleStage1
      */
     SaleStage7,
 
     /**
-     * Состояние представляющее из себя последнюю подстадию продаж,
-     * при наступлении данного состояния выпускается заданное количество токенов,
-     * количество свободных токенов приравнивается к этой эмиссии,
-     * плюс остатки нераспроданных токенов со стадий SaleStage1,SaleStage2,SaleStage3,SaleStage4,SaleStage5,SaleStage6,SaleStage7
-     * Состояние завершается по наступлению времени endDateOfSaleStageLast.
+     ICO stage.
     */
     SaleStageLast,
 
     /**
-     * Состояние наступающее после завершения Ico,
-     * при наступлении данного состояния свободные токены сохраняются в unsoldTokens,
-     * также происходит бонусное распределение дополнительных токенов Bounty и Team,
-     * С момента наступления PostIco покупка токенов невозможна
+     * After ICO.  ERC 20 / 223 methods are allowed
     */
     PostIco
 
@@ -469,30 +451,30 @@ contract RobomedIco is ERC223, ERC20 {
 
 
     /**
-    * Здесь храним балансы токенов
+    * Token balsnce mapping
     */
     mapping (address => uint256)  balances;
 
     mapping (address => mapping (address => uint256))  allowed;
 
     /**
-    * Здесь храним начисленные премиальные токены, могут быть выведены на кошелёк начиная с даты startDateOfUseTeamTokens
+    * Team token balance mapping
     */
     mapping (address => uint256) teamBalances;
 
     /**
-    * Владелец контракта - распределяет вип токены, начисляет баунти и team, осуществляет переход по стадиям,
+    * owner address public variable
     */
     address public owner;
 
 
     /**
-    * Участник контракта -  выводит eth после наступления PostIco, совместно с withdrawal2
+    * Multisig  mamber addres varibale
     */
     address public withdrawal1;
 
     /**
-    * Участник контракта - только при его участии может быть выведены eth после наступления PostIco, совместно с withdrawal1
+    * Multisig  mamber addres varibale
     */
     address public withdrawal2;
 
@@ -500,105 +482,106 @@ contract RobomedIco is ERC223, ERC20 {
 
 
     /**
-    * Адрес на счёте которого находятся нераспределённые bounty токены
+    * Bounty tokens addres variable
     */
     address public bountyTokensAccount;
 
     /**
-    * Адрес на счёте которого находятся нераспределённые team токены
+    * team tokens keeper addres tokens variable
     */
     address public teamTokensAccount;
 
     /**
-    *Адрес на который инициирован вывод eth (владельцем)
+    *addres for ETH withdrawal by 1st multisig
     */
     address public withdrawalTo;
 
     /**
-    * Количество eth который предполагается выводить на адрес withdrawalTo
+    * Sum for withdrawal
     */
     uint256 public withdrawalValue;
 
     /**
-     * Количество нераспределённых токенов bounty
+     * Bonty left tokens
      * */
     uint256 public bountyTokensNotDistributed;
 
     /**
-     * Количество нераспределённых токенов team
+     * team tokens left
      * */
     uint256 public teamTokensNotDistributed;
 
     /**
-      * Текущее состояние
+      * current State Variable
       */
     IcoStates public currentState;
 
     /**
-    * Количество собранного эфира
+    * ETH recieved total
     */
     uint256 public totalBalance;
 
     /**
-    * Количество свободных токенов (никто ими не владеет)
+    * free tokens sum
     */
     uint256 public freeMoney = 0;
 
     /**
-     * Общее количество выпущенных токенов
+     * minted tokens sum
      * */
     uint256 public totalSupply = 0;
 
     /**
-     * Общее количество купленных токенов
+     * Bought tokens sum
      * */
     uint256 public totalBought = 0;
 
 
 
     /**
-     * Количество не распределённых токенов от стадии VipPlacement
+     * Vipplacemnet tokens left
      */
     uint256 public vipPlacementNotDistributed;
 
     /**
-     * Дата окончания стадии VipPlacement
+     * Time between deploy and Vipplacemet stages (before manual change state moratory)
+     
     */
     uint256 public endDateOfVipPlacement;
 
     /**
-     * Дата окончания стадии PreSale
+     * Time between PreSale and BonusStagestages (before manual change state moratory)
     */
     uint256 public endDateOfPreSale = 0;
 
     /**
-     * Дата начала стадии SaleStageLast
+     * Time between Presale and Bonus stages (before automatic change )
     */
     uint256 public startDateOfSaleStageLast;
 
     /**
-     * Дата окончания стадии SaleStageLast
+     * Time between  stages (before automatic change )
     */
     uint256 public endDateOfSaleStageLast = 0;
 
 
     /**
-     * Остаток нераспроданных токенов для состояний с SaleStage1 по SaleStage7, которые переходят в свободные на момент наступления SaleStageLast
+     * Bonus Tokens left
      */
     uint256 public remForSalesBeforeStageLast = 0;
 
     /**
-    * Дата, начиная с которой можно получить team токены непосредственно на кошелёк
+    * Var for teem tokens use moratory duration
     */
     uint256 public startDateOfUseTeamTokens = 0;
 
     /**
-    * Дата, начиная с которой можно восстановить-перевести нераспроданные токены unsoldTokens
+    *var for unsold tokens moratory duration
     */
     uint256 public startDateOfRestoreUnsoldTokens = 0;
 
     /**
-    * Количество нераспроданных токенов на момент наступления PostIco
+    *var for unsold tokens
     */
     uint256 public unsoldTokens = 0;
 
@@ -633,8 +616,7 @@ contract RobomedIco is ERC223, ERC20 {
     }
 
     /**
-     * Модификатор позволяющий выполнять вызов,
-     * только если состояние PostIco или выше
+     * @ dev only for PostIco Stage
      */
     modifier afterIco() {
         require(uint(currentState) >= uint(IcoStates.PostIco));
@@ -643,20 +625,20 @@ contract RobomedIco is ERC223, ERC20 {
 
 
     /**
-    * Модификатор проверяющий допустимость операций transfer
+    * transfer ops cheker modificator
     */
     modifier checkForTransfer(address _from, address _to, uint256 _value)  {
 
-        //проверяем размер перевода
+        //check amount
         require(_value > 0);
 
-        //проверяем кошелёк назначения
+        //check reciever
         require(_to != 0x0 && _to != _from);
 
-        //на стадиях перед ico переводить может только владелец
+        //before ICO - only owner! 
         require(currentState == IcoStates.PostIco || _from == owner);
 
-        //операции на bounty и team не допустимы до окончания ico
+        //to bounty and team - only after ICO
         require(currentState == IcoStates.PostIco || (_to != bountyTokensAccount && _to != teamTokensAccount));
 
         _;
@@ -665,24 +647,24 @@ contract RobomedIco is ERC223, ERC20 {
 
 
     /**
-     * Событие изменения состояния контракта
+     * State (stage) change event
      */
     event StateChanged(IcoStates state);
 
 
     /**
-     * Событие покупки токенов
+     *buying event
      */
     event Buy(address beneficiary, uint256 boughtTokens, uint256 ethValue);
 
     /**
-    * @dev Конструктор
+    * @dev conctructor
     */
     function RobomedIco() public {
 
-        //проверяем, что все указанные адреса не равны 0, также они отличаются от создающего контракт
-        //по сути контракт создаёт некое 3-ее лицо не имеющее в дальнейшем ни каких особенных прав
-        //так же действует условие что все перичисленные адреса разные (нельзя быть одновременно владельцем и кошельком для токенов - например)
+        //all adresses are not 0
+        //depoyer is not owner
+        //all adresses are unique
         require(ADDR_OWNER != 0x0 && ADDR_OWNER != msg.sender);
         require(ADDR_WITHDRAWAL1 != 0x0 && ADDR_WITHDRAWAL1 != msg.sender);
         require(ADDR_WITHDRAWAL2 != 0x0 && ADDR_WITHDRAWAL2 != msg.sender);
@@ -700,7 +682,7 @@ contract RobomedIco is ERC223, ERC20 {
         require(ADDR_WITHDRAWAL2 != ADDR_TEAM_TOKENS_ACCOUNT);
         require(ADDR_WITHDRAWAL2 != ADDR_WITHDRAWAL1);
 
-        //выставляем адреса
+        //adresses mapping
         //test
         owner = ADDR_OWNER;
         withdrawal1 = ADDR_WITHDRAWAL1;
@@ -708,12 +690,12 @@ contract RobomedIco is ERC223, ERC20 {
         bountyTokensAccount = ADDR_BOUNTY_TOKENS_ACCOUNT;
         teamTokensAccount = ADDR_TEAM_TOKENS_ACCOUNT;
 
-        //устанавливаем начальное значение на предопределённых аккаунтах
+        //initial balances
         balances[owner] = INITIAL_COINS_FOR_VIPPLACEMENT;
         balances[bountyTokensAccount] = EMISSION_FOR_BOUNTY;
         balances[teamTokensAccount] = EMISSION_FOR_TEAM;
 
-        //нераспределённые токены
+        //free tokens
         bountyTokensNotDistributed = EMISSION_FOR_BOUNTY;
         teamTokensNotDistributed = EMISSION_FOR_TEAM;
         vipPlacementNotDistributed = INITIAL_COINS_FOR_VIPPLACEMENT;
@@ -727,15 +709,15 @@ contract RobomedIco is ERC223, ERC20 {
 
         //set team for members
         owner = msg.sender;
-        //ildar
+        //CIO
         transferTeam(0xa19DC4c158169bC45b17594d3F15e4dCb36CC3A3, TEAM_MEMBER_VAL);
-        //vova
+        //COO
         transferTeam(0xdf66490Fe9F2ada51967F71d6B5e26A9D77065ED, TEAM_MEMBER_VAL);
-        //kirill
+        //Dev
         transferTeam(0xf0215C6A553AD8E155Da69B2657BeaBC51d187c5, TEAM_MEMBER_VAL);
-        //evg
+        //DEV
         transferTeam(0x6c1666d388302385AE5c62993824967a097F14bC, TEAM_MEMBER_VAL);
-        //igor
+        //CTO
         transferTeam(0x82D550dC74f8B70B202aB5b63DAbe75E6F00fb36, TEAM_MEMBER_VAL);
         owner = ADDR_OWNER;
     }
@@ -770,45 +752,45 @@ contract RobomedIco is ERC223, ERC20 {
     }
 
     /**
-    * Метод получающий количество начисленных премиальных токенов
+    * check team balance method
     */
     function teamBalanceOf(address _owner) public constant returns (uint256){
         return teamBalances[_owner];
     }
 
     /**
-    * Метод зачисляющий предварительно распределённые team токены на кошелёк
+    * accrue my team tokens method
     */
     function accrueTeamTokens() public afterIco {
-        //зачисление возможно только после определённой даты
+        //only after moratory
         require(startDateOfUseTeamTokens <= now);
 
-        //добавляем в общее количество выпущенных
+        //totalSupply inc
         totalSupply = totalSupply.add(teamBalances[msg.sender]);
 
-        //зачисляем на кошелёк и обнуляем не начисленные
+        //balance transfer and clear team balance
         balances[msg.sender] = balances[msg.sender].add(teamBalances[msg.sender]);
         teamBalances[msg.sender] = 0;
     }
 
     /**
-    * Метод проверяющий возможность восстановления нераспроданных токенов
+    * unsold tokens rectore check
     */
     function canRestoreUnsoldTokens() public constant returns (bool) {
-        //восстановление возможно только после ico
+        //after ICO
         if (currentState != IcoStates.PostIco) return false;
 
-        //восстановление возможно только после определённой даты
+        //and after moratory duration
         if (startDateOfRestoreUnsoldTokens > now) return false;
 
-        //восстановление возможно только если есть что восстанавливать
+        //unsold tokens left
         if (unsoldTokens == 0) return false;
 
         return true;
     }
 
     /**
-    * Метод выполняющий восстановление нераспроданных токенов
+    * Unsold tokens restoerв
     */
     function restoreUnsoldTokens(address _to) public onlyOwner {
         require(_to != 0x0);
@@ -820,8 +802,8 @@ contract RobomedIco is ERC223, ERC20 {
     }
 
     /**
-     * Метод переводящий контракт в следующее доступное состояние,
-     * Для выяснения возможности перехода можно использовать метод canGotoState
+     * next stage switching  method
+     * 
     */
     function gotoNextState() public onlyOwner returns (bool)  {
 
@@ -833,7 +815,7 @@ contract RobomedIco is ERC223, ERC20 {
 
 
     /**
-    * Инициация снятия эфира на указанный кошелёк
+    * 1st multisig eth transfer initial
     */
     function initWithdrawal(address _to, uint256 _value) public afterIco onlyWithdrawal1 {
         withdrawalTo = _to;
@@ -841,7 +823,7 @@ contract RobomedIco is ERC223, ERC20 {
     }
 
     /**
-    * Подтверждение снятия эфира на указанный кошелёк
+    * 2nd multisig eth transfer ack
     */
     function approveWithdrawal(address _to, uint256 _value) public afterIco onlyWithdrawal2 {
         require(_to != 0x0 && _value > 0);
@@ -858,7 +840,7 @@ contract RobomedIco is ERC223, ERC20 {
 
 
     /**
-     * Метод проверяющий возможность перехода в указанное состояние
+     * checking nextstage switching
      */
     function canGotoState(IcoStates toState) public constant returns (bool){
         if (toState == IcoStates.PreSale) {
@@ -886,7 +868,7 @@ contract RobomedIco is ERC223, ERC20 {
             return (currentState == IcoStates.SaleStage6 && freeMoney == 0 && startDateOfSaleStageLast > now);
         }
         else if (toState == IcoStates.SaleStageLast) {
-            //переход на состояние SaleStageLast возможен только из состояний SaleStages
+            //only after bonus stages
             if (
             currentState != IcoStates.SaleStage1
             &&
@@ -902,8 +884,8 @@ contract RobomedIco is ERC223, ERC20 {
             &&
             currentState != IcoStates.SaleStage7) return false;
 
-            //переход осуществляется если на состоянии SaleStage7 не осталось свободных токенов
-            //или на одном из состояний SaleStages наступило время startDateOfSaleStageLast
+            //Bonus tokens are sold
+            //or duration is expired
             if (!(currentState == IcoStates.SaleStage7 && freeMoney == 0) && startDateOfSaleStageLast > now) {
                 return false;
             }
@@ -916,47 +898,40 @@ contract RobomedIco is ERC223, ERC20 {
     }
 
     /**
-    * Fallback функция - из неё по сути просто происходит вызов покупки токенов для отправителя
+    * Fallback for buying
     */
     function() public payable {
         buyTokens(msg.sender);
     }
 
     /**
-     * Метод покупки токенов
+     * Buy tokens method
      */
     function buyTokens(address beneficiary) public payable {
         require(beneficiary != 0x0);
         require(msg.value != 0);
 
-        //нельзя покупать на токены bounty и team
+        //bounty and team adress is not able to buy tokens
         require(beneficiary != bountyTokensAccount && beneficiary != teamTokensAccount);
 
-        //выставляем остаток средств
-        //в процессе покупки будем его уменьшать на каждой итерации - итерация - покупка токенов на определённой стадии
-        //суть - если покупающий переводит количество эфира,
-        //большее чем возможное количество свободных токенов на определённой стадии,
-        //то выполняется переход на следующую стадию (курс тоже меняется)
-        //и на остаток идёт покупка на новой стадии и т.д.
-        //если же в процессе покупке все свободные токены израсходуются (со всех допустимых стадий)
-        //будет выкинуто исключение
+        //switching before substages by one eth income
         uint256 remVal = msg.value;
 
-        //увеличиваем количество эфира пришедшего к нам
+        //ETH income inc
         totalBalance = totalBalance.add(msg.value);
 
-        //общее количество токенов которые купили за этот вызов
+        //tokens bought
         uint256 boughtTokens = 0;
 
         while (remVal > 0) {
-            //покупать токены можно только на указанных стадиях
+            //stage check
             require(
             currentState != IcoStates.VipPlacement
             &&
             currentState != IcoStates.PostIco);
 
-            //выполняем покупку для вызывающего
-            //смотрим, есть ли у нас такое количество свободных токенов на текущей стадии
+            //buying for sender
+            //free money check
             uint256 tokens = remVal.mul(rate);
             if (tokens > freeMoney) {
                 remVal = remVal.sub(freeMoney.div(rate));
@@ -965,7 +940,7 @@ contract RobomedIco is ERC223, ERC20 {
             else
             {
                 remVal = 0;
-                //если остаток свободных токенов меньше чем курс - отдаём их покупателю
+                //if ens is lower then ETHwei - this is a gift)
                 uint256 remFreeTokens = freeMoney.sub(tokens);
                 if (0 < remFreeTokens && remFreeTokens < rate) {
                     tokens = freeMoney;
@@ -978,16 +953,16 @@ contract RobomedIco is ERC223, ERC20 {
             balances[beneficiary] = balances[beneficiary].add(tokens);
             boughtTokens = boughtTokens.add(tokens);
 
-            //если покупка была выполнена на любой из стадий Sale кроме последней
+            //every stage exclude ICO
             if (
             uint(currentState) >= uint(IcoStates.SaleStage1)
             &&
             uint(currentState) <= uint(IcoStates.SaleStage7)) {
 
-                //уменьшаем количество остатка по токенам которые необходимо продать на этих стадиях
+                //unsold sum DEC
                 remForSalesBeforeStageLast = remForSalesBeforeStageLast.sub(tokens);
 
-                //пробуем перейти между SaleStages
+                //stages switching
                 transitionBetweenSaleStages();
             }
 
@@ -998,16 +973,16 @@ contract RobomedIco is ERC223, ERC20 {
     }
 
     /**
-    * Метод выполняющий выдачу баунти-токенов на указанный адрес
+    * Bounty tokens sending
     */
     function transferBounty(address _to, uint256 _value) public onlyOwner {
-        //проверяем кошелёк назначения
+        //reciver check
         require(_to != 0x0 && _to != msg.sender);
 
-        //уменьшаем количество нераспределённых
+        //free bounty dec
         bountyTokensNotDistributed = bountyTokensNotDistributed.sub(_value);
 
-        //переводим с акаунта баунти на акаунт назначения
+        //transfer
         balances[_to] = balances[_to].add(_value);
         balances[bountyTokensAccount] = balances[bountyTokensAccount].sub(_value);
 
@@ -1015,20 +990,20 @@ contract RobomedIco is ERC223, ERC20 {
     }
 
     /**
-    * Метод выполняющий выдачу баунти-токенов на указанный адрес
+    * team tokens sendig
     */
     function transferTeam(address _to, uint256 _value) public onlyOwner {
-        //проверяем кошелёк назначения
+        //reciver check
         require(_to != 0x0 && _to != msg.sender);
 
-        //уменьшаем количество нераспределённых
+        //уleft team dec
         teamTokensNotDistributed = teamTokensNotDistributed.sub(_value);
 
-        //переводим с акаунта team на team акаунт назначения
+        //transfer
         teamBalances[_to] = teamBalances[_to].add(_value);
         balances[teamTokensAccount] = balances[teamTokensAccount].sub(_value);
 
-        //убираем токены из общего количества выпущенных
+        //totalsup dec
         totalSupply = totalSupply.sub(_value);
     }
 
@@ -1103,7 +1078,7 @@ contract RobomedIco is ERC223, ERC20 {
         balances[_from] = balances[_from].sub(_value);
         balances[_to] = balances[_to].add(_value);
         if (currentState != IcoStates.PostIco) {
-            //общая сумма переводов от владельца (до завершения) ico не может превышать InitialCoinsFor_VipPlacement
+            //subtotal Vipcheck for owner
             vipPlacementNotDistributed = vipPlacementNotDistributed.sub(_value);
         }
     }
@@ -1168,7 +1143,7 @@ contract RobomedIco is ERC223, ERC20 {
     }
 
     /**
-    * Вспомогательный метод выставляющий количество свободных токенов, рейт и добавляющий количество эмитированных
+    * settong free, rate, minting
     */
     function setMoney(uint256 _freeMoney, uint256 _emission, uint256 _rate) private {
         freeMoney = _freeMoney;
@@ -1177,49 +1152,49 @@ contract RobomedIco is ERC223, ERC20 {
     }
 
     /**
-     * Метод переводящий контракт в состояние PreSale
+     * PreSale stage switching
      */
     function gotoPreSale() private returns (bool) {
 
-        //проверяем возможность перехода
+        //check ability
         if (!canGotoState(IcoStates.PreSale)) return false;
 
-        //да нужно переходить
+        //Yes
 
-        //переходим в PreSale
+        // PreSale activiation
         currentState = IcoStates.PreSale;
 
 
-        //выставляем состояние токенов
+        //stage vars setting
         setMoney(EMISSION_FOR_PRESALE, EMISSION_FOR_PRESALE, RATE_PRESALE);
 
-        //устанавливаем дату окончания PreSale
+        //PreSale stage duration
         endDateOfPreSale = now.add(DURATION_PRESALE);
 
-        //разим событие изменения состояния
+        //public vars csnc
         StateChanged(IcoStates.PreSale);
         return true;
     }
 
     /**
-    * Метод переводящий контракт в состояние SaleStage1
+    * Bonus stage switching
     */
     function gotoSaleStage1() private returns (bool) {
-        //проверяем возможность перехода
+        //checking ability
         if (!canGotoState(IcoStates.SaleStage1)) return false;
 
-        //да нужно переходить
+        //Yes
 
-        //переходим в SaleStage1
+        // Bonus Stage activating
         currentState = IcoStates.SaleStage1;
 
-        //непроданные токены сгорают
+        //Presale unsold are erased
         totalSupply = totalSupply.sub(freeMoney);
 
-        //выставляем состояние токенов
+        //stage mapping
         setMoney(EMISSION_FOR_SALESTAGE1, EMISSION_FOR_SALESTAGE1, RATE_SALESTAGE1);
 
-        //определяем количество токенов которое можно продать на всех стадиях Sale кроме последней
+        //sum for all bonuses
         remForSalesBeforeStageLast =
         EMISSION_FOR_SALESTAGE1 +
         EMISSION_FOR_SALESTAGE2 +
@@ -1230,19 +1205,19 @@ contract RobomedIco is ERC223, ERC20 {
         EMISSION_FOR_SALESTAGE7;
 
 
-        //устанавливаем дату начала последней стадии продаж
+        //Bonus duration 
         startDateOfSaleStageLast = now.add(DURATION_SALESTAGES);
 
-        //разим событие изменения состояния
+        //Public vars sync
         StateChanged(IcoStates.SaleStage1);
         return true;
     }
 
     /**
-     * Метод выполняющий переход между состояниями Sale
+     * Stages switching
      */
     function transitionBetweenSaleStages() private {
-        //переход между состояниями SaleStages возможен только если находимся в одном из них, кроме последнего
+        //only in bonus subStage
         if (
         currentState != IcoStates.SaleStage1
         &&
@@ -1258,12 +1233,12 @@ contract RobomedIco is ERC223, ERC20 {
         &&
         currentState != IcoStates.SaleStage7) return;
 
-        //если есть возможность сразу переходим в состояние StageLast
+        //if possible - to the ICO
         if (gotoSaleStageLast()) {
             return;
         }
 
-        //смотрим в какое состояние можем перейти и выполняем переход
+        //resolve next stage and activate
         if (canGotoState(IcoStates.SaleStage2)) {
             currentState = IcoStates.SaleStage2;
             setMoney(EMISSION_FOR_SALESTAGE2, EMISSION_FOR_SALESTAGE2, RATE_SALESTAGE2);
@@ -1297,19 +1272,19 @@ contract RobomedIco is ERC223, ERC20 {
     }
 
     /**
-      * Метод переводящий контракт в состояние SaleStageLast
+      * ICO Stahe activation method
       */
     function gotoSaleStageLast() private returns (bool) {
         if (!canGotoState(IcoStates.SaleStageLast)) return false;
 
-        //ок переходим на состояние SaleStageLast
+        //ок  - to the ICO
         currentState = IcoStates.SaleStageLast;
 
-        //выставляем состояние токенов, с учётом всех остатков
+        //all tokens with tokens from bonuses left
         setMoney(remForSalesBeforeStageLast + EMISSION_FOR_SALESTAGELAST, EMISSION_FOR_SALESTAGELAST, RATE_SALESTAGELAST);
 
 
-        //устанавливаем дату окончания SaleStageLast
+        //ICO duration (before manual switching)
         endDateOfSaleStageLast = now.add(DURATION_SALESTAGELAST);
 
         StateChanged(IcoStates.SaleStageLast);
@@ -1319,24 +1294,24 @@ contract RobomedIco is ERC223, ERC20 {
 
 
     /**
-      * Метод переводящий контракт в состояние PostIco
+      *PostIco Stage activating
       */
     function gotoPostIco() private returns (bool) {
         if (!canGotoState(IcoStates.PostIco)) return false;
 
-        //ок переходим на состояние PostIco
+        //ок  - go to PostIco
         currentState = IcoStates.PostIco;
 
-        //выставляем дату после которой можно использовать премиальные токены
+        //team tokens moratory duration
         startDateOfUseTeamTokens = now + DURATION_NONUSETEAM;
 
-        //выставляем дату после которой можно зачислять оставшиеся (не распроданные) токены, на произвольный кошелёк
+        //unsold tokens duration moratory
         startDateOfRestoreUnsoldTokens = now + DURATION_BEFORE_RESTORE_UNSOLD;
 
-        //запоминаем количество нераспроданных токенов
+        //all unsold
         unsoldTokens = freeMoney;
 
-        //уничтожаем свободные токены
+        //ereasing free
         totalSupply = totalSupply.sub(freeMoney);
         setMoney(0, 0, 0);
 
